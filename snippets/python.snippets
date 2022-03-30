@@ -1,0 +1,14 @@
+snippet docs
+	"""
+	File: ${1:`vim_snippets#Filename('$1.py', 'fubar.py')`}
+	Author: `g:snips_author`
+	Email: `g:snips_email`
+	Github: `g:snips_github`
+	Description: ${0}
+	"""
+
+snippet dowh
+	while True:
+		${1}
+		if ${0:condition}:
+			break
