@@ -1,0 +1,13 @@
+snippet dtsrcref "Docutools Reference to Source Code (builds a repo link)"
+	:srcref:fn=${1:src/mpl.py},t=${2:matplotlib}
+
+
+
+snippet dtshow_src "Docutools source code inlining - rg-finds and shows ':docs:<delim>' delimited blocks in source code"
+      `lp:show_src delim=${1:this_example} hide="${2:This Example}" dir=${3:src/plugs} lang=python`
+
+
+snippet dtshow_file "Docutools show a file"
+	`lp:show_file fmt=mk_console fn=${1:src/foo.py} lang=${2:python}`
+
+

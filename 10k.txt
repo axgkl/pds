@@ -1,0 +1,1 @@
+/home/gk/.local/share/nvim.assets/10k.txt
