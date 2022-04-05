@@ -47,10 +47,10 @@ function main {
 	mkdir -p "$d_assets"
 	#download_spell
 	#download_10
-	set_symlinks
+	#set_symlinks
 	install_plugins
 	set +x
 	echo "Done."
 }
 
-main "$@"
+#main "$@"
