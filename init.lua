@@ -212,7 +212,7 @@ local config = {
 		if has_ then
 			p.setup({
 				dic = {
-					["markdown"] = { "~/.config/nvim.gk/10k.txt" },
+					["markdown"] = { "~/.config/nvim/lua/user/10k.txt" },
 					--["markdown"] = { "/usr/share/dict/words" },
 					-- ["lua"] = "path/to/lua.dic",
 				},
@@ -238,12 +238,12 @@ local config = {
 		set.foldlevel = 99 -- open all
 		set.relativenumber = true
 		--set.dict = "/usr/share/dict/words" -- much more
-		set.dict = "~/.config/nvim.gk/10k.txt"
+		set.dict = "~/.config/nvim/lua/user/10k.txt"
 		-- map("n", "<C-s>", ":w!<CR>", opts)
 		map("n", ",4", ":ToggleTerm size=100 <CR>", opts)
 		map("n", ",D", ":lua vim.diagnostic.config({virtual_text = false})<CR>", opts)
 		-- all viml:
-		vim.cmd("source ~/.config/nvim.gk/polish.vim")
+		vim.cmd("source ~/.config/nvim/lua/user/polish.vim")
 		-- do this only here so that require mpack works for async:
 	end,
 }
