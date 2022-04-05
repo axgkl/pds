@@ -11,6 +11,7 @@ local user_plugins = {
 	"tpope/vim-surround",
 	"easymotion/vim-easymotion",
 	"voldikss/vim-floaterm",
+	{ "wakatime/vim-wakatime", event = "BufRead" },
 	{
 		"uga-rosa/cmp-dictionary",
 		after = "nvim-cmp",

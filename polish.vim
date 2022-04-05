@@ -155,5 +155,6 @@ map <Leader>k <Plug>(easymotion-k)
 nnoremap  G      G?begin_archive<CR>
 " https://discordapp.com/channels/939594913560031363/939857762043695165/958793017932800061
 "execute "TSDisableAll indent"
+
 colorscheme pinkmare
 
