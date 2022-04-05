@@ -42,7 +42,7 @@ nnoremap <C-L> <C-W><C-J>
 nnoremap <C-H> <C-W><C-K>
 
 nmap <silent> <Leader><Leader> <Leader>ff
-nnoremap <silent> <Leader>j  :Telescope buffers<cr>
+nnoremap <silent> <Leader>h  :Telescope buffers<cr>
 nnoremap <silent> <Leader>g  :Telescope live_grep<cr>
 
 
@@ -149,9 +149,11 @@ let g:EasyMotion_smartcase = 1
 " JK motions: Line motions
 map <Leader>j <Plug>(easymotion-j)
 map <Leader>k <Plug>(easymotion-k)
-
+"TSDisableAll indent
 " -----------------------------------------------------------------
 " we often have old stuff at end of files:
 nnoremap  G      G?begin_archive<CR>
-"colorscheme pinkmare
+" https://discordapp.com/channels/939594913560031363/939857762043695165/958793017932800061
+execute 'TSDisableAll indent'
+colorscheme pinkmare
 

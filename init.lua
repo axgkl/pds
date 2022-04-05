@@ -1,5 +1,4 @@
 local user_plugins = {
-	"catppuccin/nvim",
 	"joshdick/onedark.vim",
 	"ThePrimeagen/refactoring.nvim",
 	"arcticicestudio/nord-vim",
@@ -31,8 +30,8 @@ end
 local config = {
 
 	-- Set colorscheme
-	--colorscheme = "default_theme",
-	colorscheme = "catppuccin",
+	colorscheme = "default_theme",
+	-- colorscheme = "catppuccin",
 
 	-- Default theme configuration
 	default_theme = {
@@ -186,7 +185,9 @@ local config = {
 				b.diagnostics.misspell.with(txt),
 				b.diagnostics.shellcheck,
 				b.diagnostics.write_good,
-				b.formatting.black.with({ extra_args = { "--fast" } }),
+				-- NO! THAT IS BREAKING STUFF (elastic.py):
+				-- b.formatting.black.with({ extra_args = { "--fast" } }),
+				b.formatting.black,
 				b.formatting.prettier.with({ filetypes = { "html", "json", "yaml" } }),
 				b.formatting.shfmt,
 				b.formatting.stylua,
