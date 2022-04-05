@@ -154,6 +154,6 @@ map <Leader>k <Plug>(easymotion-k)
 " we often have old stuff at end of files:
 nnoremap  G      G?begin_archive<CR>
 " https://discordapp.com/channels/939594913560031363/939857762043695165/958793017932800061
-execute 'TSDisableAll indent'
+"execute "TSDisableAll indent"
 colorscheme pinkmare
 
