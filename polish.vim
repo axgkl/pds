@@ -1,29 +1,37 @@
 " this is simply ctrl-i:
 "nnoremap <Tab>   za
-nnoremap <C-i>   za
+" same size after win resize:
+autocmd VimResized * wincmd = 
+
+" C-o jump older -> alt-o is jump newer (since C-i is tab which we need elsewhere)
+nnoremap <M-o>   <C-i>
 "cnoremap <silent> x<CR>  :call ConfirmQuit(1)<CR>
 "  "Yank constent with D and C:
 nnoremap Y         y$
-nnoremap ,l        :LazyGit<CR>
+nnoremap ,G        :LazyGit<CR>
 nnoremap ,q        :q!<CR>
 nnoremap ,Q        :Q!<cr>
 nnoremap ,d        :wq!<CR>
 nnoremap ,1        :source ~/.config/nvim/init.lua<CR>
 nnoremap ,2        :edit ~/.config/nvim/lua/user/init.lua<CR>
 nnoremap ,c        :close<CR> " close just a split or a tab
-nmap     ,f        za "folds
-
-
-nnoremap <silent> ,3  :FloatermNew! --autoclose=2 --wintype=vsplit cd %:p:h<CR>
+"folds
+nnoremap <C-i>   zO
+" all close:
+nmap     ,f        zM  
+" toggle:
+nnoremap <buffer> <Enter> za
+nnoremap <silent> ,3  :ToggleTerm dir=%:p:h<CR>
 
 "" Line join better, position cursor at join point:
 " (J is 5 lines jumps)
-nnoremap gj $mx<cmd>join<CR>0$[`dmx
+nnoremap fj $mx<cmd>join<CR>0$[`dmx
 
 " Universal python scriptable file or browser opener over word:
 "nmap ,g viW"ay:lua require('utils').smart_open([[<C-R>a]])<CR><CR>
 nmap ,g viW"ay:lua require('user.utils').smart_open([[<C-R>a]])<CR>
 vmap ,g :lua require('user.utils').smart_open([[visualsel]])<CR><CR>
+"nmap ,s :lua require('user.utils').autosave()<CR>
 
 " tabularize:
 nmap ga   :Tabularize/
@@ -31,19 +39,40 @@ xmap ga   :Tabularize/
 nmap tt  vip:s:,,:\|:ge<CR>vip:Tabularize/\|<CR>
 " markdown table
 nnoremap ,ta       vip:s/$/\|/ge<CR>vip:s:,,:\|:ge<CR>vip:s:^:\|:ge<CR>vip:s:\|\|:\|:ge<CR>vip:Tabularize/\|<CR> 
-
+" close window:
+nnoremap <M-w> :bd<CR>
 nnoremap S :%s//gI<Left><Left><Left>
 " move between splits with alt-jk
-nnoremap <M-j> <C-W><C-W>
-nnoremap <M-k> <C-W><C-W>
+nnoremap <M-j> <C-W><C-h>
+nnoremap <M-k> <C-W><C-l>
 inoremap <M-j> <ESC><C-W><C-W>
 inoremap <M-k> <ESC><C-W><C-W>
+" Jump to end of line in insert mode:
+inoremap <C-E> <C-O>A 
 nnoremap <C-L> <C-W><C-J>
 nnoremap <C-H> <C-W><C-K>
+nnoremap 1 ^
 
-nmap <silent> <Leader><Leader> <Leader>ff
-nnoremap <silent> <Leader>h  :Telescope buffers<cr>
+" nnoremap <M-1> 1gt
+" nnoremap <M-2> 2gt
+" nnoremap <M-3> 3gt
+" nnoremap <M-4> 4gt
+" nnoremap <M-5> 5gt
+" nnoremap <M-6> 6gt
+" nnoremap <M>7> 7gt
+" nnoremap <M-8> 8gt
+" nnoremap <M-9> 9gt
+
+nmap <silent> ff <Leader>ff
+" :Telescope buffers<cr>
+" nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers({ sort_lastused = true, ignore_current_buffer = true }) <CR>
+"nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers({ sort_lastused = true }) <CR>
+"nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers() <CR>
+"nnoremap <silent> <Leader><Leader> :lua require("telescope.builtin").buffers() <CR>
+nnoremap <silent> ;                :lua require("telescope.builtin").buffers() <CR>
 nnoremap <silent> <Leader>g  :Telescope live_grep<cr>
+" previous buffer:
+nnoremap <silent> <space><enter>  :ls<cr>:b#<cr> 
 
 
 " go to the position I was when last editing the file
@@ -51,38 +80,20 @@ au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g'
 
 "colorscheme pinkmare"colorscheme kanagawa
 nmap ,w  :FormatAndSave<CR>
+"save all buffers
+nmap ,W  :wa<CR> 
 function! s:format_and_save()
-    lua vim.lsp.buf.formatting()
-    update
+    lua vim.notify = print
+    silent! lua k=vim.notify; vim.notify=print;vim.lsp.buf.format { async = true};vim.notify=k
+    "Like ":write", but only write when the buffer has been changed:
+    silent update
 endfunction
 command! -bang FormatAndSave call s:format_and_save()
 
 
-"" AutoSave
-nmap ,s  :AutoSave<CR>
-function! s:autosave(enable)
-  augroup autosave
-    autocmd!
-    " at $IDE we call this at ANY BufEnter, with enable=2
-    if a:enable == 2
-        if $IDE != 'true'
-            return
-        endif
-    endif
-    if a:enable
-      autocmd TextChanged,InsertLeave <buffer>
-            \  if empty(&buftype) && !empty(bufname(''))
-            \|   silent! update
-            \| endif
-      :lua require("notify")("Autosave is on.", "info", {timeout=2000, title="Autosave"})
-    endif
-  augroup END
-endfunction
-command! -bang AutoSave call s:autosave(<bang>1)
-autocmd BufEnter *.* :call s:autosave(2) " $IDE -> always
 
 "" Yank hilite
-augroup highlight_yank
+augroup  highlight_yank
     autocmd!
     au TextYankPost * silent! lua vim.highlight.on_yank({higroup="IncSearch", timeout=400})
 augroup END
@@ -149,12 +160,53 @@ let g:EasyMotion_smartcase = 1
 " JK motions: Line motions
 map <Leader>j <Plug>(easymotion-j)
 map <Leader>k <Plug>(easymotion-k)
+nnoremap <leader>p m`o<ESC>p``
+let g:better_escape_shortcut = ['ak']
+let g:better_escape_interval = 1
 "TSDisableAll indent
 " -----------------------------------------------------------------
-" we often have old stuff at end of files:
-nnoremap  G      G?begin_archive<CR>
+colorscheme iceberg
+
+autocmd! FileType TelescopeResults setlocal nofoldenable
+" set notermguicolors
+" highlight Search ctermfg=0
 " https://discordapp.com/channels/939594913560031363/939857762043695165/958793017932800061
 "execute "TSDisableAll indent"
 
-colorscheme pinkmare
+" colorscheme pinkmare
+" autopairing: consider tmsvg/pear-tree
+"
+" Type ctrl-n to get the browser
+" browser not works:
+let g:mkdp_browser = '/usr/bin/microsoft-edge-dev'
+let g:mkdp_theme = 'dark'
+let g:mkdp_echo_preview_url = 1
 
+function! s:VPE(func_name, l1, l2) range
+" Executes functions from py_api.py
+python3 << EOL
+import os, sys
+D = f'{os.environ["HOME"]}/.config/nvim.gk' 
+if not D in sys.path:
+    sys.path.insert(0, D)
+    import vim_python_eval as vpe 
+# m = vpe.ctx.state
+if 0:
+    sys.modules.pop('vim_python_eval')
+    import vim_python_eval as vpe
+    vpe.ctx.state = m
+
+vpe.ctx.L1 = int(vim.eval("a:l1"))
+vpe.ctx.L2 = int(vim.eval("a:l2"))
+
+getattr(vpe, vim.eval("a:func_name"))()
+EOL
+endfunction
+
+command! -range Evl <line1>,<line2> call s:VPE('ExecuteSelectedRange', <line1>, <line2>)
+nnoremap          ,r  :Evl<CR>
+xnoremap <silent> ,r  :Evl<CR>
+
+" we often have old stuff at end of files:
+" go all down, then (<bar>, next cmd) search up but silent on no found:
+nnoremap  G      :$<CR><bar>:silent! ?begin_archive<CR>

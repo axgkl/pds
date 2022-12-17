@@ -48,11 +48,11 @@ pth_join = lambda dir, fn: str(Path(dir).joinpath(Path(fn)))
 browse = lambda lnk: os.system('%s "%s" >/dev/null 2>/dev/null &' % (browser, lnk))
 
 
-def send_exit(fn):
-    """vim opens fn now:"""
-    log('sending back: %s' % fn)
+def send_exit(fn_or_vim_cmd):
+    """vim opens fn now if present else run vim.cmd:"""
+    log('sending back: %s' % fn_or_vim_cmd)
     with open(fn_from_lua, 'w') as fd:
-        fd.write(fn)
+        fd.write(fn_or_vim_cmd)
     exit()
 
 
@@ -61,18 +61,26 @@ def validate_and_complete(m):
         exit(notify('bug: file does not exist: %s' % m['fn']))
     log('parsed: %s' % str(m))
     m['dir'] = os.path.abspath(os.path.dirname(m['fn']))
+    w, l = m['word'], m['line']
     for spam in "'", '"':
-        m['word'] = m['word'].replace(spam, '')
+        w.replace(spam, '')
+
+    if w and w[0] == '[' and not ']' in w:
+        w = w + l.split(w, 1)[1].split(')', 1)[0] + ')'
+        pass
+    m['word'] = w
+    log('foo %s' % m)
 
 
 def try_(f, **m):
     k = '\n'.join(['- %s: %s' % (k, v) for k, v in m.items()])
     k = '\n%s\n' % k
-    notify(f.__name__, k)
+    #notify(f.__name__, k)
     try:
         f(**m)
     except Exception as ex:
-        notify('Exception', str(ex))
+        pass
+        #notify('Exception', str(ex))
 
 
 def notify_help():
@@ -89,7 +97,29 @@ def touch_new_md_file(fn, title):
 
 
 # ----------------------------------------------------------------------------- checkers
-def is_no_word_under_cursor_in_md_file_open_browser_in_ds(word, fn, **kw):
+def is_markdown_dragshot_req(word, fn, dn=os.path.dirname, **_):
+    """
+    In e.g. a markdown file write "shot:img/foo.png", then `,g` on it. Will:
+    - ask you for a screenshot area via scrot
+    - creates the file img/foo.png at the right place
+    - substitute in vim with a markdown link to it
+    """
+    if not word.startswith('shot:'):
+        return
+    tofn = fni = word.split('shot:', 1)[1]
+    if not tofn.startswith('/'):
+        fni = os.path.abspath(dn(fn) + '/' + fni)
+    os.makedirs(dn(fni), exist_ok=True)
+    cmd = f'scrot --freeze -s "{fni}"'
+    if os.system(cmd):
+        notify('drag shot', 'aborted')
+        exit(1)
+    notify('scrot', f'created {fni}')
+    w = tofn.replace('/', '\\/').replace('.', '\\.')
+    send_exit(f'%s/shot:{w}/![]({w})/g')
+
+
+def is_no_word_under_cursor_in_md_file_open_browser_in_ds(word, fn, **_):
     if word:
         return
     if '/docs/' in fn and '/repos/' in fn and fn.endswith('.md'):
@@ -102,12 +132,12 @@ def is_no_word_under_cursor_in_md_file_open_browser_in_ds(word, fn, **kw):
     exit()
 
 
-def is_help(word, **kw):
+def is_help(word, **_):
     if word == 'help' or word == '?':
         send_exit(__file__)
 
 
-def is_man_page(word, fn, **kw):
+def is_man_page(word, fn, **_):
     '''are we viewing a manpage and we ,g over e.g. "touch(5)"'''
     if not fn.startswith('man://'):
         return
@@ -147,10 +177,16 @@ def is_markdown_link(word, dir, **kw):
         if exists(pth):
             lnk += 'index.md'
 
+    pth = pth_join(dir, lnk)
+    if exists(pth):
+        if pth.rsplit('.', 1)[-1].lower() in {'png', 'svg', 'jpeg', 'gif', 'jpg'}:
+            exit(browse(pth))
+        send_exit(pth)
+    if exists(pth+'.md'): send_exit(pth+'.md')
+
     if not lnk.endswith('.md'):
         exit(browse(title + lnk))
 
-    pth = pth_join(dir, lnk)
     if not exists(pth):
         touch_new_md_file(pth, title)
 
@@ -236,6 +272,7 @@ def main():
     for k in m:
         m[k] = expression.split(''.join((sep, k, sep)), 1)[1].split(sep, 1)[0].strip()
     validate_and_complete(m)
+    try_(is_markdown_dragshot_req, **m)
     try_(is_no_word_under_cursor_in_md_file_open_browser_in_ds, **m)
     try_(is_man_page, **m)
     try_(is_help, **m)

@@ -26,10 +26,20 @@ let g:mkdp_browser = g:md_preview_tools .. "browser.sh"
 
 nnoremap ,p <cmd>MarkdownPreviewToggle<cr>
 nnoremap ,[ :lua require('utils').write_dom()<CR>
+nnoremap ,t vip:Tabularize/\|<CR>
+inoremap <M-t> <Esc>vip:Tabularize/\|<CR>
 
 au QuitPre <buffer> lua require('user.utils').write_dom()
 
+" colorscheme default_theme
 
-
+" show existing tab with 4 spaces width
+set tabstop=4
+" when indenting with '>', use 4 spaces width
+set shiftwidth=4
+" On pressing tab, insert 4 spaces
+set expandtab
+set syntax=markdown
+colorscheme kanagawa
 "let g:mkdp_browserfunc = 'RunPreviewBrowser'
 
