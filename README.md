@@ -1,6 +1,6 @@
-# My AstroVim Flavor
+# My AstroNVim Flavor
 
-Customizes [AstroVim](https://github.com/kabinspace/AstroVim).
+Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 
 
 ## Install

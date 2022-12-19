@@ -13,6 +13,8 @@ setlocal autoindent
 setlocal cindent
 let g:python_highlight_all = 1
 
+
+
 " on demand, pyright LSP is just the right amount of information for me:
 ":ALEDisable
 

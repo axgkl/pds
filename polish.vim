@@ -16,7 +16,7 @@ nnoremap ,1        :source ~/.config/nvim/init.lua<CR>
 nnoremap ,2        :edit ~/.config/nvim/lua/user/init.lua<CR>
 nnoremap ,c        :close<CR> " close just a split or a tab
 "folds
-nnoremap <C-i>   zO
+nnoremap <C-i>   zR
 " all close:
 nmap     ,f        zM  
 " toggle:
@@ -74,6 +74,9 @@ nnoremap <silent> <Leader>g  :Telescope live_grep<cr>
 " previous buffer:
 nnoremap <silent> <space><enter>  :ls<cr>:b#<cr> 
 
+" Move paragraph wise. s is hover.
+nmap J }j
+nmap K {k{kkJ
 
 " go to the position I was when last editing the file
 au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g'\"" | endif
@@ -98,11 +101,11 @@ augroup  highlight_yank
     au TextYankPost * silent! lua vim.highlight.on_yank({higroup="IncSearch", timeout=400})
 augroup END
 
-"" Packer
-augroup packer_conf
-  autocmd!
-  autocmd BufWritePost plugins.lua source <afile> | PackerSync
-augroup end
+" "" Packer
+" augroup packer_conf
+"   autocmd!
+"   autocmd BufWritePost plugins.lua source <afile> | PackerSync
+" augroup end
 
 
 function! SuperMan(...)
@@ -165,7 +168,7 @@ let g:better_escape_shortcut = ['ak']
 let g:better_escape_interval = 1
 "TSDisableAll indent
 " -----------------------------------------------------------------
-colorscheme iceberg
+"colorscheme iceberg
 
 autocmd! FileType TelescopeResults setlocal nofoldenable
 " set notermguicolors
@@ -176,17 +179,11 @@ autocmd! FileType TelescopeResults setlocal nofoldenable
 " colorscheme pinkmare
 " autopairing: consider tmsvg/pear-tree
 "
-" Type ctrl-n to get the browser
-" browser not works:
-let g:mkdp_browser = '/usr/bin/microsoft-edge-dev'
-let g:mkdp_theme = 'dark'
-let g:mkdp_echo_preview_url = 1
-
 function! s:VPE(func_name, l1, l2) range
 " Executes functions from py_api.py
 python3 << EOL
 import os, sys
-D = f'{os.environ["HOME"]}/.config/nvim.gk' 
+D = f'{os.environ["HOME"]}/.config/nvim.user' 
 if not D in sys.path:
     sys.path.insert(0, D)
     import vim_python_eval as vpe 
@@ -209,4 +206,8 @@ xnoremap <silent> ,r  :Evl<CR>
 
 " we often have old stuff at end of files:
 " go all down, then (<bar>, next cmd) search up but silent on no found:
+
+colorscheme iceberg
+
+
 nnoremap  G      :$<CR><bar>:silent! ?begin_archive<CR>

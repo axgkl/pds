@@ -81,57 +81,9 @@ local config = {
 		telescope_select = true,
 	},
 
-	-- Configure plugins
+	-- Configure plugins (in user/plugins.lua)
+	--
 	plugins = {
-		init = {
-			-- Add plugins, the packer syntax without the "use"
-			"aquach/vim-http-client",
-			"nvim-zh/auto-save.nvim",
-			"joshdick/onedark.vim",
-			"ThePrimeagen/refactoring.nvim",
-			"arcticicestudio/nord-vim",
-			"cocopon/iceberg.vim",
-			"godlygeek/tabular",
-			"cormacrelf/vim-colors-github",
-			"kshenoy/vim-signature",
-			"iamcco/markdown-preview.nvim",
-			"matsuuu/pinkmare",
-			"masukomi/vim-markdown-folding",
-			"rebelot/kanagawa.nvim",
-			"tpope/vim-repeat",
-			"tpope/vim-surround",
-			"tpope/vim-markdown",
-			"easymotion/vim-easymotion",
-			--"edluffy/hologram.nvim", (images in buffers)
-			-- "voldikss/vim-floaterm",
-			"jez/vim-superman",
-			"michaeljsmith/vim-indent-object",
-			"vim-python/python-syntax",
-			{ "wakatime/vim-wakatime", event = "BufRead" },
-			{
-				"uga-rosa/cmp-dictionary",
-				after = "nvim-cmp",
-				config = function()
-					local cmp = require("cmp")
-					local config = cmp.get_config()
-					table.insert(config.sources, { name = "dictionary", keyword_length = 2 })
-					cmp.setup(config)
-				end,
-			},
-
-			-- You can disable default plugins as follows:
-			-- ["goolord/alpha-nvim"] = { disable = true },
-
-			-- You can also add new plugins here as well:
-			-- { "andweeb/presence.nvim" },
-			-- {
-			--   "ray-x/lsp_signature.nvim",
-			--   event = "BufRead",
-			--   config = function()
-			--     require("lsp_signature").setup()
-			--   end,
-			-- },
-		},
 		-- All other entries override the setup() call for default plugins
 		["null-ls"] = function(config)
 			local null_ls = require("null-ls")
@@ -247,6 +199,13 @@ local config = {
 		-- easily add or disable built in mappings added during LSP attaching
 		mappings = {
 			n = {
+				["K"] = false,
+				["s"] = {
+					function()
+						vim.lsp.buf.hover()
+					end,
+					desc = "Hover symbol details",
+				},
 				-- ["<leader>lf"] = false -- disable formatting keymap
 				-- ["gd"] = {
 				-- 	function()
@@ -258,6 +217,7 @@ local config = {
 		},
 		-- add to the server on_attach function
 		-- on_attach = function(client, bufnr)
+		-- 	vim.cmd('echo "attach"')
 		-- end,
 
 		-- override the lsp installer server-registration function
@@ -333,16 +293,18 @@ local config = {
 	polish = function()
 		-- Set key binding
 		-- Set autocommands
-
+		-- vim.api.nvim_create_augroup("ftplugs", { clear = true })
+		-- vim.api.nvim_create_autocmd("BufEnter", {
+		-- 	desc = "Load ft plugs",
+		-- 	group = "ftplugs",
+		-- 	pattern = "*.md",
+		-- 	-- command = "source ~/.config/nvim/lua/user/ftplugin/mdown.vim",
+		-- 	command = function()
+		-- 		print("adsfa")
+		-- 	end,
+		-- })
 		require("nvim-autopairs").disable()
-		vim.api.nvim_create_augroup("packer_conf", { clear = true })
-		vim.api.nvim_create_autocmd("BufWritePost", {
-			desc = "Sync packer after modifying plugins.lua",
-			group = "packer_conf",
-			pattern = "plugins.lua",
-			command = "source <afile> | PackerSync",
-		})
-
+		-- https://neovim.io/doc/user/lua.html#lua-filetype
 		-- Set up custom filetypes
 		-- vim.filetype.add {
 		--   extension = {
@@ -359,6 +321,8 @@ local config = {
 		cnf.enabled = false
 		cnf.write_all_buffers = false
 		vim.cmd("source ~/.config/nvim/lua/user/polish.vim")
+		-- vim.cmd("echo '" .. vim.bo.filetype .. "'")
+		-- vim.cmd("echo 'foo'")
 	end,
 }
 
