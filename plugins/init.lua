@@ -9,7 +9,8 @@ return {
 	"ellisonleao/gruvbox.nvim",
 	"joshdick/onedark.vim",
 	"ThePrimeagen/refactoring.nvim",
-	"arcticicestudio/nord-vim",
+	--"arcticicestudio/nord-vim",
+	"dracula/vim",
 	"cocopon/iceberg.vim",
 	"godlygeek/tabular",
 	"cormacrelf/vim-colors-github",
@@ -35,7 +36,7 @@ return {
 	"jez/vim-superman",
 	"michaeljsmith/vim-indent-object",
 	"vim-python/python-syntax",
-	{ "wakatime/vim-wakatime", event = "BufRead" },
+	-- { "wakatime/vim-wakatime", event = "BufRead" },
 	{
 		"uga-rosa/cmp-dictionary",
 		after = "nvim-cmp",

@@ -183,7 +183,7 @@ function! s:VPE(func_name, l1, l2) range
 " Executes functions from py_api.py
 python3 << EOL
 import os, sys
-D = f'{os.environ["HOME"]}/.config/nvim.user' 
+D = f'{os.environ["HOME"]}/.config/nvim/lua/user' 
 if not D in sys.path:
     sys.path.insert(0, D)
     import vim_python_eval as vpe 

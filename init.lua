@@ -1,5 +1,5 @@
 UU = require("user.utils") -- allows :lua U.dump(vim.lsp)
-TS = require("telescope.builtin")
+-- TS = require("telescope.builtin")
 
 local config = {
 
@@ -98,7 +98,6 @@ local config = {
 				b.code_actions.shellcheck,
 				b.diagnostics.shellcheck,
 				b.formatting.shfmt,
-				--b.formatting.beautysh,
 				-- python
 				b.formatting.blue,
 				b.formatting.stylua,
@@ -268,13 +267,13 @@ local config = {
 			-- ["<CR>"] = { "zA", desc = "Toggle Global Fold" },
 			[",D"] = {
 				function()
-					TS.diagnostics({ bufnr = 0 })
+					require("telescope.builtin").diagnostics({ bufnr = 0 })
 				end,
 				desc = "BufferDiagnostics",
 			},
 			[",C"] = {
 				function()
-					TS.colorscheme({ enable_preview = true })
+					require("telescope.builtin").colorscheme({ enable_preview = true })
 				end,
 				desc = "ColorSchemes",
 			},
