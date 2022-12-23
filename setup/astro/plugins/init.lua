@@ -2,10 +2,12 @@ return {
 	-- Add plugins, the packer syntax without the "use"
 	-- For markdown:
 	-- "AXGKl/vim-minimd",
+	"~/vpe",
 	"mikeboiko/vim-markdown-folding",
 	"junegunn/limelight.vim",
 	"junegunn/goyo.vim",
-	"nvim-zh/auto-save.nvim",
+	"mbbill/undotree",
+	"Pocco81/auto-save.nvim",
 	"ellisonleao/gruvbox.nvim",
 	"joshdick/onedark.vim",
 	"ThePrimeagen/refactoring.nvim",
@@ -16,6 +18,7 @@ return {
 	"cormacrelf/vim-colors-github",
 	"kshenoy/vim-signature",
 	"matsuuu/pinkmare",
+	"rose-pine/neovim",
 	{
 		"iamcco/markdown-preview.nvim",
 		run = "cd app && npm install",

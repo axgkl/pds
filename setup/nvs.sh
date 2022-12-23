@@ -2,74 +2,97 @@
 
 # --------------------------------------------------------------------------------------- sourcing
 # when sourced, handle only act/deact - w/o spamming the process namespace with stuff below
-set +x; test "$1" == "-x" && { shift; set -x; }
-is_sourced=true
-echo "$0" | grep nvs.sh >/dev/null 2>&1 && is_sourced=false
+nvs_is_sourced=true
+
+echo "$0" | grep nvs.sh >/dev/null 2>&1 && nvs_is_sourced=false
 
 here="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$here/environ"
-d_mamba="${d_mamba:-$dflt_d_mamba}"
-
+nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
+nvs_distri="${nvs_distri:-$nvs_dflt_distri}"
 
 function activate_mamba {
-	source "$d_mamba/etc/profile.d/conda.sh"
-	conda activate "$d_mamba"
-	test "$CONDA_PREFIX" == "$d_mamba" || die "Could not activate $d_mamba"
-	echo "Activated $d_mamba"
+	source "$nvs_d_mamba/etc/profile.d/conda.sh"
+	conda activate "$nvs_d_mamba"
+	test "$CONDA_PREFIX" == "$nvs_d_mamba" || die "Could not activate $nvs_d_mamba"
+	echo "Activated $nvs_d_mamba"
 }
 
 function deactivate_mamba {
-	_() { echo "Deactivated $d_mamba"; }
+	_() { echo "Deactivated $nvs_d_mamba"; }
 	test "${nvs_shell:-}" == "true" && _ && exit
 	conda deactivate
 }
 
 function handle_sourced {
+	# we are called as function
+	proc=false
 	case "${1:-x}" in
 	a | activate)
 		activate_mamba
-		$is_sourced || bash
 		;;
 	d | deactivate)
 		deactivate_mamba
-		$is_sourced || bash
 		;;
-	*) "$here/nvs.sh" "$@" ;;
+	e | edit)
+		cd "$here/$nvs_distri" || true
+		vi init.lua
+		;;
+	ps | packer-sync) vi +PackerSync ;;
+	*)
+		proc=true
+		"$here/nvs.sh" "$@"
+		;;
 	esac
+	$proc || $nvs_is_sourced || bash
 }
 
 # return when sourced
-$is_sourced && {
+$nvs_is_sourced && {
 	handle_sourced "$@"
 	return
 }
 
 # --------------------------------------------------------------------------------------- process
+nvs_is_traced="${nvs_is_traced:-false}"
+nvs_is_stepped="${nvs_is_stepped:-false}"
+
+test "$1" == "-x" && {
+	export nvs_is_traced=true
+	shift
+}
+test "$1" == "-s" && {
+	export nvs_is_stepped=true
+	shift
+}
+$nvs_is_traced && set -x
+in_tmux=false
 set -a
-distri="${distri:-$dflt_distri}"
+distri="${distri:-$nvs_dflt_distri}"
 d="$here/$distri"
-test -d "$d" || { echo "Not found: $d"; exit 1; }
+test -d "$d" || {
+	echo "Not found: $d"
+	exit 1
+}
 source "$d/environ"
-v_distri="${v_distri:-$dflt_v_distri}"
-d_mamba="${d_mamba:-$dflt_d_mamba}"
-v_nvim="${v_nvim:-$dflt_v_nvim}"
-v_mamba="${v_mamba:-$dflt_v_mamba}"
-v_shfmt="${v_shfmt:-$dflt_v_shfmt}"
-mamba_prefer_system_tools="${mamba_prefer_system_tools:-$dflt_mamba_prefer_system_tools}"
-mamba_tools="${mamba_tools:-$dflt_mamba_tools}"
-pin_mamba="${pin_mamba:-$dflt_pin_mamba}"
-pin_mamba_pkgs="${pin_mamba_pkgs:-$dflt_pin_mamba_pkgs}"
-pin_distri="${pin_distri:-$dflt_pin_distri}"
-pin_nvim_pkgs="${pin_nvim_pkgs:-$dflt_pin_nvim_pkgs}"
+nvs_v_distri="${nvs_v_distri:-$nvs_dflt_v_distri}"
+nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
+nvs_v_nvim="${nvs_v_nvim:-$nvs_dflt_v_nvim}"
+nvs_v_mamba="${nvs_v_mamba:-$nvs_dflt_v_mamba}"
+nvs_v_shfmt="${nvs_v_shfmt:-$nvs_dflt_v_shfmt}"
+nvs_mamba_prefer_system_tools="${nvs_mamba_prefer_system_tools:-$nvs_dflt_mamba_prefer_system_tools}"
+nvs_mamba_tools="${nvs_mamba_tools:-$nvs_dflt_mamba_tools}"
+nvs_pin_mamba="${nvs_pin_mamba:-$nvs_dflt_pin_mamba}"
+nvs_pin_mamba_pkgs="${nvs_pin_mamba_pkgs:-$nvs_dflt_pin_mamba_pkgs}"
+nvs_pin_distri="${nvs_pin_distri:-$nvs_dflt_pin_distri}"
+nvs_pin_nvim_pkgs="${nvs_pin_nvim_pkgs:-$nvs_dflt_pin_nvim_pkgs}"
 set +a
-
-
 
 #
 d_conf_nvim="$HOME/.config/nvim"
 d_stash="$HOME/.local/share/stashed_nvim"
-url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$v_nvim/nvim.appimage"
-shfmt="https://github.com/mvdan/sh/releases/download/v$v_shfmt/shfmt_v${v_shfmt}_linux_amd64"
+url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$nvs_v_nvim/nvim.appimage"
+shfmt="https://github.com/mvdan/sh/releases/download/v$nvs_v_shfmt/shfmt_v${nvs_v_shfmt}_linux_amd64"
 inst_log="$HOME/nvs_have.log"
 
 d_='NeoVim Setup Tools
@@ -92,23 +115,23 @@ REQUIREMENTS:
 ACTIONS:
 
 [DE]Activate:
-- When this script is sourced (via nvs function), we (de)activate '$d_mamba' in current shell
+- When this script is sourced (via nvs function), we (de)activate '$nvs_d_mamba' in current shell
 
 Install:
 - Ensures nvs function to this script in .bashrc
-- Creates conda(mamba) environment at '$d_mamba', with tools:
-  '$mamba_tools'
-- Installs NeoVim '$v_nvim'
-- Installs Nvim '$distri' Distribution 
+- Creates conda(mamba) environment at '$nvs_d_mamba', with tools:
+  '$nvs_mamba_tools'
+- Installs NeoVim '$nvs_v_nvim'
+- Installs Nvim '$nvs_distri' Distribution 
 - Installs User Config
 
 Set install params into "'$here'/environ" or export them before install.
 
 Clean All:
 - Removes .config/nvim, .local/share/nvim and .local/state/nvim
-- Leaves the mamba tools at '$d_mamba'
+- Leaves the mamba tools at '$nvs_d_mamba'
 
-Shell: Enter a shell with '$d_mamba' activated
+Shell: Enter a shell with '$nvs_d_mamba' activated
 
 Status: Shows status of all installables and stashes
 
@@ -156,6 +179,10 @@ function TSC {
 	waitfor ".done" "$@"
 }
 
+function TMIF {
+	test "$in_tmux" == "true" && TSC "$*"
+	test "$in_tmux" == "true" || "$@"
+}
 # wait for file then do action
 function waitfor {
 	while ! test -e "$1"; do sleep 0.1; done
@@ -168,12 +195,33 @@ function waitfor {
 
 # pretty output:
 function sh {
-	echo -e "\x1b[31m$1\x1b[0m"
+	echo -e "\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
+	local m
+	$nvs_is_stepped && {
+		$in_tmux && {
+			tmux select-pane -t 0
+			echo "Attach: tmux -S $tmux_sock att"
+		}
+		read -rp 'Run / Trace / Quit [Ytq]? ' m
+		m="$(echo "$m" | tr '[:upper:]' '[:lower:'])"
+		if [ "$m" == "q" ]; then exit 1; fi
+		if [ "$m" == "t" ]; then
+			if [ "$nvs_is_traced" == "true" ]; then
+				nvs_is_traced=false
+				set +x
+			else
+				nvs_is_traced=true
+				set -x
+			fi
+		fi
+
+	}
+	$in_tmux && tmux select-pane -t 1
 	"$@"
 }
 
 function have {
-	local dt b
+	local dt b args
 	b=s
 	test "$1" == "t" && {
 		shift
@@ -184,7 +232,8 @@ function have {
 	local msg h="$1"
 	shift
 	#have="$(echo -n "$have" | sed -e 's/1m/2m/g')"
-	msg="$(printf "\x1b[2m%5s$b\x1b[0m \x1b[1;34m✔️\x1b[0m %-30s %s\x1b[0m\n" "$dt" "\x1b[1m$h" "\x1b[2m $*")"
+	args="$(echo "$*" | xargs)"
+	msg="$(printf "\x1b[2m%5s$b\x1b[0m \x1b[1;34m✔️\x1b[0m %-30s %s\x1b[0m\n" "$dt" "\x1b[1m$h" "\x1b[2m $args")"
 	echo -e "$msg"
 	echo -e "$msg" >>"$inst_log"
 }
@@ -197,7 +246,7 @@ function die {
 }
 
 function disk {
-   du -h "$1" | tail -n 1
+	du -h "$1" | tail -n 1
 }
 function install_plugins {
 	export setup_mode=true
@@ -215,92 +264,114 @@ function set_nvs_function_to_bashrc {
 	have '.bashrc' "$a"
 }
 function ensure_dirs {
-    local dd; dd=""
-    for d in .local/share .local/state .cache .config; do
-        mkdir -p "$HOME/$d"
-        dd="$dd$d "
-    done
-    have "Directories" "$dd"
+	local dd
+	dd=""
+	for d in .local/share .local/state .cache .config; do
+		mkdir -p "$HOME/$d"
+		dd="$dd$d "
+	done
+	have "Directories" "$dd"
 }
 function install_mamba {
-    bash "$1" -b -p "$d_mamba" || { set -x; head -n 1 "$1"; set +x; rm -f "$1"; die "Installer failed - removed it."; }
+	bash "$1" -b -p "$nvs_d_mamba" || {
+		set -x
+		head -n 1 "$1"
+		set +x
+		rm -f "$1"
+		die "Installer failed - removed it."
+	}
 }
 
 # we support d_mamba v_mamba pin_mamba
 function install_mamba_binary_pkg_mgr {
-	local hv_mamba fn crl url name; crl=false
-	test -d "$d_mamba" || {
-		name="Mambaforge-$v_mamba-$(uname)-$(uname -m).sh"
-        url="https://github.com/conda-forge/miniforge/releases/download/$v_mamba/$name"
-        #test "$pin_mamba" == true -o "$v_mamba" == "latest" && {
-        test "$v_mamba" == "latest" && {
-		    name="Mambaforge-$(uname)-$(uname -m).sh"
-            url="https://github.com/conda-forge/miniforge/releases/latest/download/$name"
-        }
-        echo "Installer: $name"
-        fn="$HOME/.cache/$name"
+	local hv_mamba fn crl url name
+	crl=false
+	test -d "$nvs_d_mamba" || {
+		name="Mambaforge-$nvs_v_mamba-$(uname)-$(uname -m).sh"
+		url="https://github.com/conda-forge/miniforge/releases/download/$nvs_v_mamba/$name"
+		#test "$pin_mamba" == true -o "$nvs_v_mamba" == "latest" && {
+		test "$nvs_v_mamba" == "latest" && {
+			name="Mambaforge-$(uname)-$(uname -m).sh"
+			url="https://github.com/conda-forge/miniforge/releases/latest/download/$name"
+		}
+		echo "Installer: $name"
+		fn="$HOME/.cache/$name"
 		test -f "$fn" || (
-            type curl 2>/dev/null 1>&2 && crl=true
-            echo "Not present - downloading $url"
-            $crl &&  curl -L -o "$fn" "$url"
-            $crl ||  wget "$url" -O "$fn"
-            test -e "$fn" || die "could not download $url"
-            have "Mamba Installer" "$fn"
+			type curl 2>/dev/null 1>&2 && crl=true
+			echo "Not present - downloading $url"
+			$crl && curl -L -o "$fn" "$url"
+			$crl || wget "$url" -O "$fn"
+			test -e "$fn" || die "could not download $url"
+			have "Mamba Installer" "$fn"
 		)
-        sh install_mamba "$fn"
+		sh install_mamba "$fn"
 	}
-    test -e "$d_mamba/bin/mamba" || die "No mamba dir: $d_mamba"
-    hv_mamba="$($d_mamba/bin/mamba --version | xargs)"
-    # die when pinned but different:
-    local msg; msg="Mamba ver conflict at $d_mamba (wanted: $v_mamba, have: $hv_mamba). Remove manually or change \$d_mamba to different location."
-    test "$v_mamba" == "latest" && v_mamba="-" # only have minor not -<build>
-    $pin_mamba && grep "${v_mamba%%-*}" <<< "$hv_mamba" 1>/dev/null || die "$msg"
-	have "Mamba Binary Pkg Env" "$hv_mamba $(disk $d_mamba)"
+	test -e "$nvs_d_mamba/bin/mamba" || die "No mamba dir: $nvs_d_mamba"
+	hv_mamba="$("$nvs_d_mamba/bin/mamba" --version | xargs)"
+	# die when pinned but different:
+	local msg
+	msg="Mamba ver conflict at $nvs_d_mamba (wanted: $nvs_v_mamba, have: $hv_mamba). Remove manually or change \$nvs_d_mamba to different location."
+	test "$nvs_v_mamba" == "latest" && nvs_v_mamba="-" # only have minor not -<build>
+	$nvs_pin_mamba && grep "${nvs_v_mamba%%-*}" <<<"$hv_mamba" 1>/dev/null || die "$msg"
+	have "Mamba Binary Pkg Env" "$hv_mamba $(disk "$nvs_d_mamba")"
+}
+
+function ensure_tmux {
+	local p1 t1
+	t1="$nvs_mamba_tools"
+	p1="$mamba_prefer_system_tools"
+	nvs_mamba_tools="tmux"
+	mamba_prefer_system_tools=true
+	install_binary_tools
+	export nvs_mamba_tools="$t1"
+	export mamba_prefer_system_tools="$p1"
+	have Tmux "$(type tmux)"
 }
 
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
 function install_binary_tools {
-    local f v pkg name spkgs pkgs vers vt; vt="" 
-    for f in "$here/$distri" "$here"; do
-        test -e "$f/versions_mamba.txt" || continue
-        vers="$(cat "$f/versions_mamba.txt")"
-    done
-    IFS=' ' && for t in $mamba_tools
-    do
-       pkg="${t%:*}"
-       name="${t#*:*}"
-       test "$name" == "-" || {
-           test "$mamba_prefer_system_tools" == "true" && type "$name" 2>/dev/null 1>&2 && {
-                    spkgs="$spkgs $pkg"
-                    continue
-            }
-       }
-       pkgs="$pkgs $pkg"
-       test "$pin_mamba_pkgs" == "true" && {
-             v="$(grep "^$pkg=" <<< $vers)"
-             pkg="${v:-$pkg}"
-        }
-             vt="$pkg $vt"
-    done
-    function have_installed {
-        local e;e="$(mamba list --export)"
-        # try be fast at re-installs and search the tools in pkgs:
-        vers=""
-        for k in $vt; do
-            grep -q "^$k" <<< "$e" || vers="$k $vers"
-        done
-        test -z "${vers/ /}"
-    }
-    have_installed || eval mamba install -y "$vt"
+	echo "tools $nvs_mamba_tools"
+	local f v pkg name spkgs pkgs vers vt
+	vt=""
+	for f in "$here/$nvs_distri" "$here"; do
+		test -e "$f/versions_mamba.txt" || continue
+		vers="$(cat "$f/versions_mamba.txt")"
+	done
+	IFS=' ' && for t in $nvs_mamba_tools; do
+		pkg="${t%:*}"
+		name="${t#*:*}"
+		test "$name" == "-" || {
+			test "$mamba_prefer_system_tools" == "true" && type "$name" 2>/dev/null 1>&2 && {
+				spkgs="$spkgs $pkg"
+				continue
+			}
+		}
+		pkgs="$pkgs $pkg"
+		test "$nvs_pin_mamba_pkgs" == "true" && {
+			v="$(grep "^$pkg=" <<<$vers)"
+			pkg="${v:-$pkg}"
+		}
+		vt="$pkg $vt"
+	done
+	function have_missing_installed {
+		local e
+		e="$(mamba list --export)"
+		# try be fast at re-installs and search the tools in pkgs:
+		vers=""
+		for k in $vt; do
+			grep -q "^$k" <<<"$e" || vers="$k $vers"
+		done
+		test -z "${vers/ /}"
+	}
+	have_missing_installed || TMIF mamba install -y $vt
 	have Tools "$pkgs $spkgs"
-    
-    test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
+	test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
 }
 
 # avoiding install golang
 function install_shfmt {
 	local fn
-	fn="$d_mamba/bin/shfmt"
+	fn="$nvs_d_mamba/bin/shfmt"
 	test -e "$fn" || {
 		TSC "curl -L -o shfmt '$shfmt' && mv shfmt '$fn'" "then" chmod +x "$fn"
 	}
@@ -308,15 +379,15 @@ function install_shfmt {
 }
 
 function install_neovim {
-	local a="$d_mamba/bin/nvim.appimg"
-	local d="$d_mamba/bin/nvimfs"
+	local a="$nvs_d_mamba/bin/nvim.appimg"
+	local d="$nvs_d_mamba/bin/nvimfs"
 	test -d "$d" || {
 		local s="squashfs-root"
 		rm -rf "$s"
-		rm -rf "$d_mamba/bin/vi"
+		rm -rf "$nvs_d_mamba/bin/vi"
 		test -e "$a" || TSC "curl -L -o '$a' '$url_nvim_appimg'" "then" chmod +x "$a"
 		TSC "'$a' --appimage-extract" "then" mv "$s" "$d"
-		ln -s "$d/AppRun" "$d_mamba/bin/vi"
+		ln -s "$d/AppRun" "$nvs_d_mamba/bin/vi"
 	}
 	have NeoVim "$d" "$(vi -v | head -n 1)"
 }
@@ -327,8 +398,8 @@ function clone_astronvim {
 	else
 		TSC "git clone 'https://github.com/AstroNvim/AstroNvim' '$d_conf_nvim'"
 	fi
-    $pin_distri && TSC "( cd '$d_conf_nvim' && git status && git reset --hard '$v_distri'; )"
-	have "AstroNvim Repo" "$(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
+	$nvs_pin_distri && TSC "( cd '$d_conf_nvim' && git status && git reset --hard '$nvs_v_distri'; )"
+	have "AstroNvim Repo" "Pinned: $nvs_pin_distri. $(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
 }
 
 function install_astronvim {
@@ -376,19 +447,21 @@ function install_astronvim {
 function install_vim_user {
 	set_symlinks() {
 		local s=""
-		local S="$here"
+		local S="$here/$nvs_distri"
 		local T="$d_conf_nvim"
 		rm -f "$T/lua/user"
 		ln -s "$S" "$T/lua/user"
-		for k in after spell ftplugin snippets; do
+		for k in after ftplugin snippets; do
 			s="$s $k"
 			rm -f "$T/$k"
 			TSC "ln -s "$S/$k" "$T/$k""
 		done
+		rm -f "$T/spell"
+		ln -s "$here/../assets/spell" "$T/spell"
 		have 'User Config' "Symlinks:$s"
 	}
 	set_symlinks
-    TSC "vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+	TSC "vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
 	have "User Packages" '.config/user.nvim/plugins/init.lua'
 	T kill-session
 }
@@ -406,28 +479,31 @@ function show_help {
 	echo -e "$d_"
 }
 function Install {
-	test "$1" == "in_tmux" || {
+	test "$in_tmux" == "false" && {
 		export start_time
+		export nvs_installing=true
 		start_time=$(date +%s)
 		rm -f "$inst_log"
 		sh ensure_dirs
 		sh install_mamba_binary_pkg_mgr
 		sh activate_mamba
-		sh install_binary_tools
+		sh ensure_tmux
 		echo 'Switching into tmux'
-		shift
 		T ls 2>/dev/null && {
 			T kill-session
 			sleep 0.4
 		}
-		T new "$0" install in_tmux "$@"
+		T new "$0" in_tmux install "$@"
 		start_time=$(date +%s)
 		sh set_nvs_function_to_bashrc
-		echo 'Finished.'
+		echo -e '\x1b[1;38;5;119mFinished.\x1b[0m'
+		echo -e '\n\nInstall Settings\n'
+		env | grep nvs_ | sort
+
 		echo -e '\n\nInstall Progress Log\n'
 		cat "$inst_log"
 		echo ''
-		echo -e "- \x1b[1m$d_mamba/bin/vi\x1b[0m to start."
+		echo -e "- \x1b[1m$nvs_d_mamba/bin/vi\x1b[0m to start."
 		echo -e "- \x1b[1mnvs <a|shell>\x1b[0m then vi to start with all tools available\n"
 		echo "Docs: "
 		echo "- https://mamba.readthedocs.io"
@@ -439,13 +515,12 @@ function Install {
 	T split-pane -h
 	T resize-window -x 200
 	T resize-pane -x 110
+
+	sh install_binary_tools
 	sh install_shfmt
 	sh install_neovim
 	sh clone_astronvim
 	sh install_astronvim
-echo foo
-read -p foo
-return
 	sh install_vim_user
 	return
 }
@@ -456,16 +531,19 @@ function shell {
 	export nvs_shell=true
 	bash
 }
-
 function main {
+	test "$1" == "in_tmux" && {
+		in_tmux=true
+		shift
+	}
 	local action
 	action="${1:-x}"
 	shift
 	case "$action" in
-	shell) shell ;;
 	clean-all) clean_all ;;
-	stash) stash "$@" ;;
 	i | install) Install "$@" ;;
+	shell) shell ;;
+	stash) stash "$@" ;;
 	*) show_help ;;
 	esac
 }

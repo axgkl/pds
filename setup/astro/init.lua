@@ -290,6 +290,7 @@ local config = {
 	-- This function is run last
 	-- good place to configuring augroups/autocommands and custom filetypes
 	polish = function()
+		if os.getenv("nvs_installing") then return end
 		-- Set key binding
 		-- Set autocommands
 		-- vim.api.nvim_create_augroup("ftplugs", { clear = true })
@@ -302,7 +303,6 @@ local config = {
 		-- 		print("adsfa")
 		-- 	end,
 		-- })
-		require("nvim-autopairs").disable()
 		-- https://neovim.io/doc/user/lua.html#lua-filetype
 		-- Set up custom filetypes
 		-- vim.filetype.add {

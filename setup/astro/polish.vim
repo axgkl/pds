@@ -179,35 +179,13 @@ autocmd! FileType TelescopeResults setlocal nofoldenable
 " colorscheme pinkmare
 " autopairing: consider tmsvg/pear-tree
 "
-function! s:VPE(func_name, l1, l2) range
-" Executes functions from py_api.py
-python3 << EOL
-import os, sys
-D = f'{os.environ["HOME"]}/.config/nvim/lua/user' 
-if not D in sys.path:
-    sys.path.insert(0, D)
-    import vim_python_eval as vpe 
-# m = vpe.ctx.state
-if 0:
-    sys.modules.pop('vim_python_eval')
-    import vim_python_eval as vpe
-    vpe.ctx.state = m
-
-vpe.ctx.L1 = int(vim.eval("a:l1"))
-vpe.ctx.L2 = int(vim.eval("a:l2"))
-
-getattr(vpe, vim.eval("a:func_name"))()
-EOL
-endfunction
-
-command! -range Evl <line1>,<line2> call s:VPE('ExecuteSelectedRange', <line1>, <line2>)
-nnoremap          ,r  :Evl<CR>
-xnoremap <silent> ,r  :Evl<CR>
+nnoremap          ,r  :Vpe<CR>
+xnoremap <silent> ,r  :Vpe<CR>
 
 " we often have old stuff at end of files:
 " go all down, then (<bar>, next cmd) search up but silent on no found:
 
-colorscheme iceberg
+colorscheme rose-pine
 
 
 nnoremap  G      :$<CR><bar>:silent! ?begin_archive<CR>
