@@ -1,26 +1,35 @@
 #!/usr/bin/env bash
-
 # --------------------------------------------------------------------------------------- sourcing
 # when sourced, handle only act/deact - w/o spamming the process namespace with stuff below
-nvs_is_sourced=true
+me="${BASH_SOURCE[0]:-${(%):-%x}}" # this script
+test -z "$me" && {
+	echo "Only zsh or bash. Sry!"
+	return || exit 1
+}
 
-echo "$0" | grep nvs.sh >/dev/null 2>&1 && nvs_is_sourced=false
+here="$(builtin cd "$(dirname "$me")" && pwd)"
+. "$here/environ"
 
-here="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$here/environ"
+nvs_is_sourced=false
+grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && { nvs_is_sourced=true; }
+grep -q "bash" <<<"$0"  && { nvs_is_sourced=true; }
+
+
 nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
 nvs_distri="${nvs_distri:-$nvs_dflt_distri}"
 
 function activate_mamba {
-	source "$nvs_d_mamba/etc/profile.d/conda.sh"
-	conda activate "$nvs_d_mamba"
-	test "$CONDA_PREFIX" == "$nvs_d_mamba" || die "Could not activate $nvs_d_mamba"
+  function a_m { conda activate "$nvs_d_mamba" 2>/dev/null; }
+	a_m || { . "$nvs_d_mamba/etc/profile.d/conda.sh" && a_m; }
+	test "$CONDA_PREFIX"=="$nvs_d_mamba" || { echo "Could not activate $nvs_d_mamba"; return; }
 	echo "Activated $nvs_d_mamba"
 }
 
 function deactivate_mamba {
-	_() { echo "Deactivated $nvs_d_mamba"; }
-	test "${nvs_shell:-}" == "true" && _ && exit
+	d() { echo "Deactivated $nvs_d_mamba"; }
+	if [[ "${nvs_shell:-}" == "true" ]]; then
+		d; exit 
+	fi
 	conda deactivate
 }
 
@@ -98,13 +107,13 @@ inst_log="$HOME/nvs_have.log"
 d_='NeoVim Setup Tools
 
 USAGE: nvs i(nstall)
-           a(ctivate)
-           d(eactivate)
-           clean-all
-           shell
-           stash <name> (not yet)
-           restore <name> (not yet)
-           status (not yet)
+ a(ctivate)
+ d(eactivate)
+ clean-all
+ shell
+ stash <name> (not yet)
+ restore <name> (not yet)
+ status (not yet)
 
 REQUIREMENTS:
 
@@ -120,7 +129,7 @@ ACTIONS:
 Install:
 - Ensures nvs function to this script in .bashrc
 - Creates conda(mamba) environment at '$nvs_d_mamba', with tools:
-  '$nvs_mamba_tools'
+'$nvs_mamba_tools'
 - Installs NeoVim '$nvs_v_nvim'
 - Installs Nvim '$nvs_distri' Distribution 
 - Installs User Config
@@ -155,10 +164,11 @@ t_() {
 }
 
 function T { t_ "$tmux_sock" "$@"; }
-function C { T capture-pane -p; }
+function C { T capture-pane -t 2 -p; }
 
 # tmux send-key convenience, this way we can send anything w/o space problems:
 function hex {
+	# appends an Enter (the a):
 	python -c 'import sys; l=[hex(ord(c))[2:] for c in sys.argv[1]];print(" ".join(l) + " a", end="")' "$1"
 }
 
@@ -166,7 +176,7 @@ function hex {
 function TSK {
 	local cmd
 	cmd="$(hex "$1")"
-	eval T send-keys -H "$cmd"
+	eval T send-keys -t 2 -H "$cmd"
 }
 
 # tmux send comand, return when done
@@ -202,9 +212,14 @@ function sh {
 			tmux select-pane -t 0
 			echo "Attach: tmux -S $tmux_sock att"
 		}
-		read -rp 'Run / Trace / Quit [Ytq]? ' m
+		echo -e '\x1b[41m❓Continue / Run / Trace / Quit [cYtq]? \x1b[0m'
+		read -r m
 		m="$(echo "$m" | tr '[:upper:]' '[:lower:'])"
 		if [ "$m" == "q" ]; then exit 1; fi
+		if [ "$m" == "c" ]; then
+			nvs_is_stepped=false
+			m=y
+		fi
 		if [ "$m" == "t" ]; then
 			if [ "$nvs_is_traced" == "true" ]; then
 				nvs_is_traced=false
@@ -222,6 +237,8 @@ function sh {
 
 function have {
 	local dt b args
+
+	test -z "$start_time" && start_time=$(date +%s)
 	b=s
 	test "$1" == "t" && {
 		shift
@@ -353,6 +370,7 @@ function install_binary_tools {
 		}
 		vt="$pkg $vt"
 	done
+
 	function have_missing_installed {
 		local e
 		e="$(mamba list --export)"
@@ -409,7 +427,7 @@ function install_astronvim {
 	ts=$(date +%s) # total
 	d="$HOME/.local/share/nvim/mason/bin"
 	test -e "$d/pyright-langserver" 2>/dev/null || {
-		TSK vi
+		TSK "$nvs_d_mamba/bin/vi"
 		until (C | grep Mason); do sleep 0.2; done
 		while (C | grep Mason >/dev/null); do sleep 0.2; done
 		sleep 0.1
@@ -418,7 +436,7 @@ function install_astronvim {
 	}
 	have "Mason Binary Pkg Tool"
 	test -e "$d/marksman" || {
-		TSK vi
+		TSK "$nvs_d_mamba/bin/vi"
 		sleep 1
 		TSK ":TSInstall python bash css javascript"
 		until (C | grep '[4/4]' | grep 'has been installed'); do sleep 0.1; done
@@ -461,9 +479,8 @@ function install_vim_user {
 		have 'User Config' "Symlinks:$s"
 	}
 	set_symlinks
-	TSC "vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+	TSC "$nvs_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
 	have "User Packages" '.config/user.nvim/plugins/init.lua'
-	T kill-session
 }
 
 function clean_all {
@@ -474,10 +491,40 @@ function clean_all {
 	rm -rf "$HOME/.cache/nvim"
 	set +x
 }
+function stash {
+	local name
+	name="${1:?Require name of stash}"
+	local D
+	D="${d_stash:?req stash}/$name"
+	set -x
+	rm -rf "$D"
+	mkdir -p "$D"
+	mv "$d_conf_nvim" "$D/nvim"
+	mv ".local/state/nvim" "$D/state"
+	mv ".local/share/nvim" "$D/share"
+	set +x
+}
+function unstash {
+	local name
+	name="${1:?Require name of stash}"
+	local D
+	D="${d_stash}/$name"
+	test -d "$D" || die "Not found: $D"
+	set -x
+	kmv() {
+		rm -rf "$2"
+		cp -a "$1" "$2"
+	}
+	kmv "$D/nvim" "$d_conf_nvim"
+	kmv "$D/state" ".local/state/nvim"
+	kmv "$D/share" ".local/share/nvim"
+	set +x
+}
 
 function show_help {
-	echo -e "$d_"
+	echo -e "${d_:-}"
 }
+
 function Install {
 	test "$in_tmux" == "false" && {
 		export start_time
@@ -522,7 +569,10 @@ function Install {
 	sh clone_astronvim
 	sh install_astronvim
 	sh install_vim_user
-	return
+	sh kill_tmux_session
+}
+function kill_tmux_session {
+	T kill-session
 }
 function shell {
 	activate_mamba
@@ -544,6 +594,7 @@ function main {
 	i | install) Install "$@" ;;
 	shell) shell ;;
 	stash) stash "$@" ;;
+	r | restore) unstash "$@" ;;
 	*) show_help ;;
 	esac
 }

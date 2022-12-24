@@ -2,7 +2,7 @@ return {
 	-- Add plugins, the packer syntax without the "use"
 	-- For markdown:
 	-- "AXGKl/vim-minimd",
-	"~/vpe",
+	"axiros/vpe",
 	"mikeboiko/vim-markdown-folding",
 	"junegunn/limelight.vim",
 	"junegunn/goyo.vim",
