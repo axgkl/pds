@@ -4,7 +4,6 @@
 "
 " Fix: We load via a BufEnter in init.lua, pointing to this file for markdown
 
-
 colorscheme gruvbox
 nnoremap ,t vip:Tabularize/\|<CR>
 setlocal spell

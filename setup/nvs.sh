@@ -19,6 +19,7 @@ nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
 nvs_distri="${nvs_distri:-$nvs_dflt_distri}"
 
 function activate_mamba {
+	# try to use the present conda, if there is one. otherwise deacti hangs in bash:
   function a_m { conda activate "$nvs_d_mamba" 2>/dev/null; }
 	a_m || { . "$nvs_d_mamba/etc/profile.d/conda.sh" && a_m; }
 	test "$CONDA_PREFIX"=="$nvs_d_mamba" || { echo "Could not activate $nvs_d_mamba"; return; }
@@ -438,9 +439,9 @@ function install_astronvim {
 	test -e "$d/marksman" || {
 		TSK "$nvs_d_mamba/bin/vi"
 		sleep 1
-		TSK ":TSInstall python bash css javascript"
+		TSK ":TSInstall python bash css javascript vim"
 		until (C | grep '[4/4]' | grep 'has been installed'); do sleep 0.1; done
-		have Treesitter "python bash css javascript"
+		have Treesitter "python bash css javascript vim"
 
 		lsp() {
 			echo "lsp install $1"
