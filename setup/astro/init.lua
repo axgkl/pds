@@ -1,8 +1,18 @@
 UU = require("user.utils") -- allows :lua U.dump(vim.lsp)
 -- TS = require("telescope.builtin")
-
 local config = {
-
+	header = {
+		"                  ◢ ▨ ▨ ◣         ◢ ▨ ▨ ▨ ◤  ",
+		"                ◢ ▨ ▨ ▨ ▨ ◣     ◢ ▨ ▨ ▨ ◤  ",
+		"              ◢ ▨ ▨ ▨ ▨ ▨ ▨ ◣ ◢ ▨ ▨ ▨ ◤  ",
+		"            ◢ ▨ ▨ ▨ ◤ ◥ ▨ ▨ ▨ ▨ ▨ ▨ ◤  ",
+		"          ◢ ▨ ▨ ▨ ◤     ◥ ▨ ▨ ▨ ▨ ◤    ",
+		"        ◢ ▨ ▨ ▨ ◤       ◢ ▨ ▨ ▨ ▨ ◣       ",
+		"      ◢ ▨ ▨ ▨ ◤       ◢ ▨ ▨ ▨ ▨ ▨ ▨ ◣      ",
+		"    ◢ ▨ ▨ ▨ ◤       ◢ ▨ ▨ ▨ ◤ ◥ ▨ ▨ ▨ ◣    ",
+		"  ◢ ▨ ▨ ▨ ◤       ◢ ▨ ▨ ▨ ◤     ◥ ▨ ▨ ▨ ◣  ",
+		"◢ ▨ ▨ ▨ ◤       ◢ ▨ ▨ ▨ ◤         ◥ ▨ ▨ ▨ ◣  ",
+	},
 	-- Configure AstroNvim updates
 	updater = {
 		remote = "origin", -- remote to use
@@ -290,7 +300,9 @@ local config = {
 	-- This function is run last
 	-- good place to configuring augroups/autocommands and custom filetypes
 	polish = function()
-		if os.getenv("nvs_installing") then return end
+		if os.getenv("nvs_installing") then
+			return
+		end
 		-- Set key binding
 		-- Set autocommands
 		-- vim.api.nvim_create_augroup("ftplugs", { clear = true })

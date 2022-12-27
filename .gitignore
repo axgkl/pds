@@ -4,3 +4,5 @@ __pycache__/*
 tmux-keylogger/
 environ
 Mambaforge-Linux-x86_64.sh
+
+*.swp
