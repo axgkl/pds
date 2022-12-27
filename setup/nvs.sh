@@ -11,15 +11,16 @@ here="$(builtin cd "$(dirname "$me")" && pwd)"
 . "$here/environ"
 
 nvs_is_sourced=false
-grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && { nvs_is_sourced=true; }
-grep -q "bash" <<<"$0"  && { nvs_is_sourced=true; }
+echo "bash $0"
+grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && nvs_is_sourced=true
+grep -q "bash" <<<"$0"  && nvs_is_sourced=true
 
 
 nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
 nvs_distri="${nvs_distri:-$nvs_dflt_distri}"
 
 function activate_mamba {
-	# try to use the present conda, if there is one. otherwise deacti hangs in bash:
+  # try to use the present conda, if there is one. otherwise deacti hangs in bash:
   function a_m { conda activate "$nvs_d_mamba" 2>/dev/null; }
 	a_m || { . "$nvs_d_mamba/etc/profile.d/conda.sh" && a_m; }
 	test "$CONDA_PREFIX"=="$nvs_d_mamba" || { echo "Could not activate $nvs_d_mamba"; return; }
@@ -339,7 +340,8 @@ function ensure_tmux {
 	t1="$nvs_mamba_tools"
 	p1="$mamba_prefer_system_tools"
 	nvs_mamba_tools="tmux"
-	mamba_prefer_system_tools=true
+	mamba_prefer_system_tools=false
+	tmux -V | grep -q 'tmux 3' && mamba_prefer_system_tools=true
 	install_binary_tools
 	export nvs_mamba_tools="$t1"
 	export mamba_prefer_system_tools="$p1"
@@ -413,11 +415,11 @@ function install_neovim {
 
 function clone_astronvim {
 	if [ -e "$d_conf_nvim" ]; then
-		TSC "( cd '$d_conf_nvim' && git pull )"
+		TSC "( builtin cd '$d_conf_nvim' && git pull )"
 	else
 		TSC "git clone 'https://github.com/AstroNvim/AstroNvim' '$d_conf_nvim'"
 	fi
-	$nvs_pin_distri && TSC "( cd '$d_conf_nvim' && git status && git reset --hard '$nvs_v_distri'; )"
+	$nvs_pin_distri && TSC "( builtin cd '$d_conf_nvim' && git status && git reset --hard '$nvs_v_distri'; )"
 	have "AstroNvim Repo" "Pinned: $nvs_pin_distri. $(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
 }
 
@@ -561,9 +563,10 @@ function Install {
 	}
 	# in tmux from here
 	T split-pane -h
-	T resize-window -x 200
+	#T resize-window -x 200
 	T resize-pane -x 110
 
+	sh activate_mamba_in_tmux
 	sh install_binary_tools
 	sh install_shfmt
 	sh install_neovim
@@ -571,6 +574,9 @@ function Install {
 	sh install_astronvim
 	sh install_vim_user
 	sh kill_tmux_session
+}
+function activate_mamba_in_tmux	{
+        TSC "conda activate $nvs_d_mamba"
 }
 function kill_tmux_session {
 	T kill-session
