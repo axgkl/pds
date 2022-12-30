@@ -151,7 +151,7 @@ local config = {
 				b.diagnostics.rubocop,
 				b.formatting.prettier.with({
 					filetypes = {
-						"javascript",
+						--"javascript",
 						"javascriptreact",
 						"typescript",
 						"typescriptreact",

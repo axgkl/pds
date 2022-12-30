@@ -181,9 +181,9 @@ t_() {
 	return "$r"
 }
 
-function T { 
+function T {
 	test "$1" == "-q" && shift || hint "tmux: $*"
-	t_ "$tmux_sock" "$@";
+	t_ "$tmux_sock" "$@"
 }
 function C { T capture-pane -t 2 -p; }
 
@@ -217,7 +217,7 @@ function TMIF {
 }
 # wait for file then do action
 function waitfor {
-	hint "Waiting for: $1" 
+	hint "Waiting for: $1"
 	while ! test -e "$1"; do sleep 0.1; done
 	test "$2" == "then" && {
 		shift
@@ -236,7 +236,7 @@ function sh {
 	$nvs_is_stepped && {
 		$in_tmux && {
 			tmux select-pane -t 0
-	    hint "Hint: Attach via tmux -S $tmux_sock att"
+			hint "Hint: Attach via tmux -S $tmux_sock att"
 		}
 		echo -e '\x1b[41m❓Continue / Run / Trace / Quit [cYtq]? \x1b[0m'
 		read -r m
@@ -263,7 +263,6 @@ function sh {
 
 function have {
 	local dt b args
-
 	test -z "$start_time" && start_time=$(date +%s)
 	b=s
 	test "$1" == "t" && {
@@ -450,52 +449,57 @@ function clone_astronvim {
 }
 
 function lsp() {
-	echo "lsp install $1"
+	local fn
+	fn="$HOME/.local/share/nvim/mason/bin/${2:-$1}"
+	test -e "$fn" && return 0
+	echo "lsp install $1 ($2)"
 	sleep 0.5
 	T send-keys Escape
 	TSK ":LspInstall $1"
-	hint "Waiting for: $2"
-	until (C | grep -q "$2"); do sleep 0.1; done
+	until test -e "$fn"; do sleep 0.1; done
 	T send-keys Escape
 	have LSP "$1"
 }
 
 function install_astronvim {
 	#t resize-window -x 150 -y 50
-	local d
-	local ts
-	ts=$(date +%s) # total
+	local d t0 ts fn tss
+	t0=$(date +%s) # total
 	d="$HOME/.local/share/nvim/mason/bin"
-	test -e "$d/pylsp" 2>/dev/null || {
+	test -e "$d" 2>/dev/null || {
 		# we just start it, install begins autom:
 		TSK "$nvs_d_mamba/bin/vi"
 		until (C | grep Mason); do sleep 0.2; done
-	  hint "Waiting for: 'Mason' to disappear"
+		hint "Waiting for: 'Mason' to disappear"
 		while (C | grep Mason >/dev/null); do sleep 0.2; done
 		sleep 0.1
 		TSK ':q!'
 		sleep 0.1
 	}
 	have "Mason Binary Pkg Tool"
-	test -e "$d/marksman" || {
-		TSK "$nvs_d_mamba/bin/vi"
-		sleep 1
-		TSK ":TSInstall python bash css javascript vim"
-		hint "Waiting for '[5/5]' and 'has been installed'"
-		until (C | grep '[5/5]' | grep 'has been installed'); do sleep 0.1; done
-		have Treesitter "python bash css javascript vim"
+	TSK "$nvs_d_mamba/bin/vi"
+	d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
+	tss="python bash css javascript vim"
+	for ts in $(echo "$tss" | xargs); do
+		fn="$d/$ts.so"
+		test -e "$fn" && { hint "Have $ts"; continue; }
+		TSK ":TSInstall $ts"
+		until test -e "$fn"; do sleep 0.1; done
+		sleep 0.1
+	done
+	have "Treesitter parsers" "$tss"
 
-		lsp bashls '"bash-language-server" was successfully installed' # we have shellcheck
-		lsp marksman '"marksman" was successfully installed'
-		lsp pylsp '"python-lsp-server" was successfully installed'
-		lsp sumneko_lua '"lua-language-server" was successfully installed'
-		lsp vimls '"vim-language-server" was successfully installed'
-		T send-keys Escape
-		T send-keys Escape
-		TSK ':q!'
-		TSK ':q!'
-	}
-	start_time="$ts"
+	lsp bashls "bash-language-server"
+	lsp marksman
+	lsp pylsp
+	lsp sumneko_lua "lua-language-server"
+	lsp tsserver "typescript-language-server"
+	lsp vimls "vim-language-server"
+	T send-keys Escape
+	T send-keys Escape
+	TSK ':q!'
+	TSK ':q!'
+	start_time="$t0"
 	have t AstroNvim "$(ls --format=commas "$d")"
 }
 
@@ -519,7 +523,7 @@ function install_vim_user {
 	TSC "$nvs_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
 	#TSC "$nvs_d_mamba/bin/vi +PackerSync"
 	TSK "$nvs_d_mamba/bin/vi"
-	lsp ruff_lsp '"ruff-lsp" was successfully installed'
+	lsp ruff_lsp "ruff-lsp"
 	T send-keys Escape
 	T send-keys Escape
 	TSK ':q!'
