@@ -1,36 +1,42 @@
 #!/usr/bin/env bash
 # --------------------------------------------------------------------------------------- sourcing
 # when sourced, handle only act/deact - w/o spamming the process namespace with stuff below
+
 me="${BASH_SOURCE[0]:-${(%):-%x}}" # this script
 test -z "$me" && {
 	echo "Only zsh or bash. Sry!"
 	return || exit 1
 }
-
+#
 here="$(builtin cd "$(dirname "$me")" && pwd)"
 . "$here/environ"
 
 nvs_is_sourced=false
 echo "bash $0"
 grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && nvs_is_sourced=true
-grep -q "bash" <<<"$0"  && nvs_is_sourced=true
-
+grep -q "bash" <<<"$0" && nvs_is_sourced=true
 
 nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
 nvs_distri="${nvs_distri:-$nvs_dflt_distri}"
 
 function activate_mamba {
-  # try to use the present conda, if there is one. otherwise deacti hangs in bash:
-  function a_m { conda activate "$nvs_d_mamba" 2>/dev/null; }
-	a_m || { . "$nvs_d_mamba/etc/profile.d/conda.sh" && a_m; }
-	test "$CONDA_PREFIX"=="$nvs_d_mamba" || { echo "Could not activate $nvs_d_mamba"; return; }
+	# deactivate all condas, lsp install would fail with different node
+	function a_m { conda activate "$nvs_d_mamba" 2>/dev/null; }
+	. "$nvs_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
+	while [ -n "$CONDA_PREFIX" ]; do conda deactivate; done
+	a_m || die "Could not activate mamba"
+	test "$CONDA_PREFIX"=="$nvs_d_mamba" || {
+		echo "Could not activate $nvs_d_mamba"
+		return
+	}
 	echo "Activated $nvs_d_mamba"
 }
 
 function deactivate_mamba {
 	d() { echo "Deactivated $nvs_d_mamba"; }
 	if [[ "${nvs_shell:-}" == "true" ]]; then
-		d; exit 
+		d
+		exit
 	fi
 	conda deactivate
 }
@@ -105,17 +111,26 @@ d_stash="$HOME/.local/share/stashed_nvim"
 url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$nvs_v_nvim/nvim.appimage"
 shfmt="https://github.com/mvdan/sh/releases/download/v$nvs_v_shfmt/shfmt_v${nvs_v_shfmt}_linux_amd64"
 inst_log="$HOME/nvs_have.log"
+_stashes_have="$(ls "$d_stash" | sort | xargs)"
+d_='\x1b[32mNeoVim Setup Tools\x1b[0m
 
-d_='NeoVim Setup Tools
+USAGE: nvs [-x] [-s] <action> [params]
 
-USAGE: nvs i(nstall)
- a(ctivate)
+SWITCHES:
+
+-x: Tracemode on
+-s: Stepmode on (confirm each action)
+
+ACTIONS:
+
+ i(nstall)
+ a(ctivate) 
  d(eactivate)
  clean-all
  shell
- stash <name> (not yet)
- restore <name> (not yet)
- status (not yet)
+ stash <name> 
+ restore <name> [have: '$_stashes_have']
+ status
 
 REQUIREMENTS:
 
@@ -123,7 +138,7 @@ REQUIREMENTS:
 - The repo containing this file (anywhere)
 - Using bash (we set "nvs" convenience function into .bashrc). Other shells: do it manually.
 
-ACTIONS:
+DETAILS:
 
 [DE]Activate:
 - When this script is sourced (via nvs function), we (de)activate '$nvs_d_mamba' in current shell
@@ -140,14 +155,15 @@ Set install params into "'$here'/environ" or export them before install.
 
 Clean All:
 - Removes .config/nvim, .local/share/nvim and .local/state/nvim
-- Leaves the mamba tools at '$nvs_d_mamba'
+- Leaves the mamba env at '$nvs_d_mamba' - remove manually 
 
 Shell: Enter a shell with '$nvs_d_mamba' activated
 
 Status: Shows status of all installables and stashes
 
-Stash <name>: TBD
-Restore: <name>: TBD
+Stash <name>: Moves (mv) current config into '$d_stash'/<name>
+
+Restore: <name>: Restore current config by removing(!) existing, then copying back from stash
 '
 
 # spell='http://ftp.vim.org/pub/vim/runtime/spell/de.utf-8.spl'
@@ -165,7 +181,10 @@ t_() {
 	return "$r"
 }
 
-function T { t_ "$tmux_sock" "$@"; }
+function T { 
+	test "$1" == "-q" && shift || hint "tmux: $*"
+	t_ "$tmux_sock" "$@";
+}
 function C { T capture-pane -t 2 -p; }
 
 # tmux send-key convenience, this way we can send anything w/o space problems:
@@ -177,8 +196,9 @@ function hex {
 # tmux send keys
 function TSK {
 	local cmd
+	hint "Sending: $*"
 	cmd="$(hex "$1")"
-	eval T send-keys -t 2 -H "$cmd"
+	eval T -q send-keys -t 2 -H "$cmd"
 }
 
 # tmux send comand, return when done
@@ -197,6 +217,7 @@ function TMIF {
 }
 # wait for file then do action
 function waitfor {
+	hint "Waiting for: $1" 
 	while ! test -e "$1"; do sleep 0.1; done
 	test "$2" == "then" && {
 		shift
@@ -206,13 +227,16 @@ function waitfor {
 }
 
 # pretty output:
+function hint {
+	echo -e "\x1b[2;37m$*\x1b[0m"
+}
 function sh {
 	echo -e "\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
 	local m
 	$nvs_is_stepped && {
 		$in_tmux && {
 			tmux select-pane -t 0
-			echo "Attach: tmux -S $tmux_sock att"
+	    hint "Hint: Attach via tmux -S $tmux_sock att"
 		}
 		echo -e '\x1b[41m❓Continue / Run / Trace / Quit [cYtq]? \x1b[0m'
 		read -r m
@@ -347,7 +371,6 @@ function ensure_tmux {
 	export mamba_prefer_system_tools="$p1"
 	have Tmux "$(type tmux)"
 }
-
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
 function install_binary_tools {
 	echo "tools $nvs_mamba_tools"
@@ -389,13 +412,16 @@ function install_binary_tools {
 	test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
 }
 
-# avoiding install golang
 function install_shfmt {
-	local fn
+	# avoiding install golang
+	local fn fnm
 	fn="$nvs_d_mamba/bin/shfmt"
+	fnm="$HOME/.local/share/nvim/mason/bin/shfmt" # always in nvim path
 	test -e "$fn" || {
 		TSC "curl -L -o shfmt '$shfmt' && mv shfmt '$fn'" "then" chmod +x "$fn"
 	}
+	rm -f "$fnm"
+	ln -s "$fn" "$fnm"
 	have ShellFormatter "$fn"
 }
 
@@ -423,15 +449,28 @@ function clone_astronvim {
 	have "AstroNvim Repo" "Pinned: $nvs_pin_distri. $(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
 }
 
+function lsp() {
+	echo "lsp install $1"
+	sleep 0.5
+	T send-keys Escape
+	TSK ":LspInstall $1"
+	hint "Waiting for: $2"
+	until (C | grep -q "$2"); do sleep 0.1; done
+	T send-keys Escape
+	have LSP "$1"
+}
+
 function install_astronvim {
 	#t resize-window -x 150 -y 50
 	local d
 	local ts
 	ts=$(date +%s) # total
 	d="$HOME/.local/share/nvim/mason/bin"
-	test -e "$d/pyright-langserver" 2>/dev/null || {
+	test -e "$d/pylsp" 2>/dev/null || {
+		# we just start it, install begins autom:
 		TSK "$nvs_d_mamba/bin/vi"
 		until (C | grep Mason); do sleep 0.2; done
+	  hint "Waiting for: 'Mason' to disappear"
 		while (C | grep Mason >/dev/null); do sleep 0.2; done
 		sleep 0.1
 		TSK ':q!'
@@ -442,23 +481,18 @@ function install_astronvim {
 		TSK "$nvs_d_mamba/bin/vi"
 		sleep 1
 		TSK ":TSInstall python bash css javascript vim"
-		until (C | grep '[4/4]' | grep 'has been installed'); do sleep 0.1; done
+		hint "Waiting for '[5/5]' and 'has been installed'"
+		until (C | grep '[5/5]' | grep 'has been installed'); do sleep 0.1; done
 		have Treesitter "python bash css javascript vim"
 
-		lsp() {
-			echo "lsp install $1"
-			sleep 0.5
-			T send-keys Escape
-			TSK ":LspInstall $1"
-			until (C | grep -q "$2"); do sleep 0.1; done
-			T send-keys Escape
-			have LSP "$1"
-		}
-		#lsp bashls '"bash-language-server" was successfully installed' # we have shellcheck
+		lsp bashls '"bash-language-server" was successfully installed' # we have shellcheck
 		lsp marksman '"marksman" was successfully installed'
-		lsp pyright '"pyright" was successfully installed'
+		lsp pylsp '"python-lsp-server" was successfully installed'
 		lsp sumneko_lua '"lua-language-server" was successfully installed'
 		lsp vimls '"vim-language-server" was successfully installed'
+		T send-keys Escape
+		T send-keys Escape
+		TSK ':q!'
 		TSK ':q!'
 	}
 	start_time="$ts"
@@ -483,6 +517,13 @@ function install_vim_user {
 	}
 	set_symlinks
 	TSC "$nvs_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+	#TSC "$nvs_d_mamba/bin/vi +PackerSync"
+	TSK "$nvs_d_mamba/bin/vi"
+	lsp ruff_lsp '"ruff-lsp" was successfully installed'
+	T send-keys Escape
+	T send-keys Escape
+	TSK ':q!'
+	TSK ':q!'
 	have "User Packages" '.config/user.nvim/plugins/init.lua'
 }
 
@@ -506,6 +547,7 @@ function stash {
 	mv ".local/state/nvim" "$D/state"
 	mv ".local/share/nvim" "$D/share"
 	set +x
+	have "Stashed away config" "Name $name"
 }
 function unstash {
 	local name
@@ -522,6 +564,7 @@ function unstash {
 	kmv "$D/state" ".local/state/nvim"
 	kmv "$D/share" ".local/share/nvim"
 	set +x
+	have "Copied back config" "Name $name"
 }
 
 function show_help {
@@ -568,15 +611,19 @@ function Install {
 
 	sh activate_mamba_in_tmux
 	sh install_binary_tools
-	sh install_shfmt
 	sh install_neovim
 	sh clone_astronvim
 	sh install_astronvim
+	sh install_shfmt
 	sh install_vim_user
 	sh kill_tmux_session
 }
-function activate_mamba_in_tmux	{
-        TSC "conda activate $nvs_d_mamba"
+function status {
+	echo -e 'Stashes:'
+	ls -lta "$d_stash"
+}
+function activate_mamba_in_tmux {
+	TSC "conda activate $nvs_d_mamba"
 }
 function kill_tmux_session {
 	T kill-session
@@ -589,6 +636,7 @@ function shell {
 	bash
 }
 function main {
+	mkdir -p "$d_stash"
 	test "$1" == "in_tmux" && {
 		in_tmux=true
 		shift
@@ -602,6 +650,7 @@ function main {
 	shell) shell ;;
 	stash) stash "$@" ;;
 	r | restore) unstash "$@" ;;
+	status) status "$@" ;;
 	*) show_help ;;
 	esac
 }

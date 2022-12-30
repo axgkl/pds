@@ -1,6 +1,6 @@
 local M = {}
 -- require "os"
---  e.g. utils.dump(vim.lsp)
+--  e.g. require('user.utils').dump(vim.lsp)
 M.dump = function(...)
 	local objects = vim.tbl_map(vim.inspect, { ... })
 	print(unpack(objects))

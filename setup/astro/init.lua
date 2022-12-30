@@ -23,6 +23,8 @@ local config = {
 		pin_plugins = nil, -- nil, true, false (nil will pin plugins on stable only)
 		skip_prompts = false, -- skip prompts about breaking changes
 		show_changelog = true, -- show the changelog after performing an update
+		auto_reload = false, -- automatically reload and sync packer after a successful update
+		auto_quit = false, -- automatically quit the current session after a successful update
 		-- remotes = { -- easily add new remotes to track
 		--   ["remote_name"] = "https://remote_url.come/repo.git", -- full remote url
 		--   ["remote2"] = "github_user/repo", -- GitHub user/repo shortcut,
@@ -32,14 +34,23 @@ local config = {
 
 	-- Set colorscheme
 	colorscheme = "default_theme",
-
 	-- Override highlight groups in any theme
 	highlights = {
-		-- duskfox = { -- a table of overrides
+		colors = {
+			bg = "#abb2bf",
+		},
+
+		-- duskfox = { -- a table of overrides/changes to the default
 		--   Normal = { bg = "#000000" },
 		-- },
-		default_theme = function(highlights) -- or a function that returns one
+		default_theme = function(highlights) -- or a function that returns a new table of colors to set
 			local C = require("default_theme.colors")
+
+			-- -- New approach instead of diagnostic_style
+			-- highlights.DiagnosticError.italic = true
+			-- highlights.DiagnosticHint.italic = true
+			-- highlights.DiagnosticInfo.italic = true
+			-- highlights.DiagnosticWarn.italic = true
 
 			highlights.Normal = { fg = C.fg, bg = C.bg }
 			return highlights
@@ -49,14 +60,35 @@ local config = {
 	-- set vim options here (vim.<first_key>.<second_key> =  value)
 	options = {
 		opt = {
+			-- set to true or false etc.
 			relativenumber = true, -- sets vim.opt.relativenumber
-			foldmethod = "indent",
+			number = true, -- sets vim.opt.number
+			spell = false, -- sets vim.opt.spell
+			signcolumn = "auto", -- sets vim.opt.signcolumn to auto
+			wrap = false, -- sets vim.opt.wrap
 		},
 		g = {
 			mapleader = " ", -- sets vim.g.mapleader
+			autoformat_enabled = false, -- enable or disable auto formatting at start (lsp.formatting.format_on_save must be enabled)
+			cmp_enabled = true, -- enable completion at start
+			autopairs_enabled = false, -- enable autopairs at start
+			diagnostics_enabled = true, -- enable diagnostics at start
+			status_diagnostics_enabled = true, -- enable diagnostics in statusline
+			icons_enabled = true, -- disable icons in the ui (disable if no nerd font is available, requires :packersync after changing)
+			ui_notifications_enabled = true, -- disable notifications when toggling ui elements
+			heirline_bufferline = false, -- enable new heirline based bufferline (requires :packersync after changing)
 		},
 	},
-
+	-- If you need more control, you can use the function()...end notation
+	-- options = function(local_vim)
+	--   local_vim.opt.relativenumber = true
+	--   local_vim.g.mapleader = " "
+	--   local_vim.opt.whichwrap = vim.opt.whichwrap - { 'b', 's' } -- removing option from list
+	--   local_vim.opt.shortmess = vim.opt.shortmess + { I = true } -- add to option list
+	--
+	--   return local_vim
+	-- end,
+	--
 	-- Default theme configuration
 	default_theme = {
 		diagnostics_style = { italic = true },
@@ -97,16 +129,20 @@ local config = {
 		-- All other entries override the setup() call for default plugins
 		["null-ls"] = function(config)
 			local null_ls = require("null-ls")
+			local methods = require("null-ls.methods")
+			local helpers = require("null-ls.helpers")
 			-- Check supported formatters and linters
 			-- https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md
+			-- https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTIN_CONFIG.md
 			-- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/formatting
 			-- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/diagnostics
 			local b = null_ls.builtins
 			config.sources = {
 				b.code_actions.refactoring,
 				-- bash:
-				b.code_actions.shellcheck,
-				b.diagnostics.shellcheck,
+				-- we ahve bashls:
+				-- b.code_actions.shellcheck,
+				-- b.diagnostics.shellcheck,
 				b.formatting.shfmt,
 				-- python
 				b.formatting.blue,
@@ -134,17 +170,17 @@ local config = {
 				}),
 			}
 			-- set up null-ls's on_attach function
-			-- config.on_attach = function(client)
-			-- 	-- NOTE: You can remove this on attach function to disable format on save
-			-- 	-- gk: done, we only format on ,w (collides when auto-save is on)
-			-- 	if client.resolved_capabilities.document_formatting then
-			-- 		vim.api.nvim_create_autocmd("BufWritePre", {
-			-- 			desc = "Auto format before save",
-			-- 			pattern = "<buffer>",
-			-- 			callback = vim.lsp.buf.formatting_sync,
-			-- 		})
-			-- 	end
-			-- end
+			config.on_attach = function(client)
+				-- NOTE: You can remove this on attach function to disable format on save
+				-- gk: done, we only format on ,w (collides when auto-save is on)
+				-- if client.resolved_capabilities.document_formatting then
+				-- 	vim.api.nvim_create_autocmd("BufWritePre", {
+				-- 		desc = "Auto format before save",
+				-- 		pattern = "<buffer>",
+				-- 		callback = vim.lsp.buf.formatting_sync,
+				-- 	})
+				-- end
+			end
 			return config -- return final config table
 		end,
 
@@ -157,6 +193,69 @@ local config = {
 		},
 		packer = {
 			compile_path = vim.fn.stdpath("data") .. "/packer_compiled.lua",
+		},
+	},
+	-- Extend LSP configuration
+	lsp = {
+		-- enable servers that you already have installed without lsp-installer
+		servers = {},
+		-- easily add or disable built in mappings added during LSP attaching
+		mappings = {
+			n = {
+				["K"] = false,
+				["s"] = {
+					function()
+						vim.lsp.buf.hover()
+					end,
+					desc = "Hover symbol details",
+				},
+				-- ["<leader>lf"] = false -- disable formatting keymap
+				-- ["gd"] = {
+				-- 	function()
+				-- 		vim.lsp.buf.definition()
+				-- 	end,
+				-- 	desc = "Goto definition",
+				-- },
+			},
+		},
+		-- add to the server on_attach function
+
+		on_attach = function(client, bufnr)
+			vim.cmd('echo "attach"')
+		end,
+
+		-- override the lsp installer server-registration function
+		-- server_registration = function(server, opts)
+		--   require("lspconfig")[server].setup(opts)
+		-- end,
+
+		-- Add overrides for LSP server settings, the keys are the name of the server
+		["server-settings"] = {
+			pylsp = {
+				-- https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md
+				settings = {
+					pylsp = {
+						plugins = {
+							pycodestyle = { enabled = false }, -- not very useful with blue
+							pyflakes = { enabled = false }, -- by ruff
+							pylint = { enabled = true },
+						},
+					},
+				},
+			},
+
+			-- example for addings schemas to yamlls
+			-- yamlls = {
+			--   settings = {
+			--     yaml = {
+			--       schemas = {
+			--         ["http://json.schemastore.org/github-workflow"] = ".github/workflows/*.{yml,yaml}",
+			--         ["http://json.schemastore.org/github-action"] = ".github/action.{yml,yaml}",
+			--         ["http://json.schemastore.org/ansible-stable-2.9"] = "roles/tasks/*.{yml,yaml}",
+			--       },
+			--     },
+			--   },
+			-- },
 		},
 	},
 
@@ -197,57 +296,6 @@ local config = {
 			luasnip = 750,
 			buffer = 500,
 			path = 250,
-		},
-	},
-	-- Extend LSP configuration
-	lsp = {
-		-- enable servers that you already have installed without lsp-installer
-		servers = {
-			-- "pyright"
-		},
-		-- easily add or disable built in mappings added during LSP attaching
-		mappings = {
-			n = {
-				["K"] = false,
-				["s"] = {
-					function()
-						vim.lsp.buf.hover()
-					end,
-					desc = "Hover symbol details",
-				},
-				-- ["<leader>lf"] = false -- disable formatting keymap
-				-- ["gd"] = {
-				-- 	function()
-				-- 		vim.lsp.buf.definition()
-				-- 	end,
-				-- 	desc = "Goto definition",
-				-- },
-			},
-		},
-		-- add to the server on_attach function
-		-- on_attach = function(client, bufnr)
-		-- 	vim.cmd('echo "attach"')
-		-- end,
-
-		-- override the lsp installer server-registration function
-		-- server_registration = function(server, opts)
-		--   require("lspconfig")[server].setup(opts)
-		-- end,
-
-		-- Add overrides for LSP server settings, the keys are the name of the server
-		["server-settings"] = {
-			-- example for addings schemas to yamlls
-			-- yamlls = {
-			--   settings = {
-			--     yaml = {
-			--       schemas = {
-			--         ["http://json.schemastore.org/github-workflow"] = ".github/workflows/*.{yml,yaml}",
-			--         ["http://json.schemastore.org/github-action"] = ".github/action.{yml,yaml}",
-			--         ["http://json.schemastore.org/ansible-stable-2.9"] = "roles/tasks/*.{yml,yaml}",
-			--       },
-			--     },
-			--   },
-			-- },
 		},
 	},
 
@@ -303,6 +351,7 @@ local config = {
 		if os.getenv("nvs_installing") then
 			return
 		end
+
 		-- Set key binding
 		-- Set autocommands
 		-- vim.api.nvim_create_augroup("ftplugs", { clear = true })
@@ -334,6 +383,8 @@ local config = {
 		vim.cmd("source ~/.config/nvim/lua/user/polish.vim")
 		-- vim.cmd("echo '" .. vim.bo.filetype .. "'")
 		-- vim.cmd("echo 'foo'")
+		vim.lsp.set_log_level("info")
+		require("vim.lsp.log").set_format_func(vim.inspect)
 	end,
 }
 
