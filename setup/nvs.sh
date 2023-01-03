@@ -322,6 +322,7 @@ function install_mamba {
 		rm -f "$1"
 		die "Installer failed - removed it."
 	}
+        "$nvs_d_mamba/bin/conda" init
 }
 
 # we support d_mamba v_mamba pin_mamba
