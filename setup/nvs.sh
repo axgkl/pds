@@ -2,7 +2,8 @@
 # --------------------------------------------------------------------------------------- sourcing
 # when sourced, handle only act/deact - w/o spamming the process namespace with stuff below
 
-me="${BASH_SOURCE[0]:-${(%):-%x}}" # this script
+#me="${BASH_SOURCE[0]:-${(%):-%x}}" # this script.
+me="${BASH_SOURCE[0]:-$0}"
 test -z "$me" && {
 	echo "Only zsh or bash. Sry!"
 	return || exit 1
@@ -12,7 +13,6 @@ here="$(builtin cd "$(dirname "$me")" && pwd)"
 . "$here/environ"
 
 nvs_is_sourced=false
-echo "bash $0"
 grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && nvs_is_sourced=true
 grep -q "bash" <<<"$0" && nvs_is_sourced=true
 
@@ -482,7 +482,10 @@ function install_astronvim {
 	tss="python bash css javascript vim"
 	for ts in $(echo "$tss" | xargs); do
 		fn="$d/$ts.so"
-		test -e "$fn" && { hint "Have $ts"; continue; }
+		test -e "$fn" && {
+			hint "Have $ts"
+			continue
+		}
 		TSK ":TSInstall $ts"
 		until test -e "$fn"; do sleep 0.1; done
 		sleep 0.1
@@ -590,7 +593,7 @@ function Install {
 			T kill-session
 			sleep 0.4
 		}
-		T new "$0" in_tmux install "$@"
+		T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
 		start_time=$(date +%s)
 		sh set_nvs_function_to_bashrc
 		echo -e '\x1b[1;38;5;119mFinished.\x1b[0m'
