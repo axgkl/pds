@@ -25,6 +25,7 @@ Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 
 ## Common Additional Shortcuts
 
+Some defined in our init,lua (mappings, lsp.mappings) most still in polish.vim
 
 ### Folding
 
@@ -35,7 +36,12 @@ Foldmethod is "indent", globally.
  
 ### Navigation
 
+- `0`       Start of line
+- `1`       First character in line (`^`)
 - `;`       Currently open buffers
+- `,1`      Sources our init.lua
+- `,2`      Opens our init.lua
+- `,3`      Terminal in dir of current buffer
 - `<Ctl>o`  Go back 
 - `<Alt>o`  Go forward
 - `<SPC>↩️`  Last edited buffer
@@ -43,6 +49,7 @@ Foldmethod is "indent", globally.
 - `,c`      Close window, close buffer
 - `,C`      Colors (theme picker)
 - `,d`      Done, write quit.
+- `,D`      All buffer Diagnostics
 - `,g`      Smart open (e.g. in browser if URL, or nvim if file, resolves md links) via smart_vi_open.py (👉 try `,g` on this filename)
 - `gd`      Goto definition (e.g. over function name)
 - `<Spc>lr` Rename e.g. function name

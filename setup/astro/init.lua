@@ -318,7 +318,6 @@ local config = {
 			-- second key is the lefthand side of the map
 			-- TAB IS Ctrl-I -> this would loose jump previous:
 			--["<Tab>"] = { "za", desc = "Toggle Fold" },
-			[",R"] = { ":HTTPClientDoRequest<CR>", desc = "vim-http-client request" },
 			[",s"] = { ":ASToggle<CR>", desc = "Toggle Autosave (all buffers)" },
 			["<S-Tab>"] = { "zR", desc = "Open ALL Folds" },
 			["<C-s>"] = { ":w!<cr>", desc = "Save File" },
