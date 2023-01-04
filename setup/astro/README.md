@@ -109,14 +109,6 @@ A compromised server might attack your X session. Decide for yourself.
 
 ---
 
-## 4 Noobs
-
-- `:set tw=100`  Set width for wrapping
-- `vip` Select paragraph
-- `gq`  Rewrap paragraph
-
-And 1 Mio others....
-
 ## Install
 
 - On a new linux machine, clone this repo into "~/.config/user.nvim"
@@ -133,3 +125,16 @@ To remove existing nvim config in ~.config/nvim and .local/share/nvim:
 To move it away to a backup dir:
 
 `~/.config/user.nvim/setup/nvs.sh stash <name>`
+
+---
+
+## 4 Noobs
+
+- `:set tw=100`  Set width for wrapping
+- `vip` Select paragraph
+- `gq`  Rewrap paragraph
+
+And 1 Mio others....
+
+
+
