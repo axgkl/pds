@@ -8,10 +8,12 @@ nnoremap <M-o>   <C-i>
 "cnoremap <silent> x<CR>  :call ConfirmQuit(1)<CR>
 "  "Yank constent with D and C:
 nnoremap Y         y$
+nnoremap H         :edit ~/.config/nvim/lua/user/README.md<CR>
 nnoremap ,G        :TermExec cmd=lazygit<CR>
 nnoremap ,q        :q!<CR>
-nnoremap ,Q        :Q!<cr>
+nnoremap ,Q        :quitall!<cr>
 nnoremap ,d        :wq!<CR>
+nnoremap ,u        :UndotreeToggle<CR>
 nnoremap ,1        :source ~/.config/nvim/init.lua<CR>
 nnoremap ,2        :edit ~/.config/nvim/lua/user/init.lua<CR>
 nnoremap ,c        :close<CR> " close just a split or a tab

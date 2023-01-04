@@ -18,7 +18,10 @@ from pathlib import Path
 browser = os.environ.get('BROWSER', 'microsoft-edge')
 exists = os.path.exists
 
-log = lambda s: open(fn_log, 'a').write('\ncwd: %s; %s\n' % (os.getcwd(), s))
+
+def log(s): return open(fn_log, 'a').write(
+    '\ncwd: %s; %s\n' % (os.getcwd(), s))
+
 
 sep = ':-:'
 
@@ -30,7 +33,7 @@ def clean(s):
 
 
 def notify(title, msg=''):
-    cmd = '''notify-send -t 10 "%s" "%s\n\n%s\nHelp: ,g on '?' or 'help'" &'''
+    cmd = '''notify-send -t 10 "%s" "%s\n\n%s\nHelp: ,g on '?' or 'help'" 2>/dev/null &'''
     os.system(cmd % (clean(title), clean(msg), __file__))
 
 
@@ -42,10 +45,11 @@ fn_log = '/tmp/smartopen.log'
 # '/etc/hosts'
 os.unlink(fn_log) if exists(fn_log) else 0
 exit = lambda *a: sys.exit(0)
-pth_join = lambda dir, fn: str(Path(dir).joinpath(Path(fn)))
+def pth_join(dir, fn): return str(Path(dir).joinpath(Path(fn)))
 
 
-browse = lambda lnk: os.system('%s "%s" >/dev/null 2>/dev/null &' % (browser, lnk))
+def browse(lnk): return os.system(
+    '%s "%s" >/dev/null 2>/dev/null &' % (browser, lnk))
 
 
 def send_exit(fn_or_vim_cmd):
@@ -75,12 +79,12 @@ def validate_and_complete(m):
 def try_(f, **m):
     k = '\n'.join(['- %s: %s' % (k, v) for k, v in m.items()])
     k = '\n%s\n' % k
-    #notify(f.__name__, k)
+    # notify(f.__name__, k)
     try:
         f(**m)
     except Exception as ex:
         pass
-        #notify('Exception', str(ex))
+        # notify('Exception', str(ex))
 
 
 def notify_help():
@@ -182,7 +186,8 @@ def is_markdown_link(word, dir, **kw):
         if pth.rsplit('.', 1)[-1].lower() in {'png', 'svg', 'jpeg', 'gif', 'jpg'}:
             exit(browse(pth))
         send_exit(pth)
-    if exists(pth+'.md'): send_exit(pth+'.md')
+    if exists(pth+'.md'):
+        send_exit(pth+'.md')
 
     if not lnk.endswith('.md'):
         exit(browse(title + lnk))
@@ -194,8 +199,9 @@ def is_markdown_link(word, dir, **kw):
 
 
 def is_absolute_path(word, **kw):
-    if exists(word):
-        send_exit(word)
+    w = word.replace('~', os.environ.get('HOME', '~'))
+    if exists(w):
+        send_exit(w)
 
 
 def is_relative_path(word, dir, fn, first=True, **kw):
@@ -213,8 +219,11 @@ def is_relative_path(word, dir, fn, first=True, **kw):
 
 
 # check for an lcdoc lp line:
-st = lambda l, s: l.startswith(s)
-is_lp = lambda l: (st(l, '```') and ' lp ' in l) or (st(l, '`') and ' lp:' in l)
+def st(l, s): return l.startswith(s)
+
+
+def is_lp(l): return (st(l, '```') and ' lp ' in l) or (
+    st(l, '`') and ' lp:' in l)
 
 
 def is_lcdoc_lp_line(word, dir, fn, line, **kw):
@@ -270,7 +279,8 @@ def main():
     os.unlink(fn_from_lua)
     m = {'word': '', 'fn': '', 'line': ''}
     for k in m:
-        m[k] = expression.split(''.join((sep, k, sep)), 1)[1].split(sep, 1)[0].strip()
+        m[k] = expression.split(''.join((sep, k, sep)), 1)[
+            1].split(sep, 1)[0].strip()
     validate_and_complete(m)
     try_(is_markdown_dragshot_req, **m)
     try_(is_no_word_under_cursor_in_md_file_open_browser_in_ds, **m)
