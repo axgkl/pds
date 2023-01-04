@@ -17,7 +17,7 @@ return {
 	"mbbill/undotree",
 	"Pocco81/auto-save.nvim",
 	"ThePrimeagen/refactoring.nvim",
-	--"arcticicestudio/nord-vim",
+	"arcticicestudio/nord-vim",
 	"dracula/vim",
 	"godlygeek/tabular",
 	"kshenoy/vim-signature",
