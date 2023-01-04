@@ -9,7 +9,6 @@ Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 - `,`: Additional Meta Key for shortcuts
 
 👉 Type those, to see keychords starting with them (whichkey plugin)
-👉 AstroNVim Mappings: https://astronvim.github.io/Basic%20Usage/mappings
 
 ## Config Files
 
@@ -23,9 +22,14 @@ Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 - Files are symlinked, from ~/.config/user.nvim into nvim's ~/.config/nvim
 - Some ext tools, e.g. lazygit, blue, require ~/nvim activation (i.e. ~/nvim/bin in $PATH)
 
-## Common Additional Shortcuts
+## Custom Shortcuts
 
 Some defined in our init,lua (mappings, lsp.mappings) most still in polish.vim
+
+👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings   
+👉 `:map` lists them all
+
+
 
 ### Folding
 
@@ -67,6 +71,7 @@ Foldmethod is "indent", globally.
 
 - `,p`: Toggle presentation mode
 - `,P`: Toggle rendering in $BROWSER (requires X/Wayland)
+- `,t`: Pretty format tables
 
 #### Python
 
