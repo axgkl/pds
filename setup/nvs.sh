@@ -4,6 +4,7 @@
 
 #me="${BASH_SOURCE[0]:-${(%):-%x}}" # this script.
 me="${BASH_SOURCE[0]:-$0}"
+
 test -z "$me" && {
 	echo "Only zsh or bash. Sry!"
 	return || exit 1
@@ -351,6 +352,7 @@ function install_mamba_binary_pkg_mgr {
 	}
 	test -e "$nvs_d_mamba/bin/mamba" || die "No mamba dir: $nvs_d_mamba"
 	hv_mamba="$("$nvs_d_mamba/bin/mamba" --version | xargs)"
+    test -z "$hv_mamba" && die "mamba not executable here"
 	# die when pinned but different:
 	local msg
 	msg="Mamba ver conflict at $nvs_d_mamba (wanted: $nvs_v_mamba, have: $hv_mamba). Remove manually or change \$nvs_d_mamba to different location."
@@ -407,7 +409,7 @@ function install_binary_tools {
 		done
 		test -z "${vers/ /}"
 	}
-	have_missing_installed || TMIF mamba install -y $vt
+	have_missing_installed || TMIF mamba install -c conda-forge -y $vt
 	have Tools "$pkgs $spkgs"
 	test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
 }
@@ -594,7 +596,7 @@ function Install {
 			T kill-session
 			sleep 0.4
 		}
-		T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
+		export SHELL="/bin/bash" && T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
 		start_time=$(date +%s)
 		sh set_nvs_function_to_bashrc
 		echo -e '\x1b[1;38;5;119mFinished.\x1b[0m'
@@ -612,11 +614,11 @@ function Install {
 		rm -f "$inst_log"
 		return $?
 	}
+    sh source_bashrc
 	# in tmux from here
 	T split-pane -h
 	#T resize-window -x 200
 	T resize-pane -x 110
-
 	sh activate_mamba_in_tmux
 	sh install_binary_tools
 	sh install_neovim
@@ -630,7 +632,9 @@ function status {
 	echo -e 'Stashes:'
 	ls -lta "$d_stash"
 }
+
 function activate_mamba_in_tmux {
+	TSC ". $HOME/.bashrc"
 	TSC "conda activate $nvs_d_mamba"
 }
 function kill_tmux_session {
