@@ -135,7 +135,11 @@ To move it away to a backup dir:
 - `vip` Select paragraph
 - `gq`  Rewrap paragraph
 
-And 1 Mio others....
+And 1 Mio others.  
+
+----
+
+> 👉 Live is a lesson. You've learned it when you're through.
 
 
 
