@@ -53,6 +53,7 @@ Foldmethod is "indent", globally.
 - `,d`      Done, write quit.
 - `fj`      Better line concat, replacing J
 - `J` `K`   Paragraph (next, previous)
+- `H` `L`   Window left/right selection
 - `,g`      Smart open[1]
 - `,q`      ":q!" Leave file, forget changes
 - `,Q`      ":quitall!" Leave all buffers, forget changes
