@@ -13,7 +13,7 @@ local config = {
 		"  ◢ ▨ ▨ ▨ ◤       ◢ ▨ ▨ ▨ ◤     ◥ ▨ ▨ ▨ ◣  ",
 		"◢ ▨ ▨ ▨ ◤       ◢ ▨ ▨ ▨ ◤         ◥ ▨ ▨ ▨ ◣  ",
 		"",
-		"Type H for README"
+		"Type Alt-H for README",
 	},
 	-- Configure AstroNvim updates
 	updater = {

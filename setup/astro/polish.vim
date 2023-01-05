@@ -8,7 +8,7 @@ nnoremap <M-o>   <C-i>
 "cnoremap <silent> x<CR>  :call ConfirmQuit(1)<CR>
 "  "Yank constent with D and C:
 nnoremap Y         y$
-nnoremap H         :edit ~/.config/nvim/lua/user/README.md<CR>
+nnoremap <M-H>     :edit ~/.config/nvim/lua/user/README.md<CR>
 nnoremap ,G        :TermExec cmd=lazygit<CR>
 nnoremap ,q        :q!<CR>
 nnoremap ,Q        :quitall!<cr>
