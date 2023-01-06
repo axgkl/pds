@@ -318,7 +318,7 @@ local config = {
 			-- second key is the lefthand side of the map
 			-- TAB IS Ctrl-I -> this would loose jump previous:
 			--["<Tab>"] = { "za", desc = "Toggle Fold" },
-			[",s"] = { ":ASToggle<CR><CR>", desc = "Toggle Autosave (all buffers)" },
+			[",s"] = { ":ASToggle<CR>", desc = "Toggle Autosave (all buffers)" },
 			["<S-Tab>"] = { "zR", desc = "Open ALL Folds" },
 			["<C-s>"] = { ":w!<cr>", desc = "Save File" },
 			["<M-0>"] = { "^", desc = "Jump to first character in line" },

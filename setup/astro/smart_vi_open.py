@@ -12,15 +12,15 @@ import re
 import sys
 
 # http://heise.de
-from html import escape
 from pathlib import Path
 
 browser = os.environ.get('BROWSER', 'microsoft-edge')
+user = os.environ.get('USER', 'user')
 exists = os.path.exists
 
 
-def log(s): return open(fn_log, 'a').write(
-    '\ncwd: %s; %s\n' % (os.getcwd(), s))
+def log(s):
+    return open(fn_log, 'a').write('\ncwd: %s; %s\n' % (os.getcwd(), s))
 
 
 sep = ':-:'
@@ -41,10 +41,15 @@ def notify(title, msg=''):
 
 fn_from_lua = '/tmp/smartopen'
 fn_last_from_lua = '/tmp/last_smartopen_expression_from_lua'
-fn_log = '/tmp/smartopen.log'
+fn_log = f'/tmp/smartopen.{user}.log'
 # '/etc/hosts'
 os.unlink(fn_log) if exists(fn_log) else 0
-exit = lambda *a: sys.exit(0)
+
+
+def exit(*a):
+    return sys.exit(0)
+
+
 def pth_join(dir, fn): return str(Path(dir).joinpath(Path(fn)))
 
 
@@ -61,19 +66,22 @@ def send_exit(fn_or_vim_cmd):
 
 
 def validate_and_complete(m):
-    if not exists(m['fn']) and not '://' in m['fn']:
-        exit(notify('bug: file does not exist: %s' % m['fn']))
-    log('parsed: %s' % str(m))
-    m['dir'] = os.path.abspath(os.path.dirname(m['fn']))
+    log('got: %s' % str(m))
+    if not exists(m['fn']) and "://" not in m["fn"]:
+        # may not exist, e.g. in packer plugins overlay, with urls we want to ,g on:
+        m['dir'] = os.environ['HOME']
+        #exit(notify('bug: file does not exist: %s' % m['fn']))
+    else:
+        m['dir'] = os.path.abspath(os.path.dirname(m['fn']))
     w, l = m['word'], m['line']
     for spam in "'", '"':
         w.replace(spam, '')
 
-    if w and w[0] == '[' and not ']' in w:
+    if w and w[0] == '[' and "]" not in w:
         w = w + l.split(w, 1)[1].split(')', 1)[0] + ')'
         pass
     m['word'] = w
-    log('foo %s' % m)
+    log('parsed %s' % m)
 
 
 def try_(f, **m):

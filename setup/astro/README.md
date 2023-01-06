@@ -1,7 +1,8 @@
-# AX AstroNVim Flavor (<TAB> expands)
+# AX AstroNVim Flavor
 
 Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 
+<Enter> expands, <TAB> expands all.
 
 ## Leader Keys
 
@@ -35,7 +36,7 @@ Some defined in our `init.lua` (mappings, lsp.mappings) most still in `polish.vi
 
 ### Folding
 
-Foldmethod is "indent", globally.
+Foldmethod is "indent", globally, except for markdown
 
 - `<TAB>`: Opens all folds. `zM` closes all.
 - `<Enter>`: Opens current fold
@@ -78,7 +79,9 @@ Foldmethod is "indent", globally.
 - `,C`      Colors (theme picker)
 - `,r`      Evaluates as python, see https://github.com/axiros/vpe
 - `,s`      Autosave mode on
-- `ysiw]`   Wrap word into (e.g. ])
+- `ysiw]`   [Wrap][vim-surround] word into (e.g. here: foo -> [foo])
+- `ds]`     Remove [delimiters][vim-surround] smartly (e.g. here: [foo bar] -> foo bar)
+
 
 ### File Type Specific
 
@@ -100,13 +103,14 @@ Foldmethod is "indent", globally.
 
 ### Clipbaord
 
-To paste stuff *OUT* of a vi session running on a server, we have set +unnamedplus, i.e.
-nvim tries X tools to copy into, on y.
+To copy selected stuff *OUT* of a vi session running on a server, we have set
++unnamedplus. I.e. nvim tries X tools to copy into your clipboard, on y.
 
 => Currently we expect a forwarded X session (`ssh -XY <host>` or via your
 `~/.ssh/config`)
 
-A compromised server might attack your X session. Decide for yourself.
+> ❗ A compromised server might attack your X session. Decide for yourself.
+> `set mouse=n` gives you mouse based selection and copying.
 
 ---
 
@@ -114,6 +118,8 @@ A compromised server might attack your X session. Decide for yourself.
 
 - On a new linux machine, clone this repo into "~/.config/user.nvim"
 - `~/.config/user.nvim/setup/nvs.sh i` or `... install`
+
+This will add an nvs function into your .bashrc. Call it to see supported actions.
 
 ### Handle Existing Installs
 
@@ -129,11 +135,16 @@ To move it away to a backup dir:
 
 ---
 
-## 4 Noobs
+## Vim 4 Noobs
 
 - `:set tw=100`  Set width for wrapping
-- `vip` Select paragraph
-- `gq`  Rewrap paragraph
+- `gq`           Rewrap paragraph
+- `vip`          Select paragraph, e.g. `vipga=` to align on "="
+- `zM`           Closes all folds
+- `:!ls -lta`    Runs a command
+- `:echo &tw`    Shows the set value of a vim variable 
+- `:echo &tw`    Shows the set value of a vim variable 
+- `vip<Ctrl>VI`  Block mode vertical editing (rendered for all selected lines after <ESC>)
 
 And 1 Mio others.  
 
@@ -142,4 +153,7 @@ And 1 Mio others.
 > 👉 Live is a lesson. You've learned it when you're through.
 
 
+----
 
+
+[vim-surround]: https://github.com/tpope/vim-surround

@@ -39,7 +39,6 @@ nmap <silent><buffer> ,P :MarkdownPreviewToggle<CR>
 " "setlocal foldmethod=expr
 " " autowrap at textwidth:
 " setlocal formatoptions+=t 
-" setlocal textwidth=100
 " " setlocal foldlevel=99
 " " let g:markdown_folding = 1
 " let g:markdown_fenced_languages = [ "vim", "python", "lua", "bash=sh", "javascript", "typescript", "yaml", "json" ]
