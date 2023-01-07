@@ -737,7 +737,6 @@ function main {
         shift
     }
     set_constants
-    set -x
     if [[ -d "$here/../.git" && -d "$here/../setup" && -d "$here/../ftplugin" ]]; then
         req_bootstrap=false
         set_helper_vars
