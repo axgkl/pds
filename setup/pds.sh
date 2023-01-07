@@ -743,7 +743,7 @@ function main {
         set_helper_vars
         ensure_stash_dir
     else
-        req_boostrap=true
+        req_bootstrap=true
     fi
 
     local action
