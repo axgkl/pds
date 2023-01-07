@@ -689,6 +689,7 @@ function Install {
     sh kill_tmux_session
 }
 function status {
+    $req_boostrap && die "Require bootstrap"
     echo -e 'Stashes:'
     ls -lta "$d_stash"
 }
@@ -727,7 +728,7 @@ function bootstrap {
     export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     mkdir -p "$D"
     (cd "$D" && { git clone "git@$pds_repo" || git clone "https://${pds_repo/://}"; })
-    "$D/pds/setup/pds.sh" install "$@"
+    sh "$D/pds/setup/pds.sh" install "$@"
 }
 
 function main {
@@ -736,16 +737,13 @@ function main {
         shift
     }
     set_constants
-    test -n "${1:-}" && {
-        test -d "$here/../.git" -a -d "$here/../setup" -a -d "$here/../ftplugin" || {
-            shift
-            sh bootstrap "$@"
-            "$HOME/.config/pds/setup/pds.sh" "$@"
-            exit $?
-        }
+    req_bootstrap=false
+    if [[ -d "$here/../.git" && -d "$here/../setup" && -d "$here/../ftplugin" ]]; then
         set_helper_vars
         ensure_stash_dir
-    }
+    else
+        req_boostrap=true
+    fi
 
     local action
     action="${1:-x}"
@@ -754,7 +752,13 @@ function main {
         #A clean-all [-f]:      Removes all nvim
         clean-all) clean_all "$@" ;;
         #A i|install:           Installs a personal dev sandbox on this machine
-        i | install) Install "$@" ;;
+        i | install)
+            if [[ $req_bootstrap == true ]]; then
+                sh bootstrap "$@"
+            else
+                sh Install "$@"
+            fi
+            ;;
         #A shell:               Enters a shell with pds tools available
         shell) shell ;;
         #A stash <name>:        Moves away an existing install, restorable
