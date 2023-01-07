@@ -328,7 +328,7 @@ local config = {
 	-- This function is run last
 	-- good place to configuring augroups/autocommands and custom filetypes
 	polish = function()
-		if os.getenv("nvs_installing") then
+		if os.getenv("pds_installing") then
 			return
 		end
 

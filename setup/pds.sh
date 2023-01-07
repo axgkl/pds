@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # _______________________________________________________________________________________ SOURCING
 # when sourced, no spamming of namespace with stuff req. for the process
-nvs_is_sourced=false
+pds_is_sourced=false
 if [ -n "$ZSH_VERSION" ]; then
     me="$0"
-    grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && nvs_is_sourced=true
+    grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && pds_is_sourced=true
 elif [ -n "${BASH_SOURCE[0]}" ]; then
     me="${BASH_SOURCE[0]}"
-    grep -q "bash" <<<"$0" && nvs_is_sourced=true
+    grep -q "bash" <<<"$0" && pds_is_sourced=true
 else
     echo "Only zsh or bash. Sry!"
     return 2>/dev/null || exit 1
@@ -17,36 +17,36 @@ fi
 here="$(builtin cd "$(dirname "$me")" && pwd)"
 . "$here/environ"
 
-nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
-nvs_distri="${nvs_distri:-$nvs_dflt_distri}"
+pds_d_mamba="${pds_d_mamba:-$pds_dflt_d_mamba}"
+pds_distri="${pds_distri:-$pds_dflt_distri}"
 
-function run_with_nvs_bin_path {
+function run_with_pds_bin_path {
     # conda activate got slow
-    local p="$nvs_d_mamba/bin"
+    local p="$pds_d_mamba/bin"
     if [[ "$PATH" != *"$p"* ]]; then
-        echo "nvs tools at $p in \$PATH"
+        echo "pds tools at $p in \$PATH"
         export PATH="$p:$PATH" # our bins are newer
     fi
     test -z "$1" && return
     if [[ "$1" == "deact" ]]; then
         shift
         export PATH="${PATH/$p:/}"
-        echo "removed nvs tools from \$PATH"
+        echo "removed pds tools from \$PATH"
         return
     fi
     "$@"
 }
 function handle_sourced {
-    local func="${1:--h}" r=run_with_nvs_bin_path
+    local func="${1:--h}" r=run_with_pds_bin_path
     case "$func" in
-    #F a|activate:    Adds nvs bin dir to $PATH
+    #F a|activate:    Adds pds bin dir to $PATH
     a | activate) $r ;;
     #F d|deactivate:  Removes from $PATH
     d | deactivate) $r deact ;;
     #F e|edit:        cd to user dir, edit init.lua
     e | edit)
-        cd "$here/$nvs_distri" || true
-        nvs vi init.lua
+        cd "$here/$pds_distri" || true
+        pds vi init.lua
         ;;
     #F pl|plugs-list: fzf over plugins dirs, cd to selected
     pl | plugins-list)
@@ -56,61 +56,61 @@ function handle_sourced {
     #F ps|packer-sync: Syncs your plugins/init.lua
     ps | packer-sync) vi +PackerSync ;;
     -x | -s | -h | --help | i | install | shell | stash | restore | status)
-        "$here/nvs.sh" "$@"
+        "$here/pds.sh" "$@"
         ;;
-    #F any, except action:  Runs the argument(s) with activated nvs
+    #F any, except action:  Runs the argument(s) with activated pds
     *) $r "$@" ;;
     esac
 }
-$nvs_is_sourced && {
+$pds_is_sourced && {
     handle_sourced "$@"
     return $?
 }
 # --------------------------------------------------------------------------------------- process
-nvs_is_traced="${nvs_is_traced:-false}"
-nvs_is_stepped="${nvs_is_stepped:-false}"
+pds_is_traced="${pds_is_traced:-false}"
+pds_is_stepped="${pds_is_stepped:-false}"
 
 test "$1" == "-x" && {
-    export nvs_is_traced=true
+    export pds_is_traced=true
     shift
 }
 test "$1" == "-s" && {
-    export nvs_is_stepped=true
+    export pds_is_stepped=true
     shift
 }
-$nvs_is_traced && set -x
+$pds_is_traced && set -x
 in_tmux=false
 set -a
-distri="${distri:-$nvs_dflt_distri}"
+distri="${distri:-$pds_dflt_distri}"
 d="$here/$distri"
 test -d "$d" || {
     echo "Not found: $d"
     exit 1
 }
 source "$d/environ"
-nvs_v_distri="${nvs_v_distri:-$nvs_dflt_v_distri}"
-nvs_d_mamba="${nvs_d_mamba:-$nvs_dflt_d_mamba}"
-nvs_v_nvim="${nvs_v_nvim:-$nvs_dflt_v_nvim}"
-nvs_v_mamba="${nvs_v_mamba:-$nvs_dflt_v_mamba}"
-nvs_v_shfmt="${nvs_v_shfmt:-$nvs_dflt_v_shfmt}"
-nvs_mamba_prefer_system_tools="${nvs_mamba_prefer_system_tools:-$nvs_dflt_mamba_prefer_system_tools}"
-nvs_mamba_tools="${nvs_mamba_tools:-$nvs_dflt_mamba_tools}"
-nvs_pin_mamba="${nvs_pin_mamba:-$nvs_dflt_pin_mamba}"
-nvs_pin_mamba_pkgs="${nvs_pin_mamba_pkgs:-$nvs_dflt_pin_mamba_pkgs}"
-nvs_pin_distri="${nvs_pin_distri:-$nvs_dflt_pin_distri}"
-nvs_pin_nvim_pkgs="${nvs_pin_nvim_pkgs:-$nvs_dflt_pin_nvim_pkgs}"
+pds_v_distri="${pds_v_distri:-$pds_dflt_v_distri}"
+pds_d_mamba="${pds_d_mamba:-$pds_dflt_d_mamba}"
+pds_v_nvim="${pds_v_nvim:-$pds_dflt_v_nvim}"
+pds_v_mamba="${pds_v_mamba:-$pds_dflt_v_mamba}"
+pds_v_shfmt="${pds_v_shfmt:-$pds_dflt_v_shfmt}"
+pds_mamba_prefer_system_tools="${pds_mamba_prefer_system_tools:-$pds_dflt_mamba_prefer_system_tools}"
+pds_mamba_tools="${pds_mamba_tools:-$pds_dflt_mamba_tools}"
+pds_pin_mamba="${pds_pin_mamba:-$pds_dflt_pin_mamba}"
+pds_pin_mamba_pkgs="${pds_pin_mamba_pkgs:-$pds_dflt_pin_mamba_pkgs}"
+pds_pin_distri="${pds_pin_distri:-$pds_dflt_pin_distri}"
+pds_pin_nvim_pkgs="${pds_pin_nvim_pkgs:-$pds_dflt_pin_nvim_pkgs}"
 set +a
 
 #
 d_conf_nvim="$HOME/.config/nvim"
 d_stash="$HOME/.local/share/stashed_nvim"
-url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$nvs_v_nvim/nvim.appimage"
-shfmt="https://github.com/mvdan/sh/releases/download/v$nvs_v_shfmt/shfmt_v${nvs_v_shfmt}_linux_amd64"
-inst_log="$HOME/nvs_have.log"
+url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
+shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
+inst_log="$HOME/pds_have.log"
 _stashes_have="$(ls "$d_stash" | sort | xargs)"
 d_="\x1b[1;32mPersonal Development Setup Tools\x1b[0m
 
-USAGE: nvs [-x] [-s] [-h] <function|action> [params]
+USAGE: pds [-x] [-s] [-h] <function|action> [params]
 
 SWITCHES:
  -x:        Tracemode on
@@ -133,8 +133,8 @@ ACTIONS:
  status
 
 Functions change your environ, actions are processes.
-If arg is not a function nor an action it will be run with activated nvs bin dir. 
-Examples: nvs vi myfile or ls | nvs fzf
+If arg is not a function nor an action it will be run with activated pds bin dir. 
+Examples: pds vi myfile or ls | pds fzf
 "
 
 det_help='
@@ -142,25 +142,25 @@ REQUIREMENTS:
 
 - (Any) Linux - all binaries by conda
 - The repo containing this file (anywhere)
-- Using bash (we set "nvs" convenience function into .bashrc). Other shells: do it manually.
+- Using bash (we set "pds" convenience function into .bashrc). Other shells: do it manually.
 
 ACTION DETAILS:
 
 Install:
-- Ensures nvs function to this script in .bashrc
-- Creates conda(mamba) environment at '$nvs_d_mamba', with tools:
-'$nvs_mamba_tools'
-- Installs NeoVim '$nvs_v_nvim'
-- Installs Nvim '$nvs_distri' Distribution 
+- Ensures pds function to this script in .bashrc
+- Creates conda(mamba) environment at '$pds_d_mamba', with tools:
+'$pds_mamba_tools'
+- Installs NeoVim '$pds_v_nvim'
+- Installs Nvim '$pds_distri' Distribution 
 - Installs User Config
 
 Set install params into "'$here'/environ" or export them before install.
 
 Clean All:
 - Removes .config/nvim, .local/share/nvim and .local/state/nvim
-- Leaves the mamba env at '$nvs_d_mamba' - remove manually 
+- Leaves the mamba env at '$pds_d_mamba' - remove manually 
 
-Shell: Enter a shell with '$nvs_d_mamba' activated
+Shell: Enter a shell with '$pds_d_mamba' activated
 
 Status: Shows status of all installables and stashes
 
@@ -174,20 +174,20 @@ Restore: <name>: Restore current config by removing(!) existing, then copying ba
 
 function activate_mamba {
     # deactivate all condas, lsp install would fail with different node
-    function a_m { conda activate "$nvs_d_mamba" 2>/dev/null; }
-    . "$nvs_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
+    function a_m { conda activate "$pds_d_mamba" 2>/dev/null; }
+    . "$pds_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
     while [ -n "$CONDA_PREFIX" ]; do conda deactivate; done
     a_m || die "Could not activate mamba"
-    test "$CONDA_PREFIX"=="$nvs_d_mamba" || {
-        echo "Could not activate $nvs_d_mamba"
+    test "$CONDA_PREFIX"=="$pds_d_mamba" || {
+        echo "Could not activate $pds_d_mamba"
         return
     }
-    echo "Activated $nvs_d_mamba"
+    echo "Activated $pds_d_mamba"
 }
 
 function deactivate_mamba {
-    d() { echo "Deactivated $nvs_d_mamba"; }
-    if [[ "${nvs_shell:-}" == "true" ]]; then
+    d() { echo "Deactivated $pds_d_mamba"; }
+    if [[ "${pds_shell:-}" == "true" ]]; then
         d
         exit
     fi
@@ -258,7 +258,7 @@ function hint {
 function sh {
     echo -e "\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
     local m
-    $nvs_is_stepped && {
+    $pds_is_stepped && {
         $in_tmux && {
             tmux select-pane -t 0
             hint "Hint: Attach via tmux -S $tmux_sock att"
@@ -268,15 +268,15 @@ function sh {
         m="$(echo "$m" | tr '[:upper:]' '[:lower:'])"
         if [ "$m" == "q" ]; then exit 1; fi
         if [ "$m" == "c" ]; then
-            nvs_is_stepped=false
+            pds_is_stepped=false
             m=y
         fi
         if [ "$m" == "t" ]; then
-            if [ "$nvs_is_traced" == "true" ]; then
-                nvs_is_traced=false
+            if [ "$pds_is_traced" == "true" ]; then
+                pds_is_traced=false
                 set +x
             else
-                nvs_is_traced=true
+                pds_is_traced=true
                 set -x
             fi
         fi
@@ -320,12 +320,12 @@ function install_plugins {
     nvim +PackerSync
 }
 
-function set_nvs_function_to_bashrc {
+function set_pds_function_to_bashrc {
     local a fn
     fn="$HOME/.bashrc"
-    a='function nvs { source "'$here'/nvs.sh" "$@"; }'
-    grep -A 3 'function nvs' <"$fn" | grep source | head -n 1 | grep "$here" 1>/dev/null 2>&1 || {
-        echo "writing nvs function to .bashrc => source .bashrc"
+    a='function pds { source "'$here'/pds.sh" "$@"; }'
+    grep -A 3 'function pds' <"$fn" | grep source | head -n 1 | grep "$here" 1>/dev/null 2>&1 || {
+        echo "writing pds function to .bashrc => source .bashrc"
         echo "$a" >>"$HOME/.bashrc"
     }
     have '.bashrc' "$a"
@@ -340,25 +340,25 @@ function ensure_dirs {
     have "Directories" "$dd"
 }
 function install_mamba {
-    bash "$1" -b -p "$nvs_d_mamba" || {
+    bash "$1" -b -p "$pds_d_mamba" || {
         set -x
         head -n 1 "$1"
         set +x
         rm -f "$1"
         die "Installer failed - removed it."
     }
-    "$nvs_d_mamba/bin/conda" init
+    "$pds_d_mamba/bin/conda" init
 }
 
 # we support d_mamba v_mamba pin_mamba
 function install_mamba_binary_pkg_mgr {
     local hv_mamba fn crl url name
     crl=false
-    test -d "$nvs_d_mamba" || {
-        name="Mambaforge-$nvs_v_mamba-$(uname)-$(uname -m).sh"
-        url="https://github.com/conda-forge/miniforge/releases/download/$nvs_v_mamba/$name"
-        #test "$pin_mamba" == true -o "$nvs_v_mamba" == "latest" && {
-        test "$nvs_v_mamba" == "latest" && {
+    test -d "$pds_d_mamba" || {
+        name="Mambaforge-$pds_v_mamba-$(uname)-$(uname -m).sh"
+        url="https://github.com/conda-forge/miniforge/releases/download/$pds_v_mamba/$name"
+        #test "$pin_mamba" == true -o "$pds_v_mamba" == "latest" && {
+        test "$pds_v_mamba" == "latest" && {
             name="Mambaforge-$(uname)-$(uname -m).sh"
             url="https://github.com/conda-forge/miniforge/releases/latest/download/$name"
         }
@@ -374,39 +374,39 @@ function install_mamba_binary_pkg_mgr {
         )
         sh install_mamba "$fn"
     }
-    test -e "$nvs_d_mamba/bin/mamba" || die "No mamba dir: $nvs_d_mamba"
-    hv_mamba="$("$nvs_d_mamba/bin/mamba" --version | xargs)"
+    test -e "$pds_d_mamba/bin/mamba" || die "No mamba dir: $pds_d_mamba"
+    hv_mamba="$("$pds_d_mamba/bin/mamba" --version | xargs)"
     test -z "$hv_mamba" && die "mamba not executable here"
     # die when pinned but different:
     local msg
-    msg="Mamba ver conflict at $nvs_d_mamba (wanted: $nvs_v_mamba, have: $hv_mamba). Remove manually or change \$nvs_d_mamba to different location."
-    test "$nvs_v_mamba" == "latest" && nvs_v_mamba="-" # only have minor not -<build>
-    $nvs_pin_mamba && grep "${nvs_v_mamba%%-*}" <<<"$hv_mamba" 1>/dev/null || die "$msg"
-    have "Mamba Binary Pkg Env" "$hv_mamba $(disk "$nvs_d_mamba")"
+    msg="Mamba ver conflict at $pds_d_mamba (wanted: $pds_v_mamba, have: $hv_mamba). Remove manually or change \$pds_d_mamba to different location."
+    test "$pds_v_mamba" == "latest" && pds_v_mamba="-" # only have minor not -<build>
+    $pds_pin_mamba && grep "${pds_v_mamba%%-*}" <<<"$hv_mamba" 1>/dev/null || die "$msg"
+    have "Mamba Binary Pkg Env" "$hv_mamba $(disk "$pds_d_mamba")"
 }
 
 function ensure_tmux {
     local p1 t1
-    t1="$nvs_mamba_tools"
+    t1="$pds_mamba_tools"
     p1="$mamba_prefer_system_tools"
-    nvs_mamba_tools="tmux"
+    pds_mamba_tools="tmux"
     mamba_prefer_system_tools=false
     tmux -V | grep -q 'tmux 3' && mamba_prefer_system_tools=true
     install_binary_tools
-    export nvs_mamba_tools="$t1"
+    export pds_mamba_tools="$t1"
     export mamba_prefer_system_tools="$p1"
     have Tmux "$(type tmux)"
 }
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
 function install_binary_tools {
-    echo "tools $nvs_mamba_tools"
+    echo "tools $pds_mamba_tools"
     local f v pkg name spkgs pkgs vers vt
     vt=""
-    for f in "$here/$nvs_distri" "$here"; do
+    for f in "$here/$pds_distri" "$here"; do
         test -e "$f/versions_mamba.txt" || continue
         vers="$(cat "$f/versions_mamba.txt")"
     done
-    IFS=' ' && for t in $nvs_mamba_tools; do
+    IFS=' ' && for t in $pds_mamba_tools; do
         pkg="${t%:*}"
         name="${t#*:*}"
         test "$name" == "-" || {
@@ -416,7 +416,7 @@ function install_binary_tools {
             }
         }
         pkgs="$pkgs $pkg"
-        test "$nvs_pin_mamba_pkgs" == "true" && {
+        test "$pds_pin_mamba_pkgs" == "true" && {
             v="$(grep "^$pkg=" <<<$vers)"
             pkg="${v:-$pkg}"
         }
@@ -441,7 +441,7 @@ function install_binary_tools {
 function install_shfmt {
     # avoiding install golang
     local fn fnm
-    fn="$nvs_d_mamba/bin/shfmt"
+    fn="$pds_d_mamba/bin/shfmt"
     fnm="$HOME/.local/share/nvim/mason/bin/shfmt" # always in nvim path
     test -e "$fn" || {
         TSC "curl -L -o shfmt '$shfmt' && mv shfmt '$fn'" "then" chmod +x "$fn"
@@ -452,15 +452,15 @@ function install_shfmt {
 }
 
 function install_neovim {
-    local a="$nvs_d_mamba/bin/nvim.appimg"
-    local d="$nvs_d_mamba/bin/nvimfs"
+    local a="$pds_d_mamba/bin/nvim.appimg"
+    local d="$pds_d_mamba/bin/nvimfs"
     test -d "$d" || {
         local s="squashfs-root"
         rm -rf "$s"
-        rm -rf "$nvs_d_mamba/bin/vi"
+        rm -rf "$pds_d_mamba/bin/vi"
         test -e "$a" || TSC "curl -L -o '$a' '$url_nvim_appimg'" "then" chmod +x "$a"
         TSC "'$a' --appimage-extract" "then" mv "$s" "$d"
-        ln -s "$d/AppRun" "$nvs_d_mamba/bin/vi"
+        ln -s "$d/AppRun" "$pds_d_mamba/bin/vi"
     }
     have NeoVim "$d" "$(vi -v | head -n 1)"
 }
@@ -471,8 +471,8 @@ function clone_astronvim {
     else
         TSC "git clone 'https://github.com/AstroNvim/AstroNvim' '$d_conf_nvim'"
     fi
-    $nvs_pin_distri && TSC "( builtin cd '$d_conf_nvim' && git status && git reset --hard '$nvs_v_distri'; )"
-    have "AstroNvim Repo" "Pinned: $nvs_pin_distri. $(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
+    $pds_pin_distri && TSC "( builtin cd '$d_conf_nvim' && git status && git reset --hard '$pds_v_distri'; )"
+    have "AstroNvim Repo" "Pinned: $pds_pin_distri. $(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
 }
 
 function lsp() {
@@ -495,7 +495,7 @@ function install_astronvim {
     d="$HOME/.local/share/nvim/mason/bin"
     test -e "$d" 2>/dev/null || {
         # we just start it, install begins autom:
-        TSK "$nvs_d_mamba/bin/vi"
+        TSK "$pds_d_mamba/bin/vi"
         until (C | grep Mason); do sleep 0.2; done
         hint "Waiting for: 'Mason' to disappear"
         while (C | grep Mason >/dev/null); do sleep 0.2; done
@@ -504,7 +504,7 @@ function install_astronvim {
         sleep 0.1
     }
     have "Mason Binary Pkg Tool"
-    TSK "$nvs_d_mamba/bin/vi"
+    TSK "$pds_d_mamba/bin/vi"
     d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
     tss="python bash css javascript vim help"
     for ts in $(echo "$tss" | xargs); do
@@ -536,7 +536,7 @@ function install_astronvim {
 function install_vim_user {
     set_symlinks() {
         local s=""
-        local S="$here/$nvs_distri"
+        local S="$here/$pds_distri"
         local T="$d_conf_nvim"
         rm -f "$T/lua/user"
         ln -s "$S" "$T/lua/user"
@@ -550,15 +550,15 @@ function install_vim_user {
         have 'User Config' "Symlinks:$s"
     }
     set_symlinks
-    TSC "$nvs_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
-    #TSC "$nvs_d_mamba/bin/vi +PackerSync"
-    TSK "$nvs_d_mamba/bin/vi"
+    TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+    #TSC "$pds_d_mamba/bin/vi +PackerSync"
+    TSK "$pds_d_mamba/bin/vi"
     lsp ruff_lsp "ruff-lsp"
     T send-keys Escape
     T send-keys Escape
     TSK ':q!'
     TSK ':q!'
-    have "User Packages" '.config/user.nvim/plugins/init.lua'
+    have "User Packages" '.config/pds/plugins/init.lua'
 }
 
 function clean_all {
@@ -615,7 +615,7 @@ function show_help {
 function Install {
     test "$in_tmux" == "false" && {
         export start_time
-        export nvs_installing=true
+        export pds_installing=true
         start_time=$(date +%s)
         rm -f "$inst_log"
         sh ensure_dirs
@@ -629,16 +629,16 @@ function Install {
         }
         export SHELL="/bin/bash" && T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
         start_time=$(date +%s)
-        sh set_nvs_function_to_bashrc
+        sh set_pds_function_to_bashrc
         echo -e '\x1b[1;38;5;119mFinished.\x1b[0m'
         echo -e '\n\nInstall Settings\n'
-        env | grep nvs_ | sort
+        env | grep pds_ | sort
 
         echo -e '\n\nInstall Progress Log\n'
         cat "$inst_log"
         echo ''
-        echo -e "- \x1b[1m$nvs_d_mamba/bin/vi\x1b[0m to start."
-        echo -e "- \x1b[1mnvs <a|shell>\x1b[0m then vi to start with all tools available\n"
+        echo -e "- \x1b[1m$pds_d_mamba/bin/vi\x1b[0m to start."
+        echo -e "- \x1b[1mpds <a|shell>\x1b[0m then vi to start with all tools available\n"
         echo "Docs: "
         echo "- https://mamba.readthedocs.io"
         echo "- https://astronvim.github.io"
@@ -666,7 +666,7 @@ function status {
 
 function activate_mamba_in_tmux {
     TSC ". $HOME/.bashrc"
-    TSC "conda activate $nvs_d_mamba"
+    TSC "conda activate $pds_d_mamba"
 }
 function kill_tmux_session {
     T kill-session
@@ -675,7 +675,7 @@ function shell {
     activate_mamba
     have "Mamba" "Shell"
     echo 'Deactive or exit to leave'
-    export nvs_shell=true
+    export pds_shell=true
     bash
 }
 function ensure_stash_dir { mkdir -p "$d_stash"; }

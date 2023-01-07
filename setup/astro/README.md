@@ -27,7 +27,7 @@ All in ~/.config/nvim/lua/user
 
 👉 `,g` on those filenames to open (see ,g below)
 
-- Files are symlinked, from ~/.config/user.nvim into nvim's ~/.config/nvim
+- Files are symlinked, from ~/.config/pds into nvim's ~/.config/nvim
 - Some ext tools, e.g. lazygit, blue, require ~/nvim activation (i.e. ~/nvim/bin in $PATH)
 
 ## Custom Shortcuts
@@ -159,10 +159,10 @@ nvim tries X tools to copy into your clipboard, on y.
 
 ## Install
 
-- On a new linux machine, clone this repo into "~/.config/user.nvim"
-- `~/.config/user.nvim/setup/nvs.sh i` or `... install`
+- On a new linux machine, clone this repo into "~/.config/pds"
+- `~/.config/pds/setup/pds.sh i` or `... install`
 
-This will add an nvs function into your .bashrc. Call it to see supported actions.
+This will add an pds function into your .bashrc. Call it to see supported actions.
 
 ### Handle Existing Installs
 
@@ -170,11 +170,11 @@ This will add an nvs function into your .bashrc. Call it to see supported action
 
 To remove existing nvim config in ~.config/nvim and .local/share/nvim:
 
-`~/.config/user.nvim/setup/nvs.sh clean-all` 
+`~/.config/pds/setup/pds.sh clean-all` 
 
 To move it away to a backup dir:
 
-`~/.config/user.nvim/setup/nvs.sh stash <name>`
+`~/.config/pds/setup/pds.sh stash <name>`
 
 ---
 
