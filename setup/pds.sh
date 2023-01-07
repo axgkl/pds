@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+# _______________________________________________________________________________________ DEFAULTS
+set -a
+pds_repo="${pds_repo:-github.com:AXGKl/pds}"
+pds_distri="${pds_distri:-astro}"
+pds_d_mamba="${pds_d_mamba:-$HOME/pds}"
+pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
+pds_v_nvim="${pds_v_nvim:-0.8.1}"
+pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
+pds_mamba_tools="${pds_mamba_tools:-bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip}"
+pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-true}
+pds_pin_distri=${pds_pin_distri:-true}
+pds_pin_mamba=${pds_pin_mamba:-true}
+pds_pin_mamba_pkgs=${pds_pin_mamba_pkgs:-false}
+pds_pin_nvim_pkgs=${pds_pin_nvim_pkgs:-false}
+set +a
+
 # _______________________________________________________________________________________ SOURCING
 # when sourced, no spamming of namespace with stuff req. for the process
 pds_is_sourced=false
@@ -15,10 +31,6 @@ fi
 
 #
 here="$(builtin cd "$(dirname "$me")" && pwd)"
-test -e "$here/environ" && . "$here/environ"
-
-pds_d_mamba="${pds_d_mamba:-$pds_dflt_d_mamba}"
-pds_distri="${pds_distri:-$pds_dflt_distri}"
 
 function run_with_pds_bin_path {
     # conda activate got slow
@@ -55,7 +67,7 @@ function handle_sourced {
             ;;
         #F ps|packer-sync: Syncs your plugins/init.lua
         ps | packer-sync) vi +PackerSync ;;
-        -x | -s | -h | --help | bootstrap | clean-all | i | install | shell | stash | restore | status)
+        -x | -s | -h | --help | clean-all | i | install | shell | stash | restore | status)
             "$here/pds.sh" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
@@ -80,102 +92,81 @@ test "$1" == "-s" && {
 }
 $pds_is_traced && set -x
 in_tmux=false
-function set_vars {
-    set -a
-    distri="${distri:-$pds_dflt_distri}"
-    d="$here/$distri"
-    test -d "$d" || {
-        echo "Not found: $d"
-        exit 1
-    }
-    source "$d/environ"
-    pds_v_distri="${pds_v_distri:-$pds_dflt_v_distri}"
-    pds_d_mamba="${pds_d_mamba:-$pds_dflt_d_mamba}"
-    pds_v_nvim="${pds_v_nvim:-$pds_dflt_v_nvim}"
-    pds_v_mamba="${pds_v_mamba:-$pds_dflt_v_mamba}"
-    pds_v_shfmt="${pds_v_shfmt:-$pds_dflt_v_shfmt}"
-    pds_mamba_prefer_system_tools="${pds_mamba_prefer_system_tools:-$pds_dflt_mamba_prefer_system_tools}"
-    pds_mamba_tools="${pds_mamba_tools:-$pds_dflt_mamba_tools}"
-    pds_pin_mamba="${pds_pin_mamba:-$pds_dflt_pin_mamba}"
-    pds_pin_mamba_pkgs="${pds_pin_mamba_pkgs:-$pds_dflt_pin_mamba_pkgs}"
-    pds_pin_distri="${pds_pin_distri:-$pds_dflt_pin_distri}"
-    pds_pin_nvim_pkgs="${pds_pin_nvim_pkgs:-$pds_dflt_pin_nvim_pkgs}"
-    set +a
-    # spell='http://ftp.vim.org/pub/vim/runtime/spell/de.utf-8.spl'
-    # 10k: https://raw.githubusercontent.com/neoclide/coc-sources/master/packages/word/10k.txt
-    #
-    d_conf_nvim="$HOME/.config/nvim"
-    d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
-    d_stash="$HOME/.local/share/stashed_nvim"
-    url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
-    shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
-    inst_log="$HOME/pds_have.log"
-    _stashes_have="$(ls "$d_stash" | sort | xargs)"
+function set_constants {
     T="\x1b[1;32;40m"
     M="\x1b[1;32m"
     I="\x1b[1;31m"
     L="\x1b[2;37m"
     O="\x1b[0m"
+    d_stash="$HOME/.local/share/stashed_nvim"
+    inst_log="$HOME/pds_install.log"
     d_="$T\nPDS Tools $O
-    $I
-    USAGE$O: pds [-x] [-s] [-h] <function|action> [params]
-    $I
-    SWITCHES$O:
-     -x:        Tracemode on
-     -s:        Stepmode on (confirm each action)
-     -h|--help: Help
+        $I
+        USAGE$O: pds [-x] [-s] [-h] <function|action> [params]
+        $I
+        SWITCHES$O:
+         -x:        Tracemode on
+         -s:        Stepmode on (confirm each action)
+         -h|--help: Help
 
-    $I
-    FUNCTIONS$O:
-    <FUNCS>
-    $I
-    ACTIONS$O:
-    <ACTIONS>
+        $I
+        FUNCTIONS$O:
+        <FUNCS>
+        $I
+        ACTIONS$O:
+        <ACTIONS>
 
-    ---
-    ${L}Functions change your environ, actions are processes.
-    If arg is not a function nor an action it will be run with activated pds bin dir. 
-    Examples: pds vi myfile or ls | pds fzf
-    $O
-    "
+        ---
+        ${L}Functions change your environ, actions are processes.
+        If arg is not a function nor an action it will be run with activated pds bin dir. 
+        Examples: pds vi myfile or ls | pds fzf
+        $O
+        "
 
-    det_help="
-    $I
-    REQUIREMENTS$O:
+    det_help="$I\nREQUIREMENTS$O:
+        - (Any) Linux - all binaries by conda
+        - The repo containing this file (anywhere)
+        - Using bash (we set "pds" convenience function into .bashrc). Other shells: do it manually.
+        $I
+        ACTION DETAILS$O:
+        $M
+        install$O:
+        - Ensures pds function within ~/.bashrc and/or ~/.zshrc
+        - Creates conda(mamba) environment at '$pds_d_mamba', with tools:
+        $L$pds_mamba_tools$O
+        - Installs NeoVim '$pds_v_nvim'
+        - Installs Nvim '$pds_distri' Distribution 
+        - Installs User Config
 
-    - (Any) Linux - all binaries by conda
-    - The repo containing this file (anywhere)
-    - Using bash (we set "pds" convenience function into .bashrc). Other shells: do it manually.
-    $I
-    ACTION DETAILS$O:
-    $M
-    install$O:
-    - Ensures pds function within ~/.bashrc and/or ~/.zshrc
-    - Creates conda(mamba) environment at '$pds_d_mamba', with tools:
-    $L$pds_mamba_tools$O
-    - Installs NeoVim '$pds_v_nvim'
-    - Installs Nvim '$pds_distri' Distribution 
-    - Installs User Config
-
-    Set install params into "'$here'/environ" or export them before install.
-    $M
-    clean-all [-f]$O:
-    - Removes $L${d_nvim_dirs[*]}$O
-    - Leaves the mamba env at '$pds_d_mamba' - remove manually 
-    - -f forces (e.g. to run non interactively)
-    $M
-    shell$O: Enter a shell with '$pds_d_mamba' activated
-    $M
-    status$O: Shows status of all installables and stashes
-    $M
-    stash <name>$O: Moves (mv) current config into $L$d_stash/<name>$O
-    $M
-    restore <name>$O: Restore current config by removing(!) existing, then copying back from stash
-    "
-    d_="${d_//    /}"
-    det_help="${det_help//    /}"
+        Set install params into "'$here'/environ" or export them before install.
+        $M
+        clean-all [-f]$O:
+        - Removes $L${d_nvim_dirs[*]}$O
+        - Leaves the mamba env at '$pds_d_mamba' - remove manually 
+        - -f forces (e.g. to run non interactively)
+        $M
+        shell$O: Enter a shell with '$pds_d_mamba' activated
+        $M
+        status$O: Shows status of all installables and stashes
+        $M
+        stash <name>$O: Moves (mv) current config into $L$d_stash/<name>$O
+        $M
+        restore <name>$O: Restore current config by removing(!) existing, then copying back from stash
+        "
+    d_="${d_//        /}"
+    det_help="${det_help//        /}"
 }
-set_vars
+function set_helper_vars {
+    source "$here/$pds_distri/environ" || true # maybe non needed, but show error
+    # spell='http://ftp.vim.org/pub/vim/runtime/spell/de.utf-8.spl'
+    # 10k: https://raw.githubusercontent.com/neoclide/coc-sources/master/packages/word/10k.txt
+    #
+    d_conf_nvim="$HOME/.config/nvim"
+    d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
+    url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
+    shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
+    _stashes_have="$(ls "$d_stash" | sort | xargs)"
+}
 
 function activate_mamba {
     # deactivate all condas, lsp install would fail with different node
@@ -199,7 +190,7 @@ function deactivate_mamba {
     conda deactivate
 }
 
-tmux_sock="/tmp/nvimsetup.sock"
+tmux_sock="/tmp/nvimsetup.$UID.sock"
 S="Space"
 t_() {
     local sock
@@ -390,19 +381,25 @@ function install_mamba_binary_pkg_mgr {
     $pds_pin_mamba && grep "${pds_v_mamba%%-*}" <<<"$hv_mamba" 1>/dev/null || die "$msg"
     have "Mamba Binary Pkg Env" "$hv_mamba $(disk "$pds_d_mamba")"
 }
-
-function ensure_tmux {
+function ensure_tool {
     local p1 t1
     t1="$pds_mamba_tools"
     p1="$mamba_prefer_system_tools"
-    pds_mamba_tools="tmux"
+    pds_mamba_tools="$1"
     mamba_prefer_system_tools=false
-    tmux -V | grep -q 'tmux 3' && mamba_prefer_system_tools=true
+    eval "$2" && mamba_prefer_system_tools=true
     install_binary_tools
     export pds_mamba_tools="$t1"
     export mamba_prefer_system_tools="$p1"
-    have Tmux "$(type tmux)"
+    have "$1" "$(type "$1")"
 }
+function ensure_tmux {
+    ensure_tool tmux "tmux -V | grep -q 'tmux 3'"
+}
+function ensure_git {
+    ensure_tool git "git --version"
+}
+
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
 function install_binary_tools {
     echo "tools $pds_mamba_tools"
@@ -574,7 +571,7 @@ function install_vim_user {
     T send-keys Escape
     TSK ':q!'
     TSK ':q!'
-    have "User Packages" '.config/pds/plugins/init.lua'
+    have "User Packages" "$S/plugins/init.lua"
 }
 
 function clean_all {
@@ -673,7 +670,7 @@ function Install {
         echo -e "${L}\nDocs: "
         echo -e "- https://mamba.readthedocs.io"
         echo -e "- https://astronvim.github.io"
-        echo -e "- https://github.com/AXGKl/pds $O"
+        echo -e "- $pds_repo $O"
         rm -f "$inst_log"
         return $?
     }
@@ -712,22 +709,48 @@ function shell {
 }
 function ensure_stash_dir { mkdir -p "$d_stash"; }
 
+function bootstrap_git {
+    # not even git on the system. We install the same mamba we'll anyway use for install.
+    # This relies on version compat of version params, though.
+    sh ensure_dirs
+    sh install_mamba_binary_pkg_mgr
+    sh activate_mamba
+    sh ensure_git
+}
+
 function bootstrap {
-    echo "bootstrapping $*"
+    local D grepo
+    D="$HOME/.config"
+    test -e "$D/pds" && die "Default dest $D/pds already on the system but environ was not sourced. Smells. Refusing."
+    type git || sh bootstrap_git
+    echo havegit
+    export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+    mkdir -p "$D"
+    (cd "$D" && { git clone "git@$pds_repo" || git clone "https://${pds_repo/://}"; })
+    "$D/pds/setup/pds.sh" install "$@"
 }
 
 function main {
-    ensure_stash_dir
     test "$1" == "in_tmux" && {
         in_tmux=true
         shift
     }
+    set_constants
+    test -n "${1:-}" && {
+        test -d "$here/../.git" -a -d "$here/../setup" -a -d "$here/../ftplugin" || {
+            shift
+            sh bootstrap "$@"
+            "$HOME/.config/pds/setup/pds.sh" "$@"
+            exit $?
+        }
+        set_helper_vars
+        ensure_stash_dir
+    }
+
     local action
     action="${1:-x}"
     shift
     case "$action" in
-        #A bootstrap:           Boostraps pds from this file only (no repo required)
-        bootstrap) bootstrap "$@" ;;
         #A clean-all [-f]:      Removes all nvim
         clean-all) clean_all "$@" ;;
         #A i|install:           Installs a personal dev sandbox on this machine
@@ -745,19 +768,5 @@ function main {
         *) show_help "$@" ;;
     esac
 }
-
-test "${1:-}" == "funcs" && {
-    unset have
-    return
-}
-
-# i(nstall)
-# a(ctivate)
-# d(eactivate)
-# clean-all [-f]
-# shell
-# stash <name>
-# restore <name> [have: '$_stashes_have']
-# status
 
 main "$@"
