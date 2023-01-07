@@ -465,48 +465,48 @@ function lsp() {
 }
 
 function install_astronvim {
-	#t resize-window -x 150 -y 50
-	local d t0 ts fn tss
-	t0=$(date +%s) # total
-	d="$HOME/.local/share/nvim/mason/bin"
-	test -e "$d" 2>/dev/null || {
-		# we just start it, install begins autom:
-		TSK "$nvs_d_mamba/bin/vi"
-		until (C | grep Mason); do sleep 0.2; done
-		hint "Waiting for: 'Mason' to disappear"
-		while (C | grep Mason >/dev/null); do sleep 0.2; done
-		sleep 0.1
-		TSK ':q!'
-		sleep 0.1
-	}
-	have "Mason Binary Pkg Tool"
-	TSK "$nvs_d_mamba/bin/vi"
-	d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
-	tss="python bash css javascript vim"
-	for ts in $(echo "$tss" | xargs); do
-		fn="$d/$ts.so"
-		test -e "$fn" && {
-			hint "Have $ts"
-			continue
-		}
-		TSK ":TSInstall $ts"
-		until test -e "$fn"; do sleep 0.1; done
-		sleep 0.1
-	done
-	have "Treesitter parsers" "$tss"
+    #t resize-window -x 150 -y 50
+    local d t0 ts fn tss
+    t0=$(date +%s) # total
+    d="$HOME/.local/share/nvim/mason/bin"
+    test -e "$d" 2>/dev/null || {
+        # we just start it, install begins autom:
+        TSK "$nvs_d_mamba/bin/vi"
+        until (C | grep Mason); do sleep 0.2; done
+        hint "Waiting for: 'Mason' to disappear"
+        while (C | grep Mason >/dev/null); do sleep 0.2; done
+        sleep 0.1
+        TSK ':q!'
+        sleep 0.1
+    }
+    have "Mason Binary Pkg Tool"
+    TSK "$nvs_d_mamba/bin/vi"
+    d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
+    tss="python bash css javascript vim help"
+    for ts in $(echo "$tss" | xargs); do
+        fn="$d/$ts.so"
+        test -e "$fn" && {
+            hint "Have $ts"
+            continue
+        }
+        TSK ":TSInstall $ts"
+        until test -e "$fn"; do sleep 0.1; done
+        sleep 0.1
+    done
+    have "Treesitter parsers" "$tss"
 
-	lsp bashls "bash-language-server"
-	lsp marksman
-	lsp pylsp
-	lsp sumneko_lua "lua-language-server"
-	lsp tsserver "typescript-language-server"
-	lsp vimls "vim-language-server"
-	T send-keys Escape
-	T send-keys Escape
-	TSK ':q!'
-	TSK ':q!'
-	start_time="$t0"
-	have t AstroNvim "$(ls --format=commas "$d")"
+    lsp bashls "bash-language-server"
+    lsp marksman
+    lsp pylsp
+    lsp sumneko_lua "lua-language-server"
+    lsp tsserver "typescript-language-server"
+    lsp vimls "vim-language-server"
+    T send-keys Escape
+    T send-keys Escape
+    TSK ':q!'
+    TSK ':q!'
+    start_time="$t0"
+    have t AstroNvim "$(ls --format=commas "$d")"
 }
 
 function install_vim_user {
