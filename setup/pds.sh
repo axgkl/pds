@@ -674,11 +674,11 @@ function Install {
         rm -f "$inst_log"
         return $?
     }
-    sh source_bashrc
     # in tmux from here
     T split-pane -h
     #T resize-window -x 200
     T resize-pane -x 110
+    sleep 0.1
     sh activate_mamba_in_tmux
     sh install_binary_tools
     sh install_neovim
@@ -719,7 +719,7 @@ function bootstrap_git {
     sh ensure_git
 }
 
-function bootstrap {
+function Bootstrap {
     local D grepo
     D="$HOME/.config"
     test -e "$D/pds" && die "Default dest $D/pds already on the system but environ was not sourced. Smells. Refusing."
@@ -754,7 +754,7 @@ function main {
         #A i|install:           Installs a personal dev sandbox on this machine
         i | install)
             if [[ $req_bootstrap == true ]]; then
-                sh bootstrap "$@"
+                sh Bootstrap "$@"
             else
                 sh Install "$@"
             fi
