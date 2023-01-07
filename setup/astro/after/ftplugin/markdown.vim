@@ -18,12 +18,10 @@ setlocal spelllang=en_us
 
 " only way to get both working, markdown syntax AND fenced code (TS):
 syntax off
-lua vim.notify_was = vim.notify
-" so that silent works:
 let g:markdown_fenced_languages = [ "vim", "python", "lua", "bash=sh", "javascript", "typescript", "yaml", "json" ]
-lua vim.notify = print
+lua vim.g.ui_notifications_enabled=false
 :silent lua astronvim.ui.toggle_syntax()
-lua vim.notify = vim.notify_was
+lua vim.g.ui_notifications_enabled=true
 
 let s:present_enabled = 0
 function! TogglePresent()
@@ -73,7 +71,7 @@ setlocal foldexpr=NestedMarkdownFolds()
 "
 " set nowrap " for long tables
 " set linebreak
-"
+" 1
 " let g:md_preview_tools = "/home/gk/inst/tb-my-editor/"
 " let g:mkdp_browser = g:md_preview_tools .. "browser.sh"
 "
