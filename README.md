@@ -12,7 +12,7 @@ It does not require elevated perms to install.
 Customization of NeoVim is based on a distri, currently [AstroNVim][astronvim]
 
 
-[Here][./setup/astro/README.md] is what you get, currently.
+[Here](./setup/astro/README.md) is what you get, currently.
 
 
 ---
