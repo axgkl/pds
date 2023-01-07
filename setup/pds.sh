@@ -745,8 +745,6 @@ function main {
     else
         req_boostrap=true
     fi
-    set +x
-    exit
 
     local action
     action="${1:-x}"
