@@ -39,34 +39,34 @@ function run_with_pds_bin_path {
 function handle_sourced {
     local func="${1:--h}" r=run_with_pds_bin_path
     case "$func" in
-    #F a|activate:    Adds pds bin dir to $PATH
-    a | activate) $r ;;
-    #F d|deactivate:  Removes from $PATH
-    d | deactivate) $r deact ;;
-    #F e|edit:        cd to user dir, edit init.lua
-    e | edit)
-        cd "$here/$pds_distri" || true
-        pds vi init.lua
-        ;;
-    #F pl|plugs-list: fzf over plugins dirs, cd to selected
-    pl | plugins-list)
-        $r
-        cd "$HOME/.local/share/nvim/site/pack/packer" && cd "$(fd . -t d -E .git | fzf)" && tree -L 2
-        ;;
-    #F ps|packer-sync: Syncs your plugins/init.lua
-    ps | packer-sync) vi +PackerSync ;;
-    -x | -s | -h | --help | i | install | shell | stash | restore | status)
-        "$here/pds.sh" "$@"
-        ;;
-    #F any, except action:  Runs the argument(s) with activated pds
-    *) $r "$@" ;;
+        #F a|activate:    Adds pds bin dir to $PATH
+        a | activate) $r ;;
+        #F d|deactivate:  Removes from $PATH
+        d | deactivate) $r deact ;;
+        #F e|edit:        cd to user dir, edit init.lua
+        e | edit)
+            cd "$here/$pds_distri" || true
+            pds vi init.lua
+            ;;
+        #F pl|plugs-list: fzf over plugins dirs, cd to selected
+        pl | plugins-list)
+            $r
+            cd "$HOME/.local/share/nvim/site/pack/packer" && cd "$(fd . -t d -E .git | fzf)" && tree -L 2
+            ;;
+        #F ps|packer-sync: Syncs your plugins/init.lua
+        ps | packer-sync) vi +PackerSync ;;
+        -x | -s | -h | --help | clean-all | i | install | shell | stash | restore | status)
+            "$here/pds.sh" "$@"
+            ;;
+        #F any, except action:  Runs the argument(s) with activated pds
+        *) $r "$@" ;;
     esac
 }
 $pds_is_sourced && {
     handle_sourced "$@"
     return $?
 }
-# --------------------------------------------------------------------------------------- process
+# --------------------------------------------------------------------------------------- PROCESS
 pds_is_traced="${pds_is_traced:-false}"
 pds_is_stepped="${pds_is_stepped:-false}"
 
@@ -80,97 +80,102 @@ test "$1" == "-s" && {
 }
 $pds_is_traced && set -x
 in_tmux=false
-set -a
-distri="${distri:-$pds_dflt_distri}"
-d="$here/$distri"
-test -d "$d" || {
-    echo "Not found: $d"
-    exit 1
+function set_vars {
+    set -a
+    distri="${distri:-$pds_dflt_distri}"
+    d="$here/$distri"
+    test -d "$d" || {
+        echo "Not found: $d"
+        exit 1
+    }
+    source "$d/environ"
+    pds_v_distri="${pds_v_distri:-$pds_dflt_v_distri}"
+    pds_d_mamba="${pds_d_mamba:-$pds_dflt_d_mamba}"
+    pds_v_nvim="${pds_v_nvim:-$pds_dflt_v_nvim}"
+    pds_v_mamba="${pds_v_mamba:-$pds_dflt_v_mamba}"
+    pds_v_shfmt="${pds_v_shfmt:-$pds_dflt_v_shfmt}"
+    pds_mamba_prefer_system_tools="${pds_mamba_prefer_system_tools:-$pds_dflt_mamba_prefer_system_tools}"
+    pds_mamba_tools="${pds_mamba_tools:-$pds_dflt_mamba_tools}"
+    pds_pin_mamba="${pds_pin_mamba:-$pds_dflt_pin_mamba}"
+    pds_pin_mamba_pkgs="${pds_pin_mamba_pkgs:-$pds_dflt_pin_mamba_pkgs}"
+    pds_pin_distri="${pds_pin_distri:-$pds_dflt_pin_distri}"
+    pds_pin_nvim_pkgs="${pds_pin_nvim_pkgs:-$pds_dflt_pin_nvim_pkgs}"
+    set +a
+    # spell='http://ftp.vim.org/pub/vim/runtime/spell/de.utf-8.spl'
+    # 10k: https://raw.githubusercontent.com/neoclide/coc-sources/master/packages/word/10k.txt
+    #
+    d_conf_nvim="$HOME/.config/nvim"
+    d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
+    d_stash="$HOME/.local/share/stashed_nvim"
+    url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
+    shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
+    inst_log="$HOME/pds_have.log"
+    _stashes_have="$(ls "$d_stash" | sort | xargs)"
+    T="\x1b[1;32;40m"
+    M="\x1b[1;32m"
+    I="\x1b[1;31m"
+    L="\x1b[2;37m"
+    O="\x1b[0m"
+    d_="$T\nPDS Tools $O
+    $I
+    USAGE$O: pds [-x] [-s] [-h] <function|action> [params]
+    $I
+    SWITCHES$O:
+     -x:        Tracemode on
+     -s:        Stepmode on (confirm each action)
+     -h|--help: Help
+
+    $I
+    FUNCTIONS$O:
+    <FUNCS>
+    $I
+    ACTIONS$O:
+    <ACTIONS>
+
+    ---
+    ${L}Functions change your environ, actions are processes.
+    If arg is not a function nor an action it will be run with activated pds bin dir. 
+    Examples: pds vi myfile or ls | pds fzf
+    $O
+    "
+
+    det_help="
+    $I
+    REQUIREMENTS$O:
+
+    - (Any) Linux - all binaries by conda
+    - The repo containing this file (anywhere)
+    - Using bash (we set "pds" convenience function into .bashrc). Other shells: do it manually.
+    $I
+    ACTION DETAILS$O:
+    $M
+    install$O:
+    - Ensures pds function within ~/.bashrc and/or ~/.zshrc
+    - Creates conda(mamba) environment at '$pds_d_mamba', with tools:
+    $L$pds_mamba_tools$O
+    - Installs NeoVim '$pds_v_nvim'
+    - Installs Nvim '$pds_distri' Distribution 
+    - Installs User Config
+
+    Set install params into "'$here'/environ" or export them before install.
+    $M
+    clean-all [-f]$O:
+    - Removes $L${d_nvim_dirs[*]}$O
+    - Leaves the mamba env at '$pds_d_mamba' - remove manually 
+    - -f forces (e.g. to run non interactively)
+    $M
+    shell$O: Enter a shell with '$pds_d_mamba' activated
+    $M
+    status$O: Shows status of all installables and stashes
+    $M
+    stash <name>$O: Moves (mv) current config into $L$d_stash/<name>$O
+    $M
+    restore <name>$O: Restore current config by removing(!) existing, then copying back from stash
+    "
+    d_="${d_//    /}"
+    det_help="${det_help//    /}"
 }
-source "$d/environ"
-pds_v_distri="${pds_v_distri:-$pds_dflt_v_distri}"
-pds_d_mamba="${pds_d_mamba:-$pds_dflt_d_mamba}"
-pds_v_nvim="${pds_v_nvim:-$pds_dflt_v_nvim}"
-pds_v_mamba="${pds_v_mamba:-$pds_dflt_v_mamba}"
-pds_v_shfmt="${pds_v_shfmt:-$pds_dflt_v_shfmt}"
-pds_mamba_prefer_system_tools="${pds_mamba_prefer_system_tools:-$pds_dflt_mamba_prefer_system_tools}"
-pds_mamba_tools="${pds_mamba_tools:-$pds_dflt_mamba_tools}"
-pds_pin_mamba="${pds_pin_mamba:-$pds_dflt_pin_mamba}"
-pds_pin_mamba_pkgs="${pds_pin_mamba_pkgs:-$pds_dflt_pin_mamba_pkgs}"
-pds_pin_distri="${pds_pin_distri:-$pds_dflt_pin_distri}"
-pds_pin_nvim_pkgs="${pds_pin_nvim_pkgs:-$pds_dflt_pin_nvim_pkgs}"
-set +a
-
-#
-d_conf_nvim="$HOME/.config/nvim"
-d_stash="$HOME/.local/share/stashed_nvim"
-url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
-shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
-inst_log="$HOME/pds_have.log"
-_stashes_have="$(ls "$d_stash" | sort | xargs)"
-d_="\x1b[1;32mPersonal Development Setup Tools\x1b[0m
-
-USAGE: pds [-x] [-s] [-h] <function|action> [params]
-
-SWITCHES:
- -x:        Tracemode on
- -s:        Stepmode on (confirm each action)
- -h|--help: Help
-
-
-FUNCTIONS:
-<FUNCS>
-
-ACTIONS:
-
- i(nstall)
- a(ctivate) 
- d(eactivate)
- clean-all
- shell
- stash <name> 
- restore <name> [have: '$_stashes_have']
- status
-
-Functions change your environ, actions are processes.
-If arg is not a function nor an action it will be run with activated pds bin dir. 
-Examples: pds vi myfile or ls | pds fzf
-"
-
-det_help='
-REQUIREMENTS:
-
-- (Any) Linux - all binaries by conda
-- The repo containing this file (anywhere)
-- Using bash (we set "pds" convenience function into .bashrc). Other shells: do it manually.
-
-ACTION DETAILS:
-
-Install:
-- Ensures pds function to this script in .bashrc
-- Creates conda(mamba) environment at '$pds_d_mamba', with tools:
-'$pds_mamba_tools'
-- Installs NeoVim '$pds_v_nvim'
-- Installs Nvim '$pds_distri' Distribution 
-- Installs User Config
-
-Set install params into "'$here'/environ" or export them before install.
-
-Clean All:
-- Removes .config/nvim, .local/share/nvim and .local/state/nvim
-- Leaves the mamba env at '$pds_d_mamba' - remove manually 
-
-Shell: Enter a shell with '$pds_d_mamba' activated
-
-Status: Shows status of all installables and stashes
-
-Stash <name>: Moves (mv) current config into '$d_stash'/<name>
-
-Restore: <name>: Restore current config by removing(!) existing, then copying back from stash
-'
-
-# spell='http://ftp.vim.org/pub/vim/runtime/spell/de.utf-8.spl'
-# 10k: https://raw.githubusercontent.com/neoclide/coc-sources/master/packages/word/10k.txt
+set_vars
 
 function activate_mamba {
     # deactivate all condas, lsp install would fail with different node
@@ -212,9 +217,9 @@ function T {
 }
 function C { T capture-pane -t 2 -p; }
 
-# tmux send-key convenience, this way we can send anything w/o space problems:
 function hex {
-    # appends an Enter (the a):
+    # tmux send-key convenience, this way we can send anything w/o space problems:
+    # -> safer way to send to tmux - appends an Enter (the a):
     python -c 'import sys; l=[hex(ord(c))[2:] for c in sys.argv[1]];print(" ".join(l) + " a", end="")' "$1"
 }
 
@@ -252,9 +257,7 @@ function waitfor {
 }
 
 # pretty output:
-function hint {
-    echo -e "\x1b[2;37m$*\x1b[0m"
-}
+function hint { echo -e "$L$*$O"; }
 function sh {
     echo -e "\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
     local m
@@ -320,15 +323,18 @@ function install_plugins {
     nvim +PackerSync
 }
 
-function set_pds_function_to_bashrc {
-    local a fn
-    fn="$HOME/.bashrc"
-    a='function pds { source "'$here'/pds.sh" "$@"; }'
-    grep -A 3 'function pds' <"$fn" | grep source | head -n 1 | grep "$here" 1>/dev/null 2>&1 || {
-        echo "writing pds function to .bashrc => source .bashrc"
-        echo "$a" >>"$HOME/.bashrc"
-    }
-    have '.bashrc' "$a"
+function set_pds_function_to_user_shell {
+    local a fn h
+    for fn in "$HOME/.bashrc" "$HOME/.zshrc"; do
+        test -e "$fn" || continue
+        h="$h $(basename "$fn")"
+        a='function pds { source "'$here'/pds.sh" "$@"; }'
+        grep -A 3 'function pds' <"$fn" | grep source | head -n 1 | grep "$here" 1>/dev/null 2>&1 || {
+            echo "writing pds function to $fn => pls source it"
+            echo "$a" >>"$fn"
+        }
+    done
+    have 'Shell function' "$a in $h"
 }
 function ensure_dirs {
     local dd
@@ -413,6 +419,16 @@ function install_binary_tools {
             test "$mamba_prefer_system_tools" == "true" && type "$name" 2>/dev/null 1>&2 && {
                 spkgs="$spkgs $pkg"
                 continue
+            }
+        }
+        # huge - don't install when not needed:
+        test "$pkg" == "gxx_linux-64" && {
+            test "$mamba_prefer_system_tools" == "true" && {
+                type cpp gcc cc 2>/dev/null && {
+                    spkgs="$spkgs $pkg"
+                    hint 'skipping install of C build toolchain'
+                    continue
+                }
             }
         }
         pkgs="$pkgs $pkg"
@@ -562,13 +578,25 @@ function install_vim_user {
 }
 
 function clean_all {
-    set -x
-    rm -rf "$d_conf_nvim"
-    rm -rf "$HOME/.local/share/nvim"
-    rm -rf "$HOME/.local/state/nvim"
-    rm -rf "$HOME/.cache/nvim"
-    set +x
+    local have
+    have=false
+    test "${1:-x}" == "-f" || {
+        for d in "${d_nvim_dirs[@]}"; do test -e "$d" && have=true; done
+        $have && {
+            for d in "${d_nvim_dirs[@]}"; do echo "$d"; done
+            echo 'Really remove (consider stash) [y/N]? '
+            read -r d
+            test "${d:-x}" == "y" || die "unconfirmed"
+        }
+    }
+    for d in "${d_nvim_dirs[@]}"; do
+        test -e "$d" || continue
+        set -x
+        rm -rf "$d"
+        set +x
+    done
 }
+
 function stash {
     local name
     name="${1:?Require name of stash}"
@@ -602,10 +630,13 @@ function unstash {
 }
 
 function show_help {
-    local f F
+    local f F a A
     F="F"
-    f="$(grep "#$F " <"$me" | sed -e 's/#F//g')"
-    echo -e "${d_/<FUNCS>/$f}"
+    A="A"
+    f="$(grep "#$F " <"$me" | sed -e 's/#F//g' | sed -e 's/^    //g')"
+    a="$(grep "#$A " <"$me" | sed -e 's/#A//g' | sed -e 's/^    //g')"
+    f="$(echo -e "${d_/<FUNCS>/$f}")"
+    echo -e "${f/<ACTIONS>/$a}"
 
     if [[ "${1:-x}" == "--help" ]]; then
         echo -e "${det_help}"
@@ -629,7 +660,7 @@ function Install {
         }
         export SHELL="/bin/bash" && T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
         start_time=$(date +%s)
-        sh set_pds_function_to_bashrc
+        sh set_pds_function_to_user_shell
         echo -e '\x1b[1;38;5;119mFinished.\x1b[0m'
         echo -e '\n\nInstall Settings\n'
         env | grep pds_ | sort
@@ -637,11 +668,12 @@ function Install {
         echo -e '\n\nInstall Progress Log\n'
         cat "$inst_log"
         echo ''
-        echo -e "- \x1b[1m$pds_d_mamba/bin/vi\x1b[0m to start."
-        echo -e "- \x1b[1mpds <a|shell>\x1b[0m then vi to start with all tools available\n"
-        echo "Docs: "
-        echo "- https://mamba.readthedocs.io"
-        echo "- https://astronvim.github.io"
+        echo -e "- Source your ~/.bashrc or ~/.zshrc, to have pds function available."
+        echo -e "- ${M}pds vi$O to start editor with all tools."
+        echo -e "${L}\nDocs: "
+        echo -e "- https://mamba.readthedocs.io"
+        echo -e "- https://astronvim.github.io"
+        echo -e "- https://github.com/AXGKl/pds $O"
         rm -f "$inst_log"
         return $?
     }
@@ -690,14 +722,21 @@ function main {
     action="${1:-x}"
     shift
     case "$action" in
-    clean-all) clean_all ;;
-    i | install) Install "$@" ;;
-    shell) shell ;;
-    stash) stash "$@" ;;
-    r | restore) unstash "$@" ;;
-    status) status "$@" ;;
-    --help) show_help --help ;;
-    *) show_help "$@" ;;
+        #A clean-all [-f]:      Removes all nvim
+        clean-all) clean_all "$@" ;;
+        #A i|install:           Installs a personal dev sandbox on this machine
+        i | install) Install "$@" ;;
+        #A shell:               Enters a shell with pds tools available
+        shell) shell ;;
+        #A stash <name>:        Moves away an existing install, restorable
+        stash) stash "$@" ;;
+        #A r|restore <name>:    Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
+        r | restore) unstash "$@" ;;
+        #A status:              Status infos
+        status) status "$@" ;;
+        #A -h|--help:           Help (detailed with --help)
+        --help) show_help --help ;;
+        *) show_help "$@" ;;
     esac
 }
 
@@ -705,4 +744,14 @@ test "${1:-}" == "funcs" && {
     unset have
     return
 }
+
+# i(nstall)
+# a(ctivate)
+# d(eactivate)
+# clean-all [-f]
+# shell
+# stash <name>
+# restore <name> [have: '$_stashes_have']
+# status
+
 main "$@"

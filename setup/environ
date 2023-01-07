@@ -1,7 +1,7 @@
 # vim:ft=sh
 # shellcheck disable=SC2034
 pds_dflt_distri="astro"
-pds_dflt_d_mamba="$HOME/nvim"
+pds_dflt_d_mamba="$HOME/pds"
 pds_dflt_v_mamba="22.9.0-2"
 pds_dflt_v_nvim="0.8.1"
 pds_dflt_v_shfmt="3.6.0"

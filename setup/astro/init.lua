@@ -124,7 +124,7 @@ local config = {
 				-- we ahve bashls:
 				-- b.code_actions.shellcheck,
 				-- b.diagnostics.shellcheck,
-				b.formatting.shfmt.with({ extra_args = { "-i", "4" } }),
+				b.formatting.shfmt.with({ extra_args = { "-i", "4", "-ci" } }),
 				-- python
 				b.formatting.blue,
 				b.formatting.stylua,
