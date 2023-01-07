@@ -737,6 +737,7 @@ function main {
         shift
     }
     set_constants
+    set -x
     if [[ -d "$here/../.git" && -d "$here/../setup" && -d "$here/../ftplugin" ]]; then
         req_bootstrap=false
         set_helper_vars
@@ -744,6 +745,8 @@ function main {
     else
         req_boostrap=true
     fi
+    set +x
+    exit
 
     local action
     action="${1:-x}"
