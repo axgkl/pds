@@ -737,8 +737,8 @@ function main {
         shift
     }
     set_constants
-    req_bootstrap=false
     if [[ -d "$here/../.git" && -d "$here/../setup" && -d "$here/../ftplugin" ]]; then
+        req_bootstrap=false
         set_helper_vars
         ensure_stash_dir
     else
