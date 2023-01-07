@@ -15,7 +15,7 @@ fi
 
 #
 here="$(builtin cd "$(dirname "$me")" && pwd)"
-. "$here/environ"
+test -e "$here/environ" && . "$here/environ"
 
 pds_d_mamba="${pds_d_mamba:-$pds_dflt_d_mamba}"
 pds_distri="${pds_distri:-$pds_dflt_distri}"
@@ -55,7 +55,7 @@ function handle_sourced {
             ;;
         #F ps|packer-sync: Syncs your plugins/init.lua
         ps | packer-sync) vi +PackerSync ;;
-        -x | -s | -h | --help | clean-all | i | install | shell | stash | restore | status)
+        -x | -s | -h | --help | bootstrap | clean-all | i | install | shell | stash | restore | status)
             "$here/pds.sh" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
@@ -712,6 +712,10 @@ function shell {
 }
 function ensure_stash_dir { mkdir -p "$d_stash"; }
 
+function bootstrap {
+    echo "bootstrapping $*"
+}
+
 function main {
     ensure_stash_dir
     test "$1" == "in_tmux" && {
@@ -722,6 +726,8 @@ function main {
     action="${1:-x}"
     shift
     case "$action" in
+        #A bootstrap:           Boostraps pds from this file only (no repo required)
+        bootstrap) bootstrap "$@" ;;
         #A clean-all [-f]:      Removes all nvim
         clean-all) clean_all "$@" ;;
         #A i|install:           Installs a personal dev sandbox on this machine
