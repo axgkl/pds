@@ -1,15 +1,20 @@
 # AX AstroNVim Flavor
 
+
 Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 
-<Enter> expands, <TAB> expands all.
+Usage:
+
+- `<Enter>` expands,
+- `<TAB>` expands all.
+- `,P` Read in browser (when on your machine)
 
 ## Leader Keys
 
 - `<SPACE>`: AstroNVim's map leader. Left unchanged.
 - `,`: Additional Meta Key for custom shortcuts
 
-👉 Type those, to see keychords starting with them (whichkey plugin)
+👉 Type those, to [see keychords starting with them][whichkey]
 
 ## Config Files
 
@@ -29,8 +34,8 @@ All in ~/.config/nvim/lua/user
 
 Some defined in our `init.lua` (mappings, lsp.mappings) most still in `polish.vim`
 
-👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings
-👉 `:map` lists them all
+👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings 👉 `:map`
+lists them all
 
 
 
@@ -43,8 +48,6 @@ Foldmethod is "indent", globally, except for markdown
  
 ### Navigation
 
-- `0`       Start of line
-- `1`       First character in line (`^`)
 - `;`       Currently open buffers
 - `<Ctl>o`  Go back 
 - `<Alt>o`  Go forward
@@ -52,7 +55,7 @@ Foldmethod is "indent", globally, except for markdown
 - `<Alt>w`  Close buffer
 - `,c`      Close window, close buffer
 - `,d`      Done, write quit.
-- `fj`      Better line concat, replacing J
+- `G`       Jump to end of file - except to string `"begin__archive"` (but with ONE underscore), when found in buffer
 - `J` `K`   Paragraph (next, previous)
 - `H` `L`   Window left/right selection
 - `,g`      Smart open[1]
@@ -63,6 +66,18 @@ Foldmethod is "indent", globally, except for markdown
 
 [1]: e.g. in browser if URL, or nvim if file, resolves md links) via smart_vi_open.py
 
+### Editing
+
+- `0`       Start of line
+- `1`       First character in line (`^`)
+- `fj`      Better line concat, replacing J
+- `jk`      Same as `<ESC>` in insert mode
+- `ds]`     [Remove delimiters smartly (e.g. here: [foo bar] -> foo bar)][vim-surround] 
+- `ysiw]`   [Wrap word into (e.g. here: foo -> [foo])][vim-surround]
+- `,s`      [Autosave mode on: Write after insert mode leave][autosave]
+- `ga,`     [Align selected lines on sth, e.g. here: on ","][tabularize]
+
+
 ### LSP
 
 - `gd`      Goto definition (e.g. over function name)
@@ -71,6 +86,8 @@ Foldmethod is "indent", globally, except for markdown
 - `<Spc>lR` Find references
 - `s`       Hover (code context help)
 
+👉 `:LSPInstall`
+
 ### Misc
 
 - `,1`      Sources our init.lua
@@ -78,12 +95,27 @@ Foldmethod is "indent", globally, except for markdown
 - `,3`      Terminal in dir of current buffer
 - `,C`      Colors (theme picker)
 - `,r`      Evaluates as python, see https://github.com/axiros/vpe
-- `,s`      Autosave mode on
-- `ysiw]`   [Wrap][vim-surround] word into (e.g. here: foo -> [foo])
-- `ds]`     Remove [delimiters][vim-surround] smartly (e.g. here: [foo bar] -> foo bar)
-
 
 ### File Type Specific
+
+#### Man Pages
+
+You can view man pages in vim like so:
+
+Create this script `vman` within your path and optionally `alias man=vman`:
+
+```bash
+#!/usr/bin/env bash
+if [ $# -eq 0 ]; then
+	echo "What manual page do you want?"
+	exit 0
+elif ! man -w "$@" >/dev/null; then
+	# Check that manpage exists to prevent visual noise.
+	exit 1
+fi
+
+${EDITOR:-vi} -c "SuperMan $*"
+```
 
 #### Markdown
 
@@ -99,17 +131,28 @@ Foldmethod is "indent", globally, except for markdown
 
 ---
 
+## Vim Helpers
+
+- `Redir: <cmd>` redirects command output to scratch buffer. Ex: `:Redir !ls -lta`
+
+## Lua Helpers
+
+Available as `:lua require('user.utils')` or `:lua UU`
+
+- `dump(<table)`: Prints table recursively. Ex: `:Redir lua UU.dump(vim.lsp)`
+
+
+
 ## Server Operation
 
 ### Clipbaord
 
-To copy selected stuff *OUT* of a vi session running on a server, we have set
-+unnamedplus. I.e. nvim tries X tools to copy into your clipboard, on y.
+To copy selected stuff *OUT* of a vi session running on a server, we have set +unnamedplus. I.e.
+nvim tries X tools to copy into your clipboard, on y.
 
-=> Currently we expect a forwarded X session (`ssh -XY <host>` or via your
-`~/.ssh/config`)
+=> Currently we expect a forwarded X session (`ssh -XY <host>` or via your `~/.ssh/config`)
 
-> ❗ A compromised server might attack your X session. Decide for yourself.
+> ❗ A compromised server might attack your X session. Decide for yourself.  
 > `set mouse=n` gives you mouse based selection and copying.
 
 ---
@@ -146,14 +189,15 @@ To move it away to a backup dir:
 - `:echo &tw`    Shows the set value of a vim variable 
 - `vip<Ctrl>VI`  Block mode vertical editing (rendered for all selected lines after <ESC>)
 
-And 1 Mio others.  
+...and 1 Mio others. [Live is a lesson. You learned it when you're through][lp] 🥲
 
 ----
 
-> 👉 Live is a lesson. You've learned it when you're through.
-
-
-----
-
+## Links
 
 [vim-surround]: https://github.com/tpope/vim-surround
+[autosave]: https://github.com/Pocco81/auto-save.nvim
+[whichkey]: https://github.com/folke/which-key.nvim
+[tabularize]: https://github.com/godlygeek/tabular
+[lp]: https://www.youtube.com/watch?v=HtPL2YhK6h0&t=165s
+

@@ -36,29 +36,6 @@ local config = {
 
 	-- Set colorscheme
 	colorscheme = "default_theme",
-	-- Override highlight groups in any theme
-	highlights = {
-		colors = {
-			bg = "#abb2bf",
-		},
-
-		-- duskfox = { -- a table of overrides/changes to the default
-		--   Normal = { bg = "#000000" },
-		-- },
-		default_theme = function(highlights) -- or a function that returns a new table of colors to set
-			local C = require("default_theme.colors")
-
-			-- -- New approach instead of diagnostic_style
-			-- highlights.DiagnosticError.italic = true
-			-- highlights.DiagnosticHint.italic = true
-			-- highlights.DiagnosticInfo.italic = true
-			-- highlights.DiagnosticWarn.italic = true
-
-			highlights.Normal = { fg = C.fg, bg = C.bg }
-			return highlights
-		end,
-	},
-
 	-- set vim options here (vim.<first_key>.<second_key> =  value)
 	options = {
 		opt = {
@@ -129,6 +106,8 @@ local config = {
 	--
 	plugins = {
 		-- All other entries override the setup() call for default plugins
+
+		["better_escape"] = { mapping = { "jk" } }, -- no jj
 		["null-ls"] = function(config)
 			local null_ls = require("null-ls")
 			local methods = require("null-ls.methods")
@@ -145,7 +124,7 @@ local config = {
 				-- we ahve bashls:
 				-- b.code_actions.shellcheck,
 				-- b.diagnostics.shellcheck,
-				b.formatting.shfmt,
+				b.formatting.shfmt.with({ extra_args = { "-i", "4" } }),
 				-- python
 				b.formatting.blue,
 				b.formatting.stylua,
@@ -319,7 +298,7 @@ local config = {
 			-- TAB IS Ctrl-I -> this would loose jump previous:
 			--["<Tab>"] = { "za", desc = "Toggle Fold" },
 			[",s"] = { ":ASToggle<CR>", desc = "Toggle Autosave (all buffers)" },
-			["<S-Tab>"] = { "zR", desc = "Open ALL Folds" },
+			["<S-Tab>"] = { "zM", desc = "Close ALL Folds" },
 			["<C-s>"] = { ":w!<cr>", desc = "Save File" },
 			["<M-0>"] = { "^", desc = "Jump to first character in line" },
 			--["<CR>"] = { "o<Esc>k", desc = "Insert new lines w/o insert mode" },
@@ -381,11 +360,23 @@ local config = {
 		local cnf = require("auto-save.config").opts
 		cnf.enabled = false
 		cnf.write_all_buffers = false
+
+		-- all our older viml style configs:
 		vim.cmd("source ~/.config/nvim/lua/user/polish.vim")
-		-- vim.cmd("echo '" .. vim.bo.filetype .. "'")
-		-- vim.cmd("echo 'foo'")
+
+		-- lsp logging - unreadable without this all on one line:
 		vim.lsp.set_log_level("info")
 		require("vim.lsp.log").set_format_func(vim.inspect)
+
+		-- don't get flooded by diag
+		vim.diagnostic.config({
+			virtual_text = false,
+		})
+
+		-- Show line diagnostics automatically in hover window
+		vim.o.updatetime = 250
+		--say CursorHold,CursorHoldI * to get it while typing
+		vim.cmd([[autocmd CursorHold * lua vim.diagnostic.open_float(nil, {focus=false})]])
 	end,
 }
 

@@ -1,6 +1,7 @@
 local M = {}
 -- require "os"
---  e.g. require('user.utils').dump(vim.lsp)
+--  e.g. :lua require('user.utils').dump(vim.lsp)
+--  or : UU.dump(vim.lsp), we have UU mapped to this (,E evaluates into buffer)
 M.dump = function(...)
 	local objects = vim.tbl_map(vim.inspect, { ... })
 	print(unpack(objects))

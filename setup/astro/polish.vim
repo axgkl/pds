@@ -16,7 +16,8 @@ nnoremap ,d        :wq!<CR>
 nnoremap ,u        :UndotreeToggle<CR>
 nnoremap ,1        :source ~/.config/nvim/init.lua<CR>
 nnoremap ,2        :edit ~/.config/nvim/lua/user/init.lua<CR>
-nnoremap ,c        :close<CR> " close just a split or a tab
+" close just a split or a tab
+nnoremap ,c        :close<CR> 
 "folds
 nnoremap <C-i>   zR
 " all close:
@@ -33,6 +34,7 @@ nnoremap fj $mx<cmd>join<CR>0$[`dmx
 "nmap ,g viW"ay:lua require('utils').smart_open([[<C-R>a]])<CR><CR>
 nmap ,g viW"ay:lua require('user.utils').smart_open([[<C-R>a]])<CR>
 vmap ,g :lua require('user.utils').smart_open([[visualsel]])<CR><CR>
+"Replaced by :ASToggle
 "nmap ,s :lua require('user.utils').autosave()<CR>
 
 " tabularize:
@@ -42,7 +44,7 @@ nmap tt  vip:s:,,:\|:ge<CR>vip:Tabularize/\|<CR>
 " markdown table
 nnoremap ,ta       vip:s/$/\|/ge<CR>vip:s:,,:\|:ge<CR>vip:s:^:\|:ge<CR>vip:s:\|\|:\|:ge<CR>vip:Tabularize/\|<CR> 
 " close window:
-nnoremap <M-w> :bd<CR>
+nnoremap <M-w> :bd!<CR>
 nnoremap S :%s//gI<Left><Left><Left>
 " move between splits with alt-jk
 nnoremap <M-j> <C-W><C-h>
@@ -88,7 +90,9 @@ nmap ,w  :FormatAndSave<CR>
 "save all buffers
 nmap ,W  :wa<CR> 
 function! s:format_and_save()
+    " did NOT work (Not supported msgs were still popping up): vim.g.ui_notifications_enabled=false
     lua vim.notify = print
+    " for lua, every ,w is an undo because of that, even with NO change. But only for lua. tolerated:
     silent! lua k=vim.notify; vim.notify=print;vim.lsp.buf.format { async = true};vim.notify=k
     "Like ":write", but only write when the buffer has been changed:
     silent update
@@ -146,28 +150,6 @@ endfunction
 command! -nargs=+ SuperMan call SuperMan(<f-args>)
 
 
-
-
-
-let g:EasyMotion_do_mapping = 0 " Disable default mappings
-
-" Jump to anywhere you want with minimal keystrokes, with just one key binding.
-" `s{char}{label}`
-"nmap s <Plug>(easymotion-overwin-f)
-" or
-" `s{char}{char}{label}`
-" Need one more keystroke, but on average, it may be more comfortable.
-nmap s <Plug>(easymotion-overwin-f2)
-
-" Turn on case-insensitive feature
-let g:EasyMotion_smartcase = 1
-
-" JK motions: Line motions
-map <Leader>j <Plug>(easymotion-j)
-map <Leader>k <Plug>(easymotion-k)
-nnoremap <leader>p m`o<ESC>p``
-let g:better_escape_shortcut = ['ak']
-let g:better_escape_interval = 1
 "TSDisableAll indent
 " -----------------------------------------------------------------
 "colorscheme iceberg
@@ -181,13 +163,22 @@ autocmd! FileType TelescopeResults setlocal nofoldenable
 " colorscheme pinkmare
 " autopairing: consider tmsvg/pear-tree
 "
-nnoremap          ,r  :Vpe<CR>
-xnoremap <silent> ,r  :Vpe<CR>
+nnoremap          ,r  :PythonEval<CR>
+xnoremap <silent> ,r  :PythonEval<CR>
+nnoremap          ,E  :EvalInto<CR>
+
 
 " we often have old stuff at end of files:
 " go all down, then (<bar>, next cmd) search up but silent on no found:
+" hi Error guifg=#010101
+" hi ErrorMsg guifg=#010101
+" hi DiagnosticError guifg=#010101
+" hi DiagnosticWarn  guifg=Green
+" hi DiagnosticInfo  guifg=Blue
+" hi DiagnosticHint  guifg=Green
 
-colorscheme rose-pine
+"colorscheme rose-pine
+"colorscheme tokyonight
 
-
-nnoremap  G      :$<CR><bar>:silent! ?begin_archive<CR>
+" leave here:
+nnoremap  G        :$<CR><bar>:silent! ?begin_archive<CR>

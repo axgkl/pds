@@ -1,26 +1,25 @@
 return {
-	-- Add plugins, the packer syntax without the "use"
 	-- For markdown:
 	-- "AXGKl/vim-minimd",
 	-- colors:
-	"ellisonleao/gruvbox.nvim",
-	"joshdick/onedark.vim",
+	"arcticicestudio/nord-vim",
 	"cocopon/iceberg.vim",
 	"cormacrelf/vim-colors-github",
+	"ellisonleao/gruvbox.nvim",
+	"folke/tokyonight.nvim",
+	"dracula/vim",
+	"joshdick/onedark.vim",
 	"matsuuu/pinkmare",
 	"rebelot/kanagawa.nvim",
 	"rose-pine/neovim",
+
+	-- misc:
 	"axiros/vpe",
+	-- markdown / presentations:
 	"mikeboiko/vim-markdown-folding",
 	"junegunn/limelight.vim",
 	"junegunn/goyo.vim",
-	"mbbill/undotree",
-	"Pocco81/auto-save.nvim",
-	"ThePrimeagen/refactoring.nvim",
-	"arcticicestudio/nord-vim",
-	"dracula/vim",
-	"godlygeek/tabular",
-	"kshenoy/vim-signature",
+	"tpope/vim-markdown",
 	{
 		"iamcco/markdown-preview.nvim",
 		run = "cd app && npm install",
@@ -30,10 +29,16 @@ return {
 		ft = { "markdown" },
 	},
 
+	-- misc
+	"mbbill/undotree",
+	"Pocco81/auto-save.nvim",
+	"ThePrimeagen/refactoring.nvim",
+	"godlygeek/tabular",
+	"kshenoy/vim-signature",
+
 	--"masukomi/vim-markdown-folding",
 	"tpope/vim-repeat",
 	"tpope/vim-surround",
-	"tpope/vim-markdown",
 	-- "easymotion/vim-easymotion",
 	--"edluffy/hologram.nvim", (images in buffers)
 	-- "voldikss/vim-floaterm",
@@ -51,17 +56,4 @@ return {
 			cmp.setup(config)
 		end,
 	},
-
-	-- You can disable default plugins as follows:
-	-- ["goolord/alpha-nvim"] = { disable = true },
-
-	-- You can also add new plugins here as well:
-	-- { "andweeb/presence.nvim" },
-	-- {
-	--   "ray-x/lsp_signature.nvim",
-	--   event = "BufRead",
-	--   config = function()
-	--     require("lsp_signature").setup()
-	--   end,
-	-- },
 }
