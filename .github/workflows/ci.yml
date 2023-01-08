@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: bootstrap
         shell: bash -l {0}
-        run: "test/test_bootstrap.sh"
+        run: "wget 'https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh' && chmod +x pds.sh && ./pds install"
       - name: pds_script
         shell: bash -l {0}
-        run: "test/test_pds_script.sh"
+        run: "cd $HOME/.config/pds && test/test_pds_script.sh"
