@@ -52,12 +52,17 @@ function parse_args() {
     done
 }
 function testit {
+    local test_start ret
+    test_start=$(date +%s)
     echo -e "\x1b[37;2m[$1] ${cmd[*]} $asserts\x1b[0m"
     if [[ -n "$asserts" ]]; then
         eval "${cmd[*]} $asserts"
     else
         "${cmd[@]}"
     fi
+    ret=$?
+    test_dt=$(($(date +%s) - test_start))
+    return $ret
 }
 function ✔️ {
     parse_args "$@"

@@ -105,6 +105,7 @@ function set_constants {
     I="\x1b[1;31m"
     L="\x1b[2;37m"
     O="\x1b[0m"
+    tmx_pane=1
     d_stash="$HOME/.local/share/stashed_nvim"
     d_conf_nvim="$HOME/.config/nvim"
     d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
@@ -226,7 +227,7 @@ function TSK {
     local cmd
     hint "Sending keys: $1"
     cmd="$(hex "$1")"
-    eval T -q send-keys -t 2 -H "$cmd"
+    eval T -q send-keys -t "$tmx_pane" -H "$cmd"
 }
 
 # tmux send comand, return when done
@@ -248,6 +249,7 @@ function TMIF {
 function waitfor {
     hint "Waiting for: $1"
     while ! test -e "$1"; do sleep 0.1; done
+    rm -f "$1"
     test "$2" == "then" && {
         shift
         shift
@@ -297,7 +299,7 @@ function have {
         shift
         b=t
     } # time is total
-    dt=$(($(date +%s) - $start_time))
+    dt=$(($(date +%s) - start_time))
     start_time=$(date +%s)
     local msg h="$1"
     shift
@@ -511,13 +513,14 @@ function clone_astronvim {
 function lsp() {
     local fn
     fn="$HOME/.local/share/nvim/mason/bin/${2:-$1}"
-    test -e "$fn" && return 0
-    echo "lsp install $1 ($2)"
-    sleep 0.5
-    T send-keys Escape
-    TSK ":LspInstall $1"
-    until test -e "$fn"; do sleep 0.1; done
-    T send-keys Escape
+    test -e "$fn" || {
+        echo "lsp install $1 ($2)"
+        sleep 0.5
+        T send-keys Escape
+        TSK ":LspInstall $1"
+        until test -e "$fn"; do sleep 0.1; done
+        T send-keys Escape
+    }
     have LSP "$1"
 }
 
@@ -669,9 +672,7 @@ function in_tmux {
     sleep 0.5
     # important. Otherwise we get 'Press Enter to continue...'
     T resize-window -y 40 -x 100
-    T send-keys "$@"
-    T send-keys Enter
-
+    TSK "$*"
     local out outo
     out=''
     outo=''
@@ -717,8 +718,10 @@ function Install {
         rm -f "$inst_log"
         return $?
     }
+    notify-send foo
     # in tmux from here
     T split-pane -h
+    tmx_pane=2
     #T resize-window -x 200
     T resize-pane -x 110
     sleep 0.1

@@ -8,7 +8,10 @@ function bootstrap_nvim_again {
     ✔️ chmod +x 'pds.sh'
     ❌ ./pds.sh install
 }
-
+function install_idempotent {
+    ✔️ pds i \| grep LSP \| grep tsserver
+    ✔️ eval '[[ "'${test_dt}'" -lt 60 ]]' - "reinstall took too long"
+}
 function pds_avail { ✔️ pds; }
 function vi_avail { ✔️ pds vi --version \| grep 'NVIM\ v'; }
 function pds_no_args {
@@ -64,6 +67,7 @@ function main {
     test_match="${1:-}"
     #
     tst bootstrap_nvim_again
+    tst install_idempotent
     tst pds_avail
     tst vi_avail
     tst pds_no_args
