@@ -24,7 +24,7 @@ if [ -n "$ZSH_VERSION" ]; then
     grep -q "toplevel" <<<"$ZSH_EVAL_CONTEXT" && pds_is_sourced=true
 elif [ -n "${BASH_SOURCE[0]}" ]; then
     me="${BASH_SOURCE[0]}"
-    grep -q "bash" <<<"$0" && pds_is_sourced=true
+    test "$me" == "$0" || pds_is_sourced=true
 else
     echo "Only zsh or bash. Sry!"
     return 2>/dev/null || exit 1
@@ -37,7 +37,7 @@ function run_with_pds_bin_path {
     # conda activate got slow
     local p="$pds_d_mamba/bin"
     if [[ "$PATH" != *"$p"* ]]; then
-        echo "pds tools at $p in \$PATH"
+        echo "pds tools at $p in \$PATH" >2
         export PATH="$p:$PATH" # our bins are newer
     fi
     test -z "$1" && return
@@ -254,7 +254,7 @@ function waitfor {
 
 # pretty output:
 function hint { echo -e "$L$*$O"; }
-function fin { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
+function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
 function sh {
     echo -e "\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
     local m
@@ -619,12 +619,13 @@ function stash {
     name="${1:?Require name of stash}"
     local D
     D="${d_stash:?req stash}/$name"
+    test -e "$D" && die "Already present: $D"
     set -x
     rm -rf "$D"
     mkdir -p "$D"
     mv "$d_conf_nvim" "$D/nvim"
-    mv ".local/state/nvim" "$D/state"
-    mv ".local/share/nvim" "$D/share"
+    mv "$HOME/.local/state/nvim" "$D/state"
+    mv "$HOME/.local/share/nvim" "$D/share"
     set +x
     have "Stashed away config" "Name $name"
 }
@@ -640,8 +641,8 @@ function unstash {
         cp -a "$1" "$2"
     }
     kmv "$D/nvim" "$d_conf_nvim"
-    kmv "$D/state" ".local/state/nvim"
-    kmv "$D/share" ".local/share/nvim"
+    kmv "$D/state" "$HOME/.local/state/nvim"
+    kmv "$D/share" "$HOME/.local/share/nvim"
     set +x
     have "Copied back config" "Name $name"
 }
@@ -686,7 +687,7 @@ function Install {
         fi
         start_time=$(date +%s)
         sh set_pds_function_to_user_shell
-        fin 'Finished.'
+        title 'Finished.'
         echo -e '\n\nInstall Settings\n'
         env | grep pds_ | sort
 
@@ -718,9 +719,9 @@ function Install {
     sh kill_tmux_session
 }
 function status {
-    $req_boostrap && die "Require bootstrap"
-    echo -e 'Stashes:'
-    ls -lta "$d_stash"
+    $req_bootstrap && die "Require bootstrap"
+    title 'Stashes:'
+    for k in $(ls "$d_stash"); do disk "$d_stash/$k"; done
 }
 
 function activate_mamba_in_tmux {
@@ -757,7 +758,7 @@ function Bootstrap {
     export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     mkdir -p "$D"
     (cd "$D" && { git clone "git@$pds_repo" || git clone "https://${pds_repo/://}"; })
-    fin 'Finished Bootstrapping.'
+    title 'Finished Bootstrapping.'
     hint 'Calling installer...'
     sh "$D/pds/setup/pds.sh" install "$@"
 }
@@ -774,7 +775,7 @@ function main {
         ensure_stash_dir
     else
         req_bootstrap=true
-        fin 'This pds requires bootstrapping. Run install!'
+        title 'This pds requires bootstrapping. Run install!'
     fi
 
     local action
