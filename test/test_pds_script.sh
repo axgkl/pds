@@ -8,7 +8,7 @@ tst() {
 out() {
     col="$1"
     shift
-    echo -e "\x1b[1;48;5;${col};38;5;255m$*\x1b[0m"
+    echo -e "\x1b[1;48;5;${col};30m$*\x1b[0m"
 }
 
 function bootstrap_nvim {
@@ -39,7 +39,7 @@ function main {
     # THESE MUST BE RUN IN ORDER.
     # You may comment out previous steps though, when testing locally.
 
-    tst bootstrap_nvim
+    #tst bootstrap_nvim
     tst vi_avail
     tst pds_no_args
     tst help_short
