@@ -61,7 +61,7 @@ function testit {
 }
 function ✔️ {
     parse_args "$@"
-    testit '✔️ ' || die "Failed: $errmsg"
+    testit '✅ ' || die "Failed: $errmsg"
 }
 function ❌ {
     parse_args "$@"

@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
 set -o errexit
-source test/tools.sh
-function bootstrap_nvim {
-    cd
-    rm -rf pds.sh
-    ✔️ wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh
-    ✔️ chmod +x 'pds.sh'
-    ✔️ ./pds.sh install
-}
+source test/test_bootstrap.sh
 function bootstrap_nvim_again {
     ❌ eval '( bootstrap_nvim >/dev/null )'
 }
@@ -27,7 +20,6 @@ function help_long {
     ✔️ pds --help \| grep SWITCHES
     ✔️ pds --help \| grep 'ACTION\ DETAILS'
 }
-
 function stash {
     local d="$HOME/.local/share/stashed_nvim"
     rm -rf "$d/mytest"
@@ -59,7 +51,6 @@ function main {
     # You may comment out previous steps though, when testing locally.
     test_match="${1:-}"
     #
-    test -n "${skip_install:-}" || tst bootstrap_nvim
     tst bootstrap_nvim_again
     tst pds_avail
     tst vi_avail
