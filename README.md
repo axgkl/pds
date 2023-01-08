@@ -11,6 +11,14 @@ It does not require elevated perms to install.
 
 Customization of NeoVim is based on a distri, currently [AstroNVim][astronvim]
 
+## Bootstrap Installation
+
+This is a run on a minimal debian server:
+
+[![asciicast](https://asciinema.org/a/QObqodPheKWM7A7fUzkveDvzr.svg)](https://asciinema.org/a/QObqodPheKWM7A7fUzkveDvzr)
+
+💡 The installation look and feel may be further improved in the future but you get the idea...
+
 
 [Here](./setup/astro/README.md) is what you get, currently.
 
