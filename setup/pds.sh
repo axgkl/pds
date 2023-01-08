@@ -78,7 +78,7 @@ function handle_sourced {
         *) $r "$@" ;;
     esac
 }
-test "${1:-x}" == "source" || {
+test "${1:-x}" = "source" || {
     $pds_is_sourced && {
         handle_sourced "$@"
         return $?
