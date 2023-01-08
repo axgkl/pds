@@ -25,12 +25,12 @@ jobs:
 
     steps:
       - name: Set up the Mamba Cache
-          uses: actions/cache@v2
-          env:
-            cache_name: mamba-1
-          with:
-            path: ~/pds
-            key: ${{ runner.os }}-build-${{ env.cache_name }}
+        uses: actions/cache@v2
+        env:
+          cache_name: mamba-1
+        with:
+          path: ~/pds
+          key: ${{ runner.os }}-build-${{ env.cache_name }}
       - name: bootstrap
         shell: bash -l {0}
         run: "wget 'https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh' && chmod +x pds.sh && ./pds.sh install"
