@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 set -e
+die() { out 196 "Failed: $*"; }
 tst() {
-    echo -e "\x1b[1;48;5;119mRunning Test: $*\x1b[0m"
-    (source "$HOME/.bashrc" && "$@")
+    out 119 "Running Test: $*"
+    (source "$HOME/.bashrc" && "$@") || die "$*"
 }
+out() {
+    col="$1"
+    shift
+    "\x1b[1;48;5;${col};38;5;255m$*\x1b[0m"
+}
+
 function bootstrap_nvim {
     cd
     wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh
