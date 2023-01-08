@@ -38,48 +38,61 @@ function tst {
 
 function parse_args() {
     cmd=()
+    asserts=''
+    assertmode=false
     errmsg="$*"
     while test -n "$1"; do
+        test "$1" == "|" && {
+            assertmode=true
+        }
         test "$1" == "-" && {
             shift
             errmsg="$1"
             break
         }
-        cmd+=("$1")
+        $assertmode && asserts=''$asserts' '$1'' || cmd+=("$1")
         shift
     done
-    #echo "cmd: ${cmd[*]}"
 }
-
+function testit {
+    echo -e "\x1b[37;2m${cmd[*]} $asserts\x1b[0m"
+    if [[ -n "$asserts" ]]; then
+        eval "${cmd[*]} $asserts"
+    else
+        "${cmd[@]}"
+    fi
+}
 function ✔️ {
     parse_args "$@"
-    "${cmd[@]}" || die "Failed: $errmsg"
+    testit || die "Failed: $errmsg"
 }
 function ❌ {
     parse_args "$@"
-    "${cmd[@]}" && die "Should have failed: $errmsg"
+    testit && die "Should have failed: $errmsg"
+    true
 }
 
 function bootstrap_nvim {
     cd
-    wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh
-    chmod +x 'pds.sh'
-    ./pds.sh install
+    ✔️ wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh
+    ✔️ chmod +x 'pds.sh'
+    ✔️ ./pds.sh install
 }
-function pds_avail { pds; }
-function vi_avail { pds vi --version | grep 'NVIM v'; }
+function pds_avail { ✔️ pds; }
+function vi_avail { ✔️ pds vi --version \| grep 'NVIM\ v'; }
 function pds_no_args {
-    pds | grep SWITCHES
-    pds | grep FUNCTIONS
-    pds | grep ACTIONS
+    ✔️ pds \| grep SWITCHES
+    ✔️ pds \| grep FUNCTIONS
+    ✔️ pds \| grep ACTIONS
+    ❌ pds \| grep nopie
 }
 function help_short {
-    pds -h | grep SWITCHES
-    pds -h | grep -q -v 'ACTION DETAILS'
+    ✔️ pds -h \| grep SWITCHES
+    ✔️ pds -h \| grep -q -v 'ACTION\ DETAILS'
 }
 function help_long {
-    pds --help | grep SWITCHES
-    pds --help | grep 'ACTION DETAILS'
+    ✔️ pds --help \| grep SWITCHES
+    ✔️ pds --help \| grep 'ACTION\ DETAILS'
 }
 
 function stash {
@@ -102,7 +115,7 @@ function main {
     # You may comment out previous steps though, when testing locally.
     test_match="${1:-}"
     #
-    # #tst bootstrap_nvim
+    tst bootstrap_nvim
     tst pds_avail
     tst vi_avail
     tst pds_no_args
