@@ -8,7 +8,7 @@ tst() {
 out() {
     col="$1"
     shift
-    "\x1b[1;48;5;${col};38;5;255m$*\x1b[0m"
+    echo -e "\x1b[1;48;5;${col};38;5;255m$*\x1b[0m"
 }
 
 function bootstrap_nvim {
