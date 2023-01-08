@@ -173,12 +173,12 @@ function set_helper_vars {
     #
     url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
     shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
-    _stashes_have="$(ls "$d_stash" | sort | xargs)"
+    _stashes_have="$(ls "$d_stash" 2>/dev/null | sort | xargs)"
 }
 
 function activate_mamba {
     # deactivate all condas, lsp install would fail with different node
-    function a_m { conda activate "$pds_d_mamba" 2>/dev/null; }
+    function a_m { conda activate "$pds_d_mamba" 2>/dev/null; conda init bash; }
     . "$pds_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
     while [ -n "$CONDA_PREFIX" ]; do conda deactivate; done
     a_m || die "Could not activate mamba"
@@ -773,6 +773,7 @@ function Bootstrap {
     echo havegit
     export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     mkdir -p "$D"
+    hint "Trying ssh clone first, https is fallback"
     (cd "$D" && { git clone "git@$pds_repo" || git clone "https://${pds_repo/://}"; })
     title 'Finished Bootstrapping.'
     hint 'Calling installer...'
