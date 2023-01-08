@@ -15,6 +15,8 @@ defaults:
 env:
   LANG: "en_US.utf-8"
   LC_ALL: "en_US.utf-8"
+  # 1 second intervals between tmux screencapts:
+  TMXBGDT: 1
 
 jobs:
   tests:

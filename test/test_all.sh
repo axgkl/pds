@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -e
-
 function test_bootstrap {
     cd
     wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh

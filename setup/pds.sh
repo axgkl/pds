@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 # _______________________________________________________________________________________ DEFAULTS
 set -a
 pds_repo="${pds_repo:-github.com:AXGKl/pds}"
@@ -49,25 +50,28 @@ function run_with_pds_bin_path {
     "$@"
 }
 function handle_sourced {
-    local func="${1:--h}" r=run_with_pds_bin_path
+    local r func
+    func="${1:--h}"
+    r=run_with_pds_bin_path
+    # backslashed the shorts, to avoid zsh global alias resolution. compat. with bash
     case "$func" in
         #F a|activate:    Adds pds bin dir to $PATH
-        a | activate) $r ;;
+        \a | activate) $r ;;
         #F d|deactivate:  Removes from $PATH
-        d | deactivate) $r deact ;;
+        \d | deactivate) $r deact ;;
         #F e|edit:        cd to user dir, edit init.lua
-        e | edit)
+        \e | edit)
             cd "$here/$pds_distri" || true
             pds vi init.lua
             ;;
         #F pl|plugs-list: fzf over plugins dirs, cd to selected
-        pl | plugins-list)
+        \pl | plugins-list)
             $r
             cd "$HOME/.local/share/nvim/site/pack/packer" && cd "$(fd . -t d -E .git | fzf)" && tree -L 2
             ;;
         #F ps|packer-sync: Syncs your plugins/init.lua
-        ps | packer-sync) vi +PackerSync ;;
-        -x | -s | -h | --help | clean-all | i | install | shell | stash | restore | status)
+        \ps | packer-sync) vi +PackerSync ;;
+        -x | -s | -h | --help | clean-all | \i | install | shell | stash | \r | restore | status)
             "$here/pds.sh" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
@@ -190,7 +194,7 @@ function deactivate_mamba {
     conda deactivate
 }
 
-tmux_sock="/tmp/nvimsetup.$UID.sock"
+tmux_sock="/tmp/pds_inst_tmux.$UID.sock"
 S="Space"
 t_() {
     local sock
@@ -217,7 +221,7 @@ function hex {
 # tmux send keys
 function TSK {
     local cmd
-    hint "Sending: $*"
+    hint "Sending keys: $1"
     cmd="$(hex "$1")"
     eval T -q send-keys -t 2 -H "$cmd"
 }
@@ -225,6 +229,7 @@ function TSK {
 # tmux send comand, return when done
 function TSC {
     local cmd
+    hint "Sending cmd: $1"
     cmd="$1 && touch .done"
     shift
     rm -f ".done"
@@ -307,6 +312,18 @@ function die {
     exit 1
 }
 
+function show_help {
+    local f F a A
+    F="F"
+    A="A"
+    f="$(grep "#$F " <"$me" | sed -e 's/#F//g' | sed -e 's/^    //g')"
+    a="$(grep "#$A " <"$me" | sed -e 's/#A//g' | sed -e 's/^    //g')"
+    f="$(echo -e "${d_/<FUNCS>/$f}")"
+    echo -e "${f/<ACTIONS>/$a}"
+    if [[ "${1:-x}" == "--help" ]]; then
+        echo -e "${det_help}"
+    fi
+}
 function disk {
     du -h "$1" | tail -n 1
 }
@@ -321,7 +338,7 @@ function set_pds_function_to_user_shell {
         test -e "$fn" || continue
         h="$h $(basename "$fn")"
         a='function pds { source "'$here'/pds.sh" "$@"; }'
-        grep -A 3 'function pds' <"$fn" | grep source | head -n 1 | grep "$here" 1>/dev/null 2>&1 || {
+        grep -A 3 'function pds' <"$fn" | grep source | head -n 1 | grep "$here" 1>/dev/null 2>&1 && hint "Already present in $h" || {
             echo "writing pds function to $fn => pls source it"
             echo "$a" >>"$fn"
         }
@@ -419,7 +436,6 @@ function install_binary_tools {
                 continue
             }
         }
-        # huge - don't install when not needed:
         test "$pkg" == "gxx_linux-64" && {
             test "$pds_mamba_prefer_system_tools" == "true" && {
                 type cpp gcc cc 2>/dev/null && {
@@ -516,9 +532,12 @@ function install_astronvim {
         sleep 0.1
         TSK ':q!'
         sleep 0.1
+        TSK ':q!'
+        sleep 0.1
     }
     have "Mason Binary Pkg Tool"
     TSK "$pds_d_mamba/bin/vi"
+    sleep 1
     d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
     tss="python bash css javascript vim help"
     for ts in $(echo "$tss" | xargs); do
@@ -627,21 +646,9 @@ function unstash {
     have "Copied back config" "Name $name"
 }
 
-function show_help {
-    local f F a A
-    F="F"
-    A="A"
-    f="$(grep "#$F " <"$me" | sed -e 's/#F//g' | sed -e 's/^    //g')"
-    a="$(grep "#$A " <"$me" | sed -e 's/#A//g' | sed -e 's/^    //g')"
-    f="$(echo -e "${d_/<FUNCS>/$f}")"
-    echo -e "${f/<ACTIONS>/$a}"
-
-    if [[ "${1:-x}" == "--help" ]]; then
-        echo -e "${det_help}"
-    fi
-}
-
 function Install {
+    #T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
+    #tmux new-session -f "$here/tmux.conf" -d /bin/bash
     test "$in_tmux" == "false" && {
         export start_time
         export pds_installing=true
@@ -656,7 +663,27 @@ function Install {
             T kill-session
             sleep 0.4
         }
-        export SHELL="/bin/bash" && T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
+        export SHELL="/bin/bash"
+        if [ -n "$TMXBGDT" ]; then
+            export TERM="xterm-256color"
+            tmux -S "$tmux_sock" new-session -d "/bin/bash"
+            sleep 0.5
+            # important. Otherwise we get 'Press Enter to continue...'
+            T resize-window -y 40 -x 100
+            T send-keys ''$0' in_tmux install' Enter
+            local out outo
+            out=''
+            outo=''
+            while true; do
+                sleep "$TMXBGDT"
+                tmux -S "$tmux_sock" ls >/dev/null || break
+                out="$(C)"
+                test "$out" != "$outo" && echo -e "\x1b[48;5;238m$out$O" || echo -n '.'
+                outo="$out"
+            done
+        else
+            T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
+        fi
         start_time=$(date +%s)
         sh set_pds_function_to_user_shell
         fin 'Finished.'
@@ -757,7 +784,7 @@ function main {
         #A clean-all [-f]:      Removes all nvim
         clean-all) clean_all "$@" ;;
         #A i|install:           Installs a personal dev sandbox on this machine
-        i | install)
+        \i | install)
             if [[ $req_bootstrap == true ]]; then
                 sh Bootstrap "$@"
             else
@@ -769,7 +796,7 @@ function main {
         #A stash <name>:        Moves away an existing install, restorable
         stash) stash "$@" ;;
         #A r|restore <name>:    Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
-        r | restore) unstash "$@" ;;
+        \r | restore) unstash "$@" ;;
         #A status:              Status infos
         status) status "$@" ;;
         #A -h|--help:           Help (detailed with --help)
