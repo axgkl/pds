@@ -78,9 +78,11 @@ function handle_sourced {
         *) $r "$@" ;;
     esac
 }
-$pds_is_sourced && {
-    handle_sourced "$@"
-    return $?
+test "${1:-x}" == "source" || {
+    $pds_is_sourced && {
+        handle_sourced "$@"
+        return $?
+    }
 }
 # --------------------------------------------------------------------------------------- PROCESS
 pds_is_traced="${pds_is_traced:-false}"
@@ -794,6 +796,7 @@ function main {
             ;;
         #A shell:               Enters a shell with pds tools available
         shell) shell ;;
+        source) return ;;
         #A stash <name>:        Moves away an existing install, restorable
         stash) stash "$@" ;;
         #A r|restore <name>:    Restores stashed pds (-d: deletes stash, i.e. mv, not cp)

@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
       - name: bootstrap
         shell: bash -l {0}
         run: "test/test_bootstrap.sh"
