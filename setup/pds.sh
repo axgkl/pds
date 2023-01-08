@@ -669,7 +669,9 @@ function in_tmux {
     sleep 0.5
     # important. Otherwise we get 'Press Enter to continue...'
     T resize-window -y 40 -x 100
-    T send-keys ''$*'' Enter
+    T send-keys "$@"
+    T send-keys Enter
+
     local out outo
     out=''
     outo=''
