@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 set -o errexit
-source test/test_bootstrap.sh
+source test/tools.sh
 function bootstrap_nvim_again {
-    ❌ eval '( bootstrap_nvim >/dev/null )'
-    echo foo
+    cd
+    rm -rf pds.sh
+    ✔️ wget "https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh"
+    ✔️ chmod +x 'pds.sh'
+    ❌ ./pds.sh install
 }
+
 function pds_avail { ✔️ pds; }
 function vi_avail { ✔️ pds vi --version \| grep 'NVIM\ v'; }
 function pds_no_args {
@@ -33,7 +37,7 @@ function stash {
     ❌ test -d "$HOME/.local/share/nvim" - "nvim share dir still present"
     ❌ pds stash mytest - "could restash with same name"
 }
-function clean_all {
+function clean-all {
     ✔️ pds clean-all -f
     ❌ test -d "$HOME/.config/nvim" - "nvim dir still present"
     ❌ test -d "$HOME/.local/state/nvim" - "nvim state dir still present"
@@ -50,6 +54,10 @@ function restore {
     ❌ test -e "$tf"
 }
 
+function plugs-list {
+    ✔️ echo list
+
+}
 function main {
     # THESE MUST BE RUN IN ORDER.
     # You may comment out previous steps though, when testing locally.
@@ -62,9 +70,10 @@ function main {
     tst help_short
     tst help_long
     tst stash
-    tst clean_all
+    tst clean-all
     tst restore
-
+    . "$HOME/.config/pds/setup/pds.sh" source
+    tst plugs-list
 }
 
 main "$@"

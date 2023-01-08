@@ -71,6 +71,8 @@ function handle_sourced {
             ;;
         #F ps|packer-sync: Syncs your plugins/init.lua
         \ps | packer-sync) vi +PackerSync ;;
+        #F source:         Sources ALL the pds functions
+        source) return ;;
         -x | -s | -h | --help | clean-all | \i | install | shell | stash | \r | restore | status)
             "$here/pds.sh" "$@"
             ;;
@@ -78,11 +80,10 @@ function handle_sourced {
         *) $r "$@" ;;
     esac
 }
-test "${1:-x}" = "source" || {
-    $pds_is_sourced && {
-        handle_sourced "$@"
-        return $?
-    }
+$pds_is_sourced && {
+    handle_sourced "$@"
+    ret=$?
+    test "${1:-}" = "source" || return $ret
 }
 # --------------------------------------------------------------------------------------- PROCESS
 pds_is_traced="${pds_is_traced:-false}"
@@ -649,6 +650,38 @@ function unstash {
     have "Copied back config" "Name $name"
 }
 
+function in_tmux {
+    hint 'Switching into tmux'
+    T ls 2>/dev/null && {
+        T kill-session
+        sleep 0.4
+    }
+    export SHELL="/bin/bash"
+
+    if [ -z "$TMXBGDT" ]; then
+        T -f "$here/tmux.conf" new "$@"
+        return $?
+    fi
+
+    # github runner mode:
+    export TERM="xterm-256color"
+    tmux -S "$tmux_sock" -f "$here/tmux.conf" new-session -d "/bin/bash"
+    sleep 0.5
+    # important. Otherwise we get 'Press Enter to continue...'
+    T resize-window -y 40 -x 100
+    T send-keys ''$*'' Enter
+    local out outo
+    out=''
+    outo=''
+    while true; do
+        sleep "$TMXBGDT"
+        tmux -S "$tmux_sock" ls >/dev/null || break
+        out="$(C)"
+        test "$out" != "$outo" && echo -e "\x1b[48;5;238m$out$O" || echo -n '.'
+        outo="$out"
+    done
+}
+
 function Install {
     #T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
     #tmux new-session -f "$here/tmux.conf" -d /bin/bash
@@ -661,32 +694,8 @@ function Install {
         sh install_mamba_binary_pkg_mgr
         sh activate_mamba
         sh ensure_tmux
-        echo 'Switching into tmux'
-        T ls 2>/dev/null && {
-            T kill-session
-            sleep 0.4
-        }
-        export SHELL="/bin/bash"
-        if [ -n "$TMXBGDT" ]; then
-            export TERM="xterm-256color"
-            tmux -S "$tmux_sock" -f "$here/tmux.conf" new-session -d "/bin/bash"
-            sleep 0.5
-            # important. Otherwise we get 'Press Enter to continue...'
-            T resize-window -y 40 -x 100
-            T send-keys ''$0' in_tmux install' Enter
-            local out outo
-            out=''
-            outo=''
-            while true; do
-                sleep "$TMXBGDT"
-                tmux -S "$tmux_sock" ls >/dev/null || break
-                out="$(C)"
-                test "$out" != "$outo" && echo -e "\x1b[48;5;238m$out$O" || echo -n '.'
-                outo="$out"
-            done
-        else
-            T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
-        fi
+
+        in_tmux "$0" in_tmux install "$@"
         start_time=$(date +%s)
         sh set_pds_function_to_user_shell
         title 'Finished.'
