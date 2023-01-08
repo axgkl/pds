@@ -11,5 +11,5 @@ function bootstrap_nvim {
 function main {
     tst bootstrap_nvim
 }
-
+return 2>/dev/null || true
 main "$@"

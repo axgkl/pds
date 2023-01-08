@@ -3,6 +3,7 @@ set -o errexit
 source test/test_bootstrap.sh
 function bootstrap_nvim_again {
     ❌ eval '( bootstrap_nvim >/dev/null )'
+    echo foo
 }
 function pds_avail { ✔️ pds; }
 function vi_avail { ✔️ pds vi --version \| grep 'NVIM\ v'; }
@@ -40,10 +41,13 @@ function clean_all {
 }
 function restore {
     local d="$HOME/.local/share/stashed_nvim"
+    local tf="$HOME/.local/share/nvim/foo"
+    touch "$tf"
     ✔️ pds restore mytest
     ✔️ test -e "$HOME/.config/nvim/init.lua"
     ✔️ test -e "$d/mytest/nvim/init.lua"
     ✔️ pds status \| grep mytest - 'must be still available'
+    ❌ test -e "$tf"
 }
 
 function main {
