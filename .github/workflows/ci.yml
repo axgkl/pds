@@ -27,6 +27,7 @@ jobs:
       - name: Set up the Mamba Cache
         uses: actions/cache@v2
         env:
+          # count up to have it build a new mamba:
           cache_name: mamba-1
         with:
           path: ~/pds
