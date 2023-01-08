@@ -666,7 +666,7 @@ function Install {
         export SHELL="/bin/bash"
         if [ -n "$TMXBGDT" ]; then
             export TERM="xterm-256color"
-            tmux -S "$tmux_sock" new-session -d "/bin/bash"
+            tmux -S "$tmux_sock" -f "$here/tmux.conf" new-session -d "/bin/bash"
             sleep 0.5
             # important. Otherwise we get 'Press Enter to continue...'
             T resize-window -y 40 -x 100
