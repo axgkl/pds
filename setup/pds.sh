@@ -8,7 +8,7 @@ pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
 pds_v_nvim="${pds_v_nvim:-0.8.1}"
 pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
 pds_mamba_tools="${pds_mamba_tools:-bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip}"
-pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-true}
+pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-false}
 pds_pin_distri=${pds_pin_distri:-true}
 pds_pin_mamba=${pds_pin_mamba:-true}
 pds_pin_mamba_pkgs=${pds_pin_mamba_pkgs:-false}
@@ -376,7 +376,7 @@ function install_mamba_binary_pkg_mgr {
     test -z "$hv_mamba" && die "mamba not executable here"
     # die when pinned but different:
     local msg
-    msg="Mamba ver conflict at $pds_d_mamba (wanted: $pds_v_mamba, have: $hv_mamba). Remove manually or change \$pds_d_mamba to different location."
+    msg="Mamba version conflict at $pds_d_mamba (wanted: $pds_v_mamba, have: $hv_mamba). Remove manually or change \$pds_d_mamba to different location."
     test "$pds_v_mamba" == "latest" && pds_v_mamba="-" # only have minor not -<build>
     $pds_pin_mamba && grep "${pds_v_mamba%%-*}" <<<"$hv_mamba" 1>/dev/null || die "$msg"
     have "Mamba Binary Pkg Env" "$hv_mamba $(disk "$pds_d_mamba")"
@@ -384,13 +384,13 @@ function install_mamba_binary_pkg_mgr {
 function ensure_tool {
     local p1 t1
     t1="$pds_mamba_tools"
-    p1="$mamba_prefer_system_tools"
+    p1="$pds_mamba_prefer_system_tools"
     pds_mamba_tools="$1"
-    mamba_prefer_system_tools=false
-    eval "$2" && mamba_prefer_system_tools=true
+    pds_mamba_prefer_system_tools=false
+    eval "$2" && pds_mamba_prefer_system_tools=true
     install_binary_tools
     export pds_mamba_tools="$t1"
-    export mamba_prefer_system_tools="$p1"
+    export pds_mamba_prefer_system_tools="$p1"
     have "$1" "$(type "$1")"
 }
 function ensure_tmux {
@@ -413,14 +413,14 @@ function install_binary_tools {
         pkg="${t%:*}"
         name="${t#*:*}"
         test "$name" == "-" || {
-            test "$mamba_prefer_system_tools" == "true" && type "$name" 2>/dev/null 1>&2 && {
+            test "$pds_mamba_prefer_system_tools" == "true" && type "$name" 2>/dev/null 1>&2 && {
                 spkgs="$spkgs $pkg"
                 continue
             }
         }
         # huge - don't install when not needed:
         test "$pkg" == "gxx_linux-64" && {
-            test "$mamba_prefer_system_tools" == "true" && {
+            test "$pds_mamba_prefer_system_tools" == "true" && {
                 type cpp gcc cc 2>/dev/null && {
                     spkgs="$spkgs $pkg"
                     hint 'skipping install of C build toolchain'
@@ -665,6 +665,7 @@ function Install {
         echo -e '\n\nInstall Progress Log\n'
         cat "$inst_log"
         echo ''
+        echo -e "- Size: $(disk "$pds_d_mamba") - you may delete the pkgs folder."
         echo -e "- Source your ~/.bashrc or ~/.zshrc, to have pds function available."
         echo -e "- ${M}pds vi$O to start editor with all tools."
         echo -e "${L}\nDocs: "
