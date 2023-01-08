@@ -99,6 +99,8 @@ function set_constants {
     L="\x1b[2;37m"
     O="\x1b[0m"
     d_stash="$HOME/.local/share/stashed_nvim"
+    d_conf_nvim="$HOME/.config/nvim"
+    d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
     inst_log="$HOME/pds_install.log"
     d_="$T\nPDS Tools $O
         $I
@@ -161,8 +163,6 @@ function set_helper_vars {
     # spell='http://ftp.vim.org/pub/vim/runtime/spell/de.utf-8.spl'
     # 10k: https://raw.githubusercontent.com/neoclide/coc-sources/master/packages/word/10k.txt
     #
-    d_conf_nvim="$HOME/.config/nvim"
-    d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
     url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
     shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
     _stashes_have="$(ls "$d_stash" | sort | xargs)"
@@ -724,7 +724,7 @@ function bootstrap_git {
 function Bootstrap {
     local D grepo
     D="$HOME/.config"
-    test -e "$D/pds" && die "Default dest $D/pds already on the system but environ was not sourced. Smells. Refusing."
+    test -e "$D/pds" && die "Cloned pds already on the system. Run $D/pds/setup/pds.sh and not $me!"
     type git || sh bootstrap_git
     echo havegit
     export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
