@@ -25,7 +25,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Run tests
+      - name: Run pds script tests
         shell: bash -l {0}
-        run: "test/test_all.sh"
-
+        run: "test/test_pds_script.sh"
