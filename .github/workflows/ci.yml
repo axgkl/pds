@@ -20,7 +20,7 @@ env:
 
 jobs:
   tests:
-    name: Tests PDS
+    name: PDS Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -33,14 +33,14 @@ jobs:
           path: ~/pds
           key: ${{ runner.os }}-build-${{ env.cache_name }}
 
-      - name: bootstrap
+      - name: Bootstrap
         shell: bash -l {0}
         run: "wget 'https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh' && chmod +x pds.sh && ./pds.sh install && rm -rf $HOME/pds/pkgs"
 
-      - name: pds_script_tmux
+      - name: TMUX Tests
         shell: bash -l {0}
-        run: "cd $HOME/.config/pds && test/test_pds_script_tmux.sh"
+        run: "cd $HOME/.config/pds && test/test_tmux.sh"
 
-      - name: pds_script
+      - name: Script Tests
         shell: bash -l {0}
         run: "cd $HOME/.config/pds && test/test_pds_script.sh"

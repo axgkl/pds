@@ -2,7 +2,9 @@
 function fn_tmux_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.log"; }
 function fn_tres_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.res.log"; }
 fn_tmux_err_exit="/tmp/pds.tmux.$UID.err"
+
 function shows {
+    📷
     C | grep "$1"
 }
 function print {
@@ -30,14 +32,14 @@ function test_in_tmux {
     rm -f "$fn_tmux_err_exit"
     . "$HOME/.config/pds/setup/pds.sh" source
     test "$1" == "in_tmux" || {
-        run_in_tmux "$0" in_tmux "$@"
+        run_in_tmux silent "$0" in_tmux "$@"
         test -e "$fn_tmux_err_exit" && exit 1
         exit 0
     }
     shift
     export in_tmux=true
     tmx_split_pane
-    TSC 'function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; }'
+    TSC 'function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; } && clear'
     tst plugs-list
     kill_tmux_session
 }
@@ -103,4 +105,8 @@ function ❌ {
     parse_args "$@"
     testit '❌' && tst_die "Should have failed: $errmsg"
     true
+}
+
+function 📷 {
+    C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$(fn_tmux_log)"
 }

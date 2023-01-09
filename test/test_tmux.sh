@@ -7,6 +7,7 @@ source test/tools.sh
 function plugs-list {
     TSK 'pds plugins-list'
     TSK "'mason-null-ls.nvim"
+    📷
     T send-keys Enter
     #TSC "pwd > $(fn_tres_log)"
     TSC pwd

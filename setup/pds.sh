@@ -667,6 +667,12 @@ function unstash {
 
 function run_in_tmux {
     hint 'Switching into tmux'
+    local silent
+    silent=false
+    test "$1" == "silent" && {
+        silent=true
+        shift
+    }
     rm -f "$tmux_sock.log"
     touch "$tmux_sock.log"
     T ls 2>/dev/null && {
@@ -688,13 +694,14 @@ function run_in_tmux {
         T resize-window -y 40 -x 100
         TSK "$*"
         local out outo
-        tail -f "$tmux_sock.log" | sed -e 's/^/>/g' &
+        tail -f "$tmux_sock.log" #| sed -r "/^\r?$/d;s/^/💻 /g" &
         tailer=$!
         out=''
         outo=''
         while true; do
             sleep "$TMXBGDT"
             tmux -S "$tmux_sock" ls >/dev/null 2>&1 || break
+            $silent && continue
             out="$(C)"
             test "$out" != "$outo" && echo -e "$out" || hintn '.'
             outo="$out"
