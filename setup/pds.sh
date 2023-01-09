@@ -55,7 +55,7 @@ function run_with_pds_bin_path {
 function show-tools {
     shift
     local ts
-    ts="$(grep -E '^function' <"$here/tools.sh" | sed -e 's/function //g;s/{//g' | run_with_pds_bin_path fzf --height=30% --query "${*:-}" -1)"
+    ts="$(grep -E '^function' <"$here/tools.sh" | sed -e 's/function //g;s/{//g' | run_with_pds_bin_path fzf --exact --height=30% --query "${*:-}" -1)"
     . "$here/tools.sh"
     run_with_pds_bin_path 2>/dev/null
     eval "$ts"
@@ -79,7 +79,7 @@ function handle_sourced {
         #F source:        Sources ALL the pds functions
         source) return ;;
         #F t|tools:       Opens tools menu
-        \t | tools) show-tools "$@" ;;
+        \s | \t | show-tools) show-tools "$@" ;;
         -x | -s | -h | --help | clean-all | \i | install | shell | stash | swaps | \r | restore | status)
             "$here/pds.sh" "$@"
             ;;

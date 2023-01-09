@@ -19,19 +19,80 @@ return {
 	"mikeboiko/vim-markdown-folding",
 	"junegunn/limelight.vim",
 	"junegunn/goyo.vim",
-	"tpope/vim-markdown",
+	"AXGKl/vim-markdown",
+	--"prurigro/vim-markdown-concealed",
+	-- {
+	-- 	"nvim-neorg/neorg",
+	-- 	run = ":Neorg sync-parsers",
+	-- 	ft = "norg",
+	-- 	after = { "nvim-treesitter", "nvim-cmp" },
+	-- 	config = function()
+	-- 		require("neorg").setup({
+	-- 			load = {
+	-- 				["core.defaults"] = {},
+	-- 				["core.norg.concealer"] = {},
+	-- 				["core.norg.completion"] = { config = { engine = "nvim-cmp" } },
+	-- 				["core.presenter"] = { config = { zen_mode = "truezen" } },
+	-- 			},
+	-- 		})
+	-- 	end,
+	-- },
+	{
+		"Pocco81/high-str.nvim",
+		verbosity = 0,
+		saving_path = "/tmp",
+		highlight_colors = {
+			-- color_id = {"bg_hex_code",<"fg_hex_code"/"smart">}
+			color_0 = { "#0c0d0e", "smart" }, -- Cosmic charcoal
+			color_1 = { "#e5c07b", "smart" }, -- Pastel yellow
+			color_2 = { "#7FFFD4", "smart" }, -- Aqua menthe
+			color_3 = { "#8A2BE2", "smart" }, -- Proton purple
+			color_4 = { "#FF4500", "smart" }, -- Orange red
+			color_5 = { "#008000", "smart" }, -- Office green
+			color_6 = { "#0000FF", "smart" }, -- Just blue
+			color_7 = { "#FFC0CB", "smart" }, -- Blush pink
+			color_8 = { "#FFF9E3", "smart" }, -- Cosmic latte
+			color_9 = { "#7d5c34", "smart" }, -- Fallow brown
+		},
+	},
 	{
 		"iamcco/markdown-preview.nvim",
-		run = "cd app && npm install",
+		run = "cd app && npm install && git reset --hard",
 		setup = function()
 			vim.g.mkdp_filetypes = { "markdown" }
 		end,
 		ft = { "markdown" },
 	},
+	{
+		"nvim-treesitter/playground",
+		config = function()
+			require("nvim-treesitter.configs").setup({
+				playground = {
+					enable = true,
+					disable = {},
+					updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
+					persist_queries = false, -- Whether the query persists across vim sessions
+					keybindings = {
+						toggle_query_editor = "o",
+						toggle_hl_groups = "i",
+						toggle_injected_languages = "t",
+						toggle_anonymous_nodes = "a",
+						toggle_language_display = "I",
+						focus_language = "f",
+						unfocus_language = "F",
+						update = "R",
+						goto_node = "<cr>",
+						show_help = "?",
+					},
+				},
+			})
+		end,
+	},
 
 	-- misc
 	"mbbill/undotree",
 	"Pocco81/auto-save.nvim",
+	"Pocco81/true-zen.nvim",
 	"ThePrimeagen/refactoring.nvim",
 	"godlygeek/tabular",
 	"kshenoy/vim-signature",

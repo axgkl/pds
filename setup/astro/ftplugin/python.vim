@@ -1,3 +1,10 @@
+" syntax match pythonOperator "=" conceal cchar=≢
+"
+" hi link pythonOperator Operator
+" hi! link Conceal Operator
+"
+" setlocal conceallevel=1
+
 setlocal textwidth=200
 setlocal foldmethod=indent
 setlocal foldlevel=99
