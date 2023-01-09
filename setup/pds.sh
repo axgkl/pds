@@ -694,7 +694,7 @@ function run_in_tmux {
         T resize-window -y 40 -x 100
         TSK "$*"
         local out outo
-        tail -f "$tmux_sock.log" #| sed -r "/^\r?$/d;s/^/💻 /g" &
+        tail -f "$tmux_sock.log" & #| sed -r "/^\r?$/d;s/^/💻 /g" &
         tailer=$!
         out=''
         outo=''

@@ -1,7 +1,9 @@
 # Most tools for tmux mode sourced from pds.sh itself.
 function fn_tmux_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.log"; }
+# if we need a joint file
 function fn_tres_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.res.log"; }
 fn_tmux_err_exit="/tmp/pds.tmux.$UID.err"
+fn_vi_file="/tmp/pds.vi.$UID"
 
 function shows {
     📷
@@ -24,7 +26,10 @@ function tst_die {
     set +x
     out 196 "Failed" "${cur_test:-}"
     test -n "$1" && echo -e "$*"
-    $in_tmux && touch "$fn_tmux_err_exit" && sh kill_tmux_session
+    $in_tmux && touch "$fn_tmux_err_exit" && {
+        test -z "$TMXBGDT" && bash
+        sh kill_tmux_session
+    }
     exit 1
 }
 
@@ -37,10 +42,11 @@ function test_in_tmux {
         exit 0
     }
     shift
+    test_match="${1:-}"
     export in_tmux=true
     tmx_split_pane
     TSC 'function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; } && clear'
-    tst plugs-list
+    tests
     kill_tmux_session
 }
 
@@ -48,21 +54,12 @@ function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; }
 
 function tst {
     cur_test="$1"
-    grep -q "$test_match" <<<"$cur_test" || {
+    grep -q "${test_match:-}" <<<"$cur_test" || {
         out 125 "Skipped" "$cur_test"
         return
     }
     out 119 "Test" "$*"
     "$@" || exit 1
-
-    #     ("$@") && {
-    #         echo -e "✔️ $*"
-    #         return
-    #     } || true
-    #     out 125 "Error. Running again, traced: $*"
-    #     rerurn=true
-    #     "$@"
-    #     exit 1
 }
 
 function parse_args() {
@@ -96,17 +93,24 @@ function testit {
     test_dt=$(($(date +%s) - test_start))
     return $ret
 }
+function open {
+    local fn="$fn_vi_file$1"
+    echo -e "$2" >"$fn"
+    TSK 'pds vi "'$fn'"'
+}
 function ✔️ {
     parse_args "$@"
     testit '✅ ' || tst_die "Failed: $errmsg"
 }
 
+# shellcheck disable=SC1083
 function ❌ {
     parse_args "$@"
     testit '❌' && tst_die "Should have failed: $errmsg"
     true
 }
 
-function 📷 {
+# shellcheck disable=SC1083
+function 📷 { #C is capture (pds.sh)
     C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$(fn_tmux_log)"
 }
