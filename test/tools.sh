@@ -37,6 +37,7 @@ function test_in_tmux {
     shift
     export in_tmux=true
     tmx_split_pane
+    TSC 'source "$HOME/.bashrc"'
     tst plugs-list
     kill_tmux_session
 }
