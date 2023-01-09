@@ -62,7 +62,7 @@ function plugs-list {
 
 }
 function main {
-    # THESE MUST BE RUN IN ORDER.
+    # Testing process calls. THESE MUST BE RUN IN ORDER (after bootstrap)
     # You may comment out previous steps though, when testing locally.
     test_match="${1:-}"
     #
@@ -76,8 +76,6 @@ function main {
     tst stash
     tst clean-all
     tst restore
-    . "$HOME/.config/pds/setup/pds.sh" source
-    tst plugs-list
 }
 
 main "$@"

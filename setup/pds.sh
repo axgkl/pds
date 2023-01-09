@@ -18,6 +18,8 @@ set +a
 
 # _______________________________________________________________________________________ SOURCING
 # when sourced, no spamming of namespace with stuff req. for the process
+#
+# Note: sourcing should be fast, `pds vi` may be an alias
 pds_is_sourced=false
 if [ -n "$ZSH_VERSION" ]; then
     me="$0"
@@ -37,7 +39,7 @@ function run_with_pds_bin_path {
     # conda activate got slow
     local p="$pds_d_mamba/bin"
     if [[ "$PATH" != *"$p"* ]]; then
-        echo "pds tools at $p in \$PATH" >2
+        echo "pds tools at $p in \$PATH" >&2
         export PATH="$p:$PATH" # our bins are newer
     fi
     test -z "$1" && return
@@ -64,13 +66,13 @@ function handle_sourced {
             cd "$here/$pds_distri" || true
             pds vi init.lua
             ;;
-        #F pl|plugs-list: fzf over plugins dirs, cd to selected
+        #F pl|plugins-list: fzf over plugins dirs, cd to selected
         \pl | plugins-list)
             $r
             cd "$HOME/.local/share/nvim/site/pack/packer" && cd "$(fd . -t d -E .git | fzf)" && tree -L 2
             ;;
         #F ps|packer-sync: Syncs your plugins/init.lua
-        \ps | packer-sync) vi +PackerSync ;;
+        ps | packer-sync) vi +PackerSync ;;
         #F source:         Sources ALL the pds functions
         source) return ;;
         -x | -s | -h | --help | clean-all | \i | install | shell | stash | \r | restore | status)
@@ -178,7 +180,10 @@ function set_helper_vars {
 
 function activate_mamba {
     # deactivate all condas, lsp install would fail with different node
-    function a_m { conda activate "$pds_d_mamba" 2>/dev/null; conda init bash; }
+    function a_m {
+        conda activate "$pds_d_mamba" 2>/dev/null
+        conda init bash
+    }
     . "$pds_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
     while [ -n "$CONDA_PREFIX" ]; do conda deactivate; done
     a_m || die "Could not activate mamba"
@@ -199,6 +204,7 @@ function deactivate_mamba {
 }
 
 tmux_sock="/tmp/pds_inst_tmux.$UID.sock"
+done="/tmp/tmx.done.$UID"
 S="Space"
 t_() {
     local sock
@@ -214,7 +220,7 @@ function T {
     test "$1" == "-q" && shift || hint "tmux: $*"
     t_ "$tmux_sock" "$@"
 }
-function C { T capture-pane -t 2 -p; }
+function C { T -q capture-pane -t 2 -p; }
 
 function hex {
     # tmux send-key convenience, this way we can send anything w/o space problems:
@@ -225,7 +231,7 @@ function hex {
 # tmux send keys
 function TSK {
     local cmd
-    hint "Sending keys: $1"
+    hint "⌨️  $1"
     cmd="$(hex "$1")"
     eval T -q send-keys -t "$tmx_pane" -H "$cmd"
 }
@@ -233,12 +239,11 @@ function TSK {
 # tmux send comand, return when done
 function TSC {
     local cmd
-    hint "Sending cmd: $1"
-    cmd="$1 && touch .done"
+    cmd="$1 && touch \$done"
     shift
-    rm -f ".done"
+    rm -f "$done"
     TSK "$cmd"
-    waitfor ".done" "$@"
+    waitfor "$done" "$@"
 }
 
 function TMIF {
@@ -247,22 +252,29 @@ function TMIF {
 }
 # wait for file then do action
 function waitfor {
-    hint "Waiting for: $1"
-    while ! test -e "$1"; do sleep 0.1; done
+    hintn '.'
+    while ! test -e "$1"; do
+        hintn "."
+        sleep 0.1
+    done
+    hint "✔️ $1"
     rm -f "$1"
     test "$2" == "then" && {
         shift
         shift
         eval "$*"
     }
+    true
 }
 
 # pretty output:
-function hint { echo -e "$L$*$O"; }
+function hintn { echo -en "$L$*$O" | tee -a "$tmux_sock.log"; }
+function hint { hintn "$*\n"; }
 function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
 function sh {
-    echo -e "\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
-    local m
+    local m out
+    out="\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
+    echo -e "$out" | tee -a "$tmux_sock.log"
     $pds_is_stepped && {
         $in_tmux && {
             tmux select-pane -t 0
@@ -653,36 +665,44 @@ function unstash {
     have "Copied back config" "Name $name"
 }
 
-function in_tmux {
+function run_in_tmux {
     hint 'Switching into tmux'
+    rm -f "$tmux_sock.log"
+    touch "$tmux_sock.log"
     T ls 2>/dev/null && {
-        T kill-session
+        sh kill_tmux_session
         sleep 0.4
     }
     export SHELL="/bin/bash"
 
     if [ -z "$TMXBGDT" ]; then
         T -f "$here/tmux.conf" new "$@"
-        return $?
-    fi
+    else
 
-    # github runner mode:
-    export TERM="xterm-256color"
-    tmux -S "$tmux_sock" -f "$here/tmux.conf" new-session -d "/bin/bash"
-    sleep 0.5
-    # important. Otherwise we get 'Press Enter to continue...'
-    T resize-window -y 40 -x 100
-    TSK "$*"
-    local out outo
-    out=''
-    outo=''
-    while true; do
-        sleep "$TMXBGDT"
-        tmux -S "$tmux_sock" ls >/dev/null || break
-        out="$(C)"
-        test "$out" != "$outo" && echo -e "\x1b[48;5;238m$out$O" || echo -n '.'
-        outo="$out"
-    done
+        # github runner mode:
+        local tailer
+        export TERM="xterm-256color"
+        tmux -S "$tmux_sock" -f "$here/tmux.conf" new-session -d "/bin/bash"
+        sleep 0.5
+        # important. Otherwise we get 'Press Enter to continue...'
+        T resize-window -y 40 -x 100
+        TSK "$*"
+        local out outo
+        tail -f "$tmux_sock.log" | sed -e 's/^/>/g' &
+        tailer=$!
+        out=''
+        outo=''
+        while true; do
+            sleep "$TMXBGDT"
+            tmux -S "$tmux_sock" ls >/dev/null 2>&1 || break
+            out="$(C)"
+            test "$out" != "$outo" && echo -e "$out" || hintn '.'
+            outo="$out"
+        done
+        kill $tailer
+        sleep 0.1
+    fi
+    have 'Tmux fin'
 }
 
 function Install {
@@ -698,7 +718,7 @@ function Install {
         sh activate_mamba
         sh ensure_tmux
 
-        in_tmux "$0" in_tmux install "$@"
+        run_in_tmux "$0" in_tmux install "$@"
         start_time=$(date +%s)
         sh set_pds_function_to_user_shell
         title 'Finished.'
@@ -718,13 +738,7 @@ function Install {
         rm -f "$inst_log"
         return $?
     }
-    notify-send foo
-    # in tmux from here
-    T split-pane -h
-    tmx_pane=2
-    #T resize-window -x 200
-    T resize-pane -x 110
-    sleep 0.1
+    tmx_split_pane
     sh activate_mamba_in_tmux
     sh install_binary_tools
     sh install_neovim
@@ -734,6 +748,17 @@ function Install {
     sh install_vim_user
     sh kill_tmux_session
 }
+
+function tmx_split_pane {
+    # in tmux from here
+    export tmx_pane=2
+    T set-environment "done" "$done"
+    T split-pane -h
+    #T resize-window -x 200
+    T resize-pane -x 90
+    sleep 0.1
+}
+
 function status {
     $req_bootstrap && die "Require bootstrap"
     title 'Stashes:'

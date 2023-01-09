@@ -38,3 +38,6 @@ jobs:
       - name: pds_script
         shell: bash -l {0}
         run: "cd $HOME/.config/pds && test/test_pds_script.sh"
+      - name: pds_script_tmux
+        shell: bash -l {0}
+        run: "cd $HOME/.config/pds && test/test_pds_script_tmux.sh"
