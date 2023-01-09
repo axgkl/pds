@@ -5,7 +5,7 @@ source test/tools.sh
 # ❌ test -e "$tf"
 #
 function plugs-list {
-    TSK 'pds plugins-list'
+    TSK 'pds t plugins-list'
     TSK "'mason-null-ls.nvim"
     📷
     T send-keys Enter

@@ -51,6 +51,16 @@ function run_with_pds_bin_path {
     fi
     "$@"
 }
+
+function show-tools {
+    shift
+    local ts
+    ts="$(grep -E '^function' <"$here/tools.sh" | sed -e 's/function //g;s/{//g' | run_with_pds_bin_path fzf --height=30% --query "${*:-}" -1)"
+    . "$here/tools.sh"
+    run_with_pds_bin_path 2>/dev/null
+    eval "$ts"
+}
+
 function handle_sourced {
     local r func
     func="${1:--h}"
@@ -66,22 +76,18 @@ function handle_sourced {
             cd "$here/$pds_distri" || true
             pds vi init.lua
             ;;
-        #F pl|plugins-list: fzf over plugins dirs, cd to selected
-        \pl | plugins-list)
-            $r
-            cd "$HOME/.local/share/nvim/site/pack/packer" && cd "$(fd . -t d -E .git | fzf)" && tree -L 2
-            ;;
-        #F ps|packer-sync: Syncs your plugins/init.lua
-        ps | packer-sync) vi +PackerSync ;;
-        #F source:         Sources ALL the pds functions
+        #F source:        Sources ALL the pds functions
         source) return ;;
-        -x | -s | -h | --help | clean-all | \i | install | shell | stash | \r | restore | status)
+        #F t|tools:       Opens tools menu
+        \t | tools) show-tools "$@" ;;
+        -x | -s | -h | --help | clean-all | \i | install | shell | stash | swaps | \r | restore | status)
             "$here/pds.sh" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
         *) $r "$@" ;;
     esac
 }
+
 $pds_is_sourced && {
     handle_sourced "$@"
     ret=$?
@@ -811,7 +817,6 @@ function Bootstrap {
     hint 'Calling installer...'
     sh "$D/pds/setup/pds.sh" install "$@"
 }
-
 function main {
     test "$1" == "in_tmux" && {
         in_tmux=true
