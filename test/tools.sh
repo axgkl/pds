@@ -37,7 +37,7 @@ function test_in_tmux {
     shift
     export in_tmux=true
     tmx_split_pane
-    TSC 'function pds { source "/home/gk/.config/pds/setup/pds.sh" "$@"; }'
+    TSC 'function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; }'
     tst plugs-list
     kill_tmux_session
 }
