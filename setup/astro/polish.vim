@@ -82,9 +82,6 @@ nnoremap <silent> <space><enter>  :ls<cr>:b#<cr>
 nmap J }j
 nmap K {k{kkJ
 
-" go to the position I was when last editing the file
-au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g'\"" | endif
-
 "colorscheme pinkmare"colorscheme kanagawa
 nmap ,w  :FormatAndSave<CR>
 "save all buffers
@@ -193,6 +190,12 @@ vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
 "     " endfor
 " endfunction
 " map gm :call SynStack()<CR>
+
+
+" go to the position I was when last editing the file
+au BufRead * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g'\"" | endif
+
+
 
 " leave here:
 nnoremap  G        :$<CR><bar>:silent! ?begin_archive<CR>

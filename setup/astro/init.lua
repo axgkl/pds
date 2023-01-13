@@ -194,7 +194,8 @@ local config = {
 					end,
 					desc = "Hover symbol details",
 				},
-				-- ["<leader>lf"] = false -- disable formatting keymap
+
+				["<leader>lx"] = { UU.toggle_diag_displ, desc = "Toggle Diag. Display" },
 				-- ["gd"] = {
 				-- 	function()
 				-- 		vim.lsp.buf.definition()
@@ -369,14 +370,8 @@ local config = {
 		require("vim.lsp.log").set_format_func(vim.inspect)
 
 		-- don't get flooded by diag
-		vim.diagnostic.config({
-			virtual_text = false,
-		})
-
-		-- Show line diagnostics automatically in hover window
 		vim.o.updatetime = 250
-		--say CursorHold,CursorHoldI * to get it while typing
-		vim.cmd([[autocmd CursorHold * lua vim.diagnostic.open_float(nil, {focus=false})]])
+		UU.toggle_diag_displ()
 	end,
 }
 

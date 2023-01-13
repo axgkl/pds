@@ -1,6 +1,5 @@
 # AX AstroNVim Flavor
 
-
 Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 
 Usage:
@@ -11,7 +10,7 @@ Usage:
 
 ## Leader Keys
 
-- `<SPACE>`: AstroNVim's map leader. Left unchanged.
+- ` `: AstroNVim's map leader (space bar). Left unchanged.
 - `,`: Additional Meta Key for custom shortcuts
 
 👉 Type those, to [see keychords starting with them][whichkey]
@@ -51,7 +50,7 @@ Foldmethod is "indent", globally, except for markdown
 - `;`       Currently open buffers
 - `<Ctl>o`  Go back 
 - `<Alt>o`  Go forward
-- `<SPC>↩️`  Last edited buffer
+- ` ↩️`  Last edited buffer
 - `<Alt>w`  Close buffer
 - `,c`      Close window, close buffer
 - `,d`      Done, write quit.
@@ -82,8 +81,9 @@ Foldmethod is "indent", globally, except for markdown
 
 - `gd`      Goto definition (e.g. over function name)
 - `,D`      All buffer Diagnostics
-- `<Spc>lr` Rename e.g. function name
-- `<Spc>lR` Find references
+- ` lr`     Rename e.g. function name
+- ` lR`     Find references
+- ` lx`     Diagnostics on/off toggle
 - `s`       Hover (code context help)
 
 👉 `:LSPInstall`
