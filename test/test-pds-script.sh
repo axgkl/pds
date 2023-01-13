@@ -6,7 +6,7 @@ function bootstrap_nvim_again {
     rm -rf pds.sh
     ✔️ wget "https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh"
     ✔️ chmod +x 'pds.sh'
-    ❌ ./pds.sh install
+    🚫 ./pds.sh install
 }
 function install_idempotent {
     ✔️ pds i \| grep LSP \| grep tsserver
@@ -18,7 +18,7 @@ function pds_no_args {
     ✔️ pds \| grep SWITCHES
     ✔️ pds \| grep FUNCTIONS
     ✔️ pds \| grep ACTIONS
-    ❌ pds \| grep nopie
+    🚫 pds \| grep nopie
 }
 function help_short {
     ✔️ pds -h \| grep SWITCHES
@@ -35,16 +35,16 @@ function stash {
     ✔️ test -e "$d/mytest/nvim/init.lua"
     ✔️ test -d "$d/mytest/share"
     ✔️ test -d "$d/mytest/state"
-    ❌ test -d "$HOME/.config/nvim" - "nvim dir still present"
-    ❌ test -d "$HOME/.local/state/nvim" - "nvim state dir still present"
-    ❌ test -d "$HOME/.local/share/nvim" - "nvim share dir still present"
-    ❌ pds stash mytest - "could restash with same name"
+    🚫 test -d "$HOME/.config/nvim" - "nvim dir still present"
+    🚫 test -d "$HOME/.local/state/nvim" - "nvim state dir still present"
+    🚫 test -d "$HOME/.local/share/nvim" - "nvim share dir still present"
+    🚫 pds stash mytest - "could restash with same name"
 }
 function clean-all {
     ✔️ pds clean-all -f
-    ❌ test -d "$HOME/.config/nvim" - "nvim dir still present"
-    ❌ test -d "$HOME/.local/state/nvim" - "nvim state dir still present"
-    ❌ test -d "$HOME/.local/share/nvim" - "nvim share dir still present"
+    🚫 test -d "$HOME/.config/nvim" - "nvim dir still present"
+    🚫 test -d "$HOME/.local/state/nvim" - "nvim state dir still present"
+    🚫 test -d "$HOME/.local/share/nvim" - "nvim share dir still present"
 }
 function restore {
     local d="$HOME/.local/share/stashed_nvim"
@@ -54,7 +54,7 @@ function restore {
     ✔️ test -e "$HOME/.config/nvim/init.lua"
     ✔️ test -e "$d/mytest/nvim/init.lua"
     ✔️ pds status \| grep mytest - 'must be still available'
-    ❌ test -e "$tf"
+    🚫 test -e "$tf"
 }
 
 function plugs-list {

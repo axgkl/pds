@@ -6,7 +6,9 @@ This installs an IDE and tools, organized so that it won't collide with anything
 It is intended for
 
 - local and server operation, based on [Mamba][mamba] and [NeoVim][neovim].
-- python, js, lua, shell development and markdown documentation (but extendable to more)
+- Neovim is your IDE
+- Mamba is the package manager for underlying tools the IDE is based upon, incl. a compiler
+- python, javascript, lua, shell, markdown lsp support ootb but extendable
 
 It does not require elevated perms to install.
 
@@ -39,6 +41,8 @@ Before installing pds, you might want to run `pds.sh stash mybackup`.
 
 This moves `~/.config/nvim`, `~/.local/state/nvim`, `~/.local/share/nvim` to an archive, ready for
 later restoration via `pds restore mybackup`.
+
+`pds clean-all` would erase the existing install.
 
 ## Features
 

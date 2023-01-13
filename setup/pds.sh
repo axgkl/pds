@@ -112,6 +112,10 @@ $pds_is_sourced && {
     handle_sourced "$@"
     ret=$?
     test "${1:-}" = "source" || return $ret
+    test -n "$ZSH_VERSION" && {
+        echo 'Full sourcing of all functions only in bash, sorry.'
+        return 1
+    }
 }
 # --------------------------------------------------------------------------------------- PROCESS
 pds_is_traced="${pds_is_traced:-false}"
@@ -278,6 +282,7 @@ if true; then
             hintn "."
             sleep "$dt"
         done
+        test "$test_mode" = "true" && C
         die "timed out, (waiting $dt*100s)"
     }
 
@@ -462,6 +467,20 @@ function install_pips {
     # todo: versions... For now we need those, for vpe vi plugin
     TMIF pip install --upgrade emoji-fzf pyyaml
     have PIPs "emoji-fzf pyyaml"
+}
+function create_vman {
+    # this only required alias man='pds vman'
+    local fn='#!/usr/bin/env bash
+    if [ $# -eq 0 ]; then
+        echo "What manual page do you want?"
+        exit 0
+    elif ! /usr/bin/man -w "$@" >/dev/null; then
+        # Check that manpage exists to prevent visual noise.
+        exit 1
+    fi
+    . ~/.config/pds/setup/pds.sh vi -c "SuperMan $*"' >"$fn"
+    chmod +x "$fn"
+    have vman 'Man pages in vi (alias man=vman)'
 }
 
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
@@ -794,6 +813,7 @@ function try_install {
     sh unset_installing_flag
     TSK echo "$pds_installing"
     sh core_tests
+    sh create_vman
     sh set_pds_function_to_user_shell
     title 'Finished.'
     echo -e '\n\nInstall Settings\n'

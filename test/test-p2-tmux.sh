@@ -19,6 +19,35 @@ h4 stuff
     ✔️ shows H2
     ✔️ shows H3
     ✔️ shows 'h4 stuff'
+    vi_quit
+}
+
+function test-man-pages {
+    TSC "alias man='pds vman'"
+    TSC man
+    ✔️ shows 'What manual page do you want'
+    TSK "man ls"
+    ✔️ max 0.4 shows "list directory contents"
+    vi_quit
+}
+
+function test-diag-show-toggle {
+    # diag off at start up.
+    # have to wait hover timeout vim.o.update
+    function diag { shows "Undefined"; }
+    M1='class foo(noexist):
+    stuff=42'
+    open 'p1.py' "$M1" pylsp
+    ✔️ shows stuff
+    ⌨️ G
+    🚫 diag
+    ⌨️ gg
+    ✔️ max 1 diag
+    ⌨️ G
+    🚫 max 1 diag
+    ⌨️ ' lx' # switch it on
+    ✔️ max 1 diag
+    vi_quit
 }
 
 return 2>/dev/null || test_in_tmux "$@"

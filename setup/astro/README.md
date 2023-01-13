@@ -100,22 +100,7 @@ Foldmethod is "indent", globally, except for markdown
 
 #### Man Pages
 
-You can view man pages in vim like so:
-
-Create this script `vman` within your path and optionally `alias man=vman`:
-
-```bash
-#!/usr/bin/env bash
-if [ $# -eq 0 ]; then
-	echo "What manual page do you want?"
-	exit 0
-elif ! man -w "$@" >/dev/null; then
-	# Check that manpage exists to prevent visual noise.
-	exit 1
-fi
-
-${EDITOR:-vi} -c "SuperMan $*"
-```
+You can view man pages in vim like so: alias man='pds vman'
 
 #### Markdown
 

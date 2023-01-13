@@ -33,12 +33,19 @@ function tst_die {
 }
 
 function test_in_tmux {
-    rm -f "$fn_tmux_err_exit"
+
+    export wait_dt=0.01
+    export test_mode=true
+    rm -f "$HOME"/.local/state/nvim/swap/%tmp%pds.vi*
     . "$HOME/.config/pds/setup/pds.sh" source
+    test "$1" == "-k" && {
+        shift
+        kill_tmux
+    }
     q 12 T ls || sh start_tmux
     test_match="${1:-}"
     for t in $(grep 'function test-' <"$0" | cut -d ' ' -f 2); do
-        tst $t
+        tst "$t"
     done
     safe_quit_vi
     sh kill_tmux
@@ -80,7 +87,7 @@ function parse_args() {
         shift
     done
 }
-function ico { $fail && echo -n '❌' || echo -n '✅ '; }
+function ico { $fail && echo -n '🚫' || echo -n '✅ '; }
 function testit {
     print "\x1b[37;2m[$(ico)] ${cmd[*]} $asserts\x1b[0m"
     if [[ -n "$asserts" ]]; then
@@ -108,6 +115,10 @@ function open {
     done
     tst_die "Opening the file I did not even see '"$3"'"
 }
+function vi_quit {
+    TSK ':q!'
+    TSC echo # the && touch done will be failing if not on shell again
+}
 function set_test_dt {
     test_dt=$(($(date +%s) - test_start))
 }
@@ -129,8 +140,8 @@ function tst_loop {
 
 # shellcheck disable=SC1083
 function ✔️ { fail=false && tst_loop "$@"; }
-function ❌ { fail=true && tst_loop "$@"; }
-
+function 🚫 { fail=true && tst_loop "$@"; }
+function ⌨️ { TSK "$@"; }
 # shellcheck disable=SC1083
 function 📷 { #C is capture (pds.sh)
     C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$inst_log"

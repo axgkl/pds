@@ -10,7 +10,7 @@ function test-vi-dashboard {
     TSK vi
     ✔️ max 0.4 shows "Recents"
     ✔️ shows "Find File"
-    ❌ shows 'Error'
+    🚫 shows 'Error'
 }
 
 # lib call?
