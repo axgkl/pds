@@ -508,7 +508,7 @@ function install_binary_tools {
         done
         test -z "${vers/ /}"
     }
-    have_missing_installed || TMIF mamba install -c conda-forge -y $vt
+    have_missing_installed || wait_dt=1 TMIF mamba install -c conda-forge -y $vt
     have Tools "$pkgs $spkgs"
     test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
 }
