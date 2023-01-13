@@ -37,10 +37,14 @@ jobs:
         shell: bash -l {0}
         run: "wget 'https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh' && chmod +x pds.sh && ./pds.sh install && rm -rf $HOME/pds/pkgs"
 
-      - name: TMUX Tests
+      - name: Prio 1 Tests
         shell: bash -l {0}
-        run: "cd $HOME/.config/pds && test/test_tmux.sh"
+        run: "cd $HOME/.config/pds && test/test-p1-tmux.sh"
 
-      - name: Script Tests
+      - name: Prio 2 Tests
         shell: bash -l {0}
-        run: "cd $HOME/.config/pds && test/test_pds_script.sh"
+        run: "cd $HOME/.config/pds && test/test-p2-tmux.sh"
+
+      - name: PDS Script Tests
+        shell: bash -l {0}
+        run: "cd $HOME/.config/pds && test/test-pds-script.sh"
