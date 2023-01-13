@@ -180,6 +180,7 @@ To move it away to a backup dir:
 
 ## Vim 4 Noobs
 
+- `:messages`    Show all messages printed up to now
 - `:set tw=100`  Set width for wrapping
 - `gq`           Rewrap paragraph
 - `vip`          Select paragraph, e.g. `vipga=` to align on "="

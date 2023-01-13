@@ -167,6 +167,8 @@ nnoremap          ,r  :PythonEval<CR>
 xnoremap <silent> ,r  :PythonEval<CR>
 nnoremap          ,E  :EvalInto<CR>
 
+vnoremap <silent> 5 :<c-u>HSHighlight 4<CR>
+vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
 
 " we often have old stuff at end of files:
 " go all down, then (<bar>, next cmd) search up but silent on no found:

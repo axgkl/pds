@@ -8,6 +8,7 @@
 setlocal textwidth=200
 setlocal foldmethod=indent
 setlocal foldlevel=99
+setlocal foldenable
 let g:SimpylFold_docstring_preview = 1
 map ,b Obreakpoint() # FIXME BREAKPOINT<C-c>
 map ,e   Otry:<Esc>j^i<TAB><Esc>oexcept Exception as ex:<CR>print('breakpoint set')<CR>breakpoint()<CR>keep_ctx=True<Esc>^

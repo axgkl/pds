@@ -3,9 +3,10 @@ TSDisable highlight
 
 
 
+"colorscheme rose-pine
 colorscheme tokyonight
 setl colorcolumn=
-setl conceallevel=0
+setl conceallevel=1
 " using mikeboiko/vim-markdown-folding, fixing the original for header display
 "setl foldexpr=markdown#FoldExpression(v:lnum)
 setl foldmethod=expr
@@ -27,6 +28,8 @@ let g:mkdp_browser = expand($BROWSER)
 let g:mkdp_theme = 'dark'
 let g:mkdp_echo_preview_url = 1
 
+let g:limelight_paragraph_span = 1
+let g:limelight_conceal_guifg = '#999999'
 let s:present_enabled = 0
 function! TogglePresent()
     if s:present_enabled
@@ -34,12 +37,15 @@ function! TogglePresent()
 	    :Limelight!
 	    :Gitsigns toggle_signs
       let s:present_enabled = 0
-      setl conceallevel=0
+      setl conceallevel=1
+      setl concealcursor=
       setl spell
       source ~/.config/nvim/lua/user/after/syntax/markdown.vim
     else
-	    :Goyo 120
+	    :Goyo 122
 	    :Limelight
+
+
 	    :Gitsigns toggle_signs
 	    " ugly but maybe needed - maybe only change color...?
 	    :delmarks! 
@@ -49,6 +55,9 @@ function! TogglePresent()
       setl concealcursor=nc
       setl nospell
       let s:present_enabled = 1
+      source ~/.config/nvim/lua/user/after/syntax/markdown.vim
+      " hi NonText ctermbg=none guibg=none
+      " hi Normal guifg=None guibg=NONE ctermbg=NONE
     endif
 endfunction
 
