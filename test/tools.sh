@@ -1,8 +1,8 @@
-# Most tools for tmux mode sourced from pds.sh itself.
-function fn_tmux_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.log"; }
-# if we need a joint file
-function fn_tres_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.res.log"; }
-fn_tmux_err_exit="/tmp/pds.tmux.$UID.err"
+# # Most tools for tmux mode sourced from pds.sh itself.
+# function fn_tmux_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.log"; }
+# # if we need a joint file
+# function fn_tres_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.res.log"; }
+#fn_tmux_err_exit="/tmp/pds.tmux.$UID.err"
 fn_vi_file="/tmp/pds.vi.$UID"
 
 function shows {
@@ -10,7 +10,7 @@ function shows {
     C | grep "$1"
 }
 function print {
-    echo -e "$*" | tee -a "$(fn_tmux_log)"
+    echo -e "$*" # | tee -a "$(fn_tmux_log)"
 }
 
 out() {
@@ -24,30 +24,24 @@ out() {
 function tst_die {
     # die is in pds.sh
     set +x
+    C
+    #tail -n 100 "${tmux_cmds_log:-}" || true
     out 196 "Failed" "${cur_test:-}"
     test -n "$1" && echo -e "$*"
-    $in_tmux && touch "$fn_tmux_err_exit" && {
-        test -z "$TMXBGDT" && bash
-        sh kill_tmux_session
-    }
+    echo 'Run "pds att" to see the error'
     exit 1
 }
 
 function test_in_tmux {
     rm -f "$fn_tmux_err_exit"
     . "$HOME/.config/pds/setup/pds.sh" source
-    test "$1" == "in_tmux" || {
-        run_in_tmux silent "$0" in_tmux "$@"
-        test -e "$fn_tmux_err_exit" && exit 1
-        exit 0
-    }
-    shift
+    q 12 T ls || sh start_tmux
     test_match="${1:-}"
-    export in_tmux=true
-    tmx_split_pane
-    TSC 'function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; } && clear'
-    tests
-    kill_tmux_session
+    for t in $(grep 'function test-' <"$0" | cut -d ' ' -f 2); do
+        tst $t
+    done
+    safe_quit_vi
+    sh kill_tmux
 }
 
 function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; }
@@ -61,8 +55,14 @@ function tst {
     out 119 "Test" "$*"
     "$@" || exit 1
 }
-
+tst_tries=1
+tst_dt=0.1
 function parse_args() {
+    test "$1" = "max" && {
+        tst_tries=10
+        tst_dt="$(bc <<<"scale=3; $2 / $tst_tries")"
+        shift 2
+    }
     cmd=()
     asserts=''
     assertmode=false
@@ -80,37 +80,58 @@ function parse_args() {
         shift
     done
 }
+function ico { $fail && echo -n '❌' || echo -n '✅ '; }
 function testit {
-    local test_start ret
-    test_start=$(date +%s)
-    print "\x1b[37;2m[$1] ${cmd[*]} $asserts\x1b[0m"
+    print "\x1b[37;2m[$(ico)] ${cmd[*]} $asserts\x1b[0m"
     if [[ -n "$asserts" ]]; then
         eval "${cmd[*]} $asserts"
     else
         "${cmd[@]}"
     fi
-    ret=$?
-    test_dt=$(($(date +%s) - test_start))
-    return $ret
+    local ret="$?"
+    if [[ "$fail" == "true" && "$ret" != "0" ]]; then
+        return
+    fi
+    if [[ "$fail" == "false" && "$ret" == "0" ]]; then
+        return
+    fi
+    return 1
 }
 function open {
-    local fn="$fn_vi_file$1"
+    # puts given content into a file with given name then opens vi on it
+    local fn="$fn_vi_file.$1"
     echo -e "$2" >"$fn"
     TSK 'pds vi "'$fn'"'
+    for i in {1..10}; do
+        C | grep "${3:-no_init_match_given}" && return
+        sleep 0.1
+    done
+    tst_die "Opening the file I did not even see '"$3"'"
 }
-function ✔️ {
+function set_test_dt {
+    test_dt=$(($(date +%s) - test_start))
+}
+
+function tst_loop {
+    # sometimes max is given, then we have to loop
+    local test_start
+    test_start=$(date +%s)
     parse_args "$@"
-    testit '✅ ' || tst_die "Failed: $errmsg"
+    for i in $(seq $tst_tries); do
+        #date -I"ns"
+        testit && set_test_dt && return
+        sleep $tst_dt
+    done
+    set_test_dt
+    $fail || tst_die "Failed: $errmsg"
+    tst_die "Should have failed: $errmsg"
 }
 
 # shellcheck disable=SC1083
-function ❌ {
-    parse_args "$@"
-    testit '❌' && tst_die "Should have failed: $errmsg"
-    true
-}
+function ✔️ { fail=false && tst_loop "$@"; }
+function ❌ { fail=true && tst_loop "$@"; }
 
 # shellcheck disable=SC1083
 function 📷 { #C is capture (pds.sh)
-    C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$(fn_tmux_log)"
+    C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$inst_log"
 }

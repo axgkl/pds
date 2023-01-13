@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 # _______________________________________________________________________________________ DEFAULTS
 set -a
 pds_repo="${pds_repo:-github.com:AXGKl/pds}"
@@ -34,12 +33,13 @@ fi
 
 #
 here="$(builtin cd "$(dirname "$me")" && pwd)"
+pds_tmux_sock="/tmp/pds_inst_tmux.$UID.sock"
 
 function run_with_pds_bin_path {
     # conda activate got slow
     local p="$pds_d_mamba/bin"
     if [[ "$PATH" != *"$p"* ]]; then
-        echo "pds tools at $p in \$PATH" >&2
+        test -z "$1" && echo "pds tools at $p in \$PATH" >&2
         export PATH="$p:$PATH" # our bins are newer
     fi
     test -z "$1" && return
@@ -52,23 +52,43 @@ function run_with_pds_bin_path {
     "$@"
 }
 
-function show-tools {
-    shift
-    local ts
-    ts="$(grep -E '^function' <"$here/tools.sh" | sed -e 's/function //g;s/{//g' | run_with_pds_bin_path fzf --exact --height=30% --query "${*:-}" -1)"
+function run-tools {
+    # access to further tools
+    local funcs ts
     . "$here/tools.sh"
+    test -n "$1" && {
+        type "$1" >/dev/null && {
+            "$@"
+            return $?
+        }
+    }
+    type
+    funcs="$(grep -E "^function " <"$here/tools.sh" | grep '\{ #')" # only documented ones
+    if [[ "$2" = "nomenu" ]]; then
+        shift 2
+        ts="$(cut -f 2 -d ' ' <<<"$funcs")"
+    else
+        ts="$(grep -E '^function' <"$here/tools.sh" |
+            sed -e 's/function //g;s/{//g;s/^/\x1b\[1;32m/g;s/#/\x1b[2;37m/g' |
+            run_with_pds_bin_path fzf --ansi --exact --height=30% --query "${*:-}" -1)"
+    fi
     run_with_pds_bin_path 2>/dev/null
-    eval "$ts"
+    shift
+    eval "$ts $*"
 }
 
 function handle_sourced {
     local r func
     func="${1:--h}"
+    test -z "$1" || shift
     r=run_with_pds_bin_path
     # backslashed the shorts, to avoid zsh global alias resolution. compat. with bash
+
     case "$func" in
         #F a|activate:    Adds pds bin dir to $PATH
-        \a | activate) $r ;;
+        \a | activate) $r "$@" ;;
+        #F att:           Attach to pds tmux socket
+        att) $r tmux -S "$pds_tmux_sock" att ;;
         #F d|deactivate:  Removes from $PATH
         \d | deactivate) $r deact ;;
         #F e|edit:        cd to user dir, edit init.lua
@@ -78,13 +98,13 @@ function handle_sourced {
             ;;
         #F source:        Sources ALL the pds functions
         source) return ;;
-        #F t|tools:       Opens tools menu
-        \s | \t | show-tools) show-tools "$@" ;;
-        -x | -s | -h | --help | clean-all | \i | install | shell | stash | swaps | \r | restore | status)
-            "$here/pds.sh" "$@"
+        #F s|tools:       Opens tools menu, except when exact match
+        \s | tools) run-tools "$@" ;;
+        -x | -s | -h | --help | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status)
+            "$here/pds.sh" "$func" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
-        *) $r "$@" ;;
+        *) $r "$func" "$@" ;;
     esac
 }
 
@@ -106,18 +126,18 @@ test "$1" == "-s" && {
     shift
 }
 $pds_is_traced && set -x
-in_tmux=false
+
 function set_constants {
-    T="\x1b[1;32;40m"
-    M="\x1b[1;32m"
-    I="\x1b[1;31m"
-    L="\x1b[2;37m"
-    O="\x1b[0m"
+    set -a
+    fn_done="/tmp/pds.done.$UID" # indicates a command done in tmux
+    have_tmux=false
     tmx_pane=1
     d_stash="$HOME/.local/share/stashed_nvim"
     d_conf_nvim="$HOME/.config/nvim"
     d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
-    inst_log="$HOME/pds_install.log"
+    inst_log="$HOME/pds_install.log"      # cmds sent
+    captures="/tmp/pds_captures.$UID.log" # tmux shots
+    set +a
     d_="$T\nPDS Tools $O
         $I
         USAGE$O: pds [-x] [-s] [-h] <function|action> [params]
@@ -209,152 +229,154 @@ function deactivate_mamba {
     conda deactivate
 }
 
-tmux_sock="/tmp/pds_inst_tmux.$UID.sock"
-done="/tmp/tmx.done.$UID"
-S="Space"
-t_() {
-    local sock
-    sock="$1"
-    shift
-    tmux -S "$sock" "$@"
-    local r="$?"
-    sleep 0.1
-    return "$r"
-}
-
-function T {
-    test "$1" == "-q" && shift || hint "tmux: $*"
-    t_ "$tmux_sock" "$@"
-}
-function C { T -q capture-pane -t 2 -p; }
-
-function hex {
-    # tmux send-key convenience, this way we can send anything w/o space problems:
-    # -> safer way to send to tmux - appends an Enter (the a):
-    python -c 'import sys; l=[hex(ord(c))[2:] for c in sys.argv[1]];print(" ".join(l) + " a", end="")' "$1"
-}
-
-# tmux send keys
-function TSK {
-    local cmd
-    hint "⌨️  $1"
-    cmd="$(hex "$1")"
-    eval T -q send-keys -t "$tmx_pane" -H "$cmd"
-}
-
-# tmux send comand, return when done
-function TSC {
-    local cmd
-    cmd="$1 && touch \$done"
-    shift
-    rm -f "$done"
-    TSK "$cmd"
-    waitfor "$done" "$@"
-}
-
-function TMIF {
-    test "$in_tmux" == "true" && TSC "$*"
-    test "$in_tmux" == "true" || "$@"
-}
-# wait for file then do action
-function waitfor {
-    hintn '.'
-    while ! test -e "$1"; do
-        hintn "."
-        sleep 0.1
-    done
-    hint "✔️ $1"
-    rm -f "$1"
-    test "$2" == "then" && {
-        shift
-        shift
-        eval "$*"
+if true; then
+    function T {
+        test "$1" == "-q" && shift || hint "tmux: $*"
+        tmux -S "$pds_tmux_sock" "$@"
     }
-    true
-}
+    function C { T -q capture-pane -t 1 -p; }
 
-# pretty output:
-function hintn { echo -en "$L$*$O" | tee -a "$tmux_sock.log"; }
-function hint { hintn "$*\n"; }
-function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
-function sh {
-    local m out
-    out="\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
-    echo -e "$out" | tee -a "$tmux_sock.log"
-    $pds_is_stepped && {
-        $in_tmux && {
-            tmux select-pane -t 0
-            hint "Hint: Attach via tmux -S $tmux_sock att"
+    function hex {
+        # tmux send-key convenience, this way we can send anything w/o space problems:
+        # -> safer way to send to tmux - appends an Enter (the a):
+        python -c 'import sys; l=[hex(ord(c))[2:] for c in sys.argv[1]];print(" ".join(l) + " a", end="")' "$1"
+    }
+
+    # tmux send keys
+    function TSK {
+        local cmd
+        hint "⌨️  $1"
+        cmd="$(hex "$1")"
+        eval T -q send-keys -t "$tmx_pane" -H "$cmd"
+    }
+
+    function TSC {
+        # tmux send comand, return when done or run all after 'then'
+        local cmd
+        cmd="$1 && touch \$fn_done"
+        shift
+        rm -f "$fn_done"
+        TSK "$cmd"
+        wait_for_file "$fn_done" "$@"
+        rm -f "$fn_done"
+    }
+
+    function TMIF {
+        if [ "$have_tmux" == "true" ]; then
+            TSC "$*"
+        else
+            "$@"
+        fi
+    }
+
+    function wait_for {
+        local dt
+        dt="${wait_dt:-0.1}"
+        hintn '.'
+        for i in {1..100}; do
+            eval "$1" && return 0
+            hintn "."
+            sleep "$dt"
+        done
+        die "timed out, (waiting $dt*100s)"
+    }
+
+    # wait for file then do action
+    function wait_for_file {
+        wait_for 'test -e "'$1'"'
+        hint "✔️ $1"
+        test "$2" == "then" && {
+            shift
+            shift
+            eval "$*"
         }
-        echo -e '\x1b[41m❓Continue / Run / Trace / Quit [cYtq]? \x1b[0m'
-        read -r m
-        m="$(echo "$m" | tr '[:upper:]' '[:lower:'])"
-        if [ "$m" == "q" ]; then exit 1; fi
-        if [ "$m" == "c" ]; then
-            pds_is_stepped=false
-            m=y
-        fi
-        if [ "$m" == "t" ]; then
-            if [ "$pds_is_traced" == "true" ]; then
-                pds_is_traced=false
-                set +x
-            else
-                pds_is_traced=true
-                set -x
-            fi
-        fi
-
+        true
     }
-    $in_tmux && tmux select-pane -t 1
-    "$@"
-}
+fi
+if true; then
+    O="\x1b["
+    T="$O;1;32;40m"
+    M="$O;1;32m"
+    I="$O;1;31m"
+    L="$O;2;37m"
+    O="$O;0m"
 
-function have {
-    local dt b args
-    test -z "$start_time" && start_time=$(date +%s)
-    b=s
-    test "$1" == "t" && {
+    function hintn { echo -en "$L$*$O"; }
+    function hint { hintn "$*\n"; }
+    function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
+    function sh {
+        local m out
+        out="\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
+        echo -e "$out" | tee "$captures"
+
+        $pds_is_stepped && {
+            $have_tmux && hint "Hint: Attach via tmux -S $pds_tmux_sock att"
+            echo -e '\x1b[41m❓Continue / Run / Trace / Quit [cYtq]? \x1b[0m'
+            read -r m
+            m="$(echo "$m" | tr '[:upper:]' '[:lower:'])"
+            if [ "$m" == "q" ]; then exit 1; fi
+            if [ "$m" == "c" ]; then
+                pds_is_stepped=false
+                m=y
+            fi
+            if [ "$m" == "t" ]; then
+                if [ "$pds_is_traced" == "true" ]; then
+                    pds_is_traced=false
+                    set +x
+                else
+                    pds_is_traced=true
+                    set -x
+                fi
+            fi
+
+        }
+        "$@"
+    }
+
+    function have {
+        local dt b args
+        test -z "$start_time" && start_time=$(date +%s)
+        b=s
+        test "$1" == "t" && {
+            shift
+            b=t
+        } # time is total
+        dt=$(($(date +%s) - start_time))
+        start_time=$(date +%s)
+        local msg h="$1"
         shift
-        b=t
-    } # time is total
-    dt=$(($(date +%s) - start_time))
-    start_time=$(date +%s)
-    local msg h="$1"
-    shift
-    #have="$(echo -n "$have" | sed -e 's/1m/2m/g')"
-    args="$(echo "$*" | xargs)"
-    msg="$(printf "\x1b[2m%5s$b\x1b[0m \x1b[1;34m✔️\x1b[0m %-30s %s\x1b[0m\n" "$dt" "\x1b[1m$h" "\x1b[2m $args")"
-    echo -e "$msg"
-    echo -e "$msg" >>"$inst_log"
-}
+        #have="$(echo -n "$have" | sed -e 's/1m/2m/g')"
+        args="$(echo "$*" | xargs)"
+        msg="$(printf "\x1b[2m%5s$b\x1b[0m \x1b[1;34m✔️\x1b[0m %-30s %s\x1b[0m\n" "$dt" "\x1b[1m$h" "\x1b[2m $args")"
+        echo -e "$msg"
+        echo -e "$msg" >>"$inst_log"
+    }
 
-function die {
-    echo -e "FATAL: \x1b[1;31m$1\x1b[0m"
-    shift
-    echo "$@"
-    exit 1
-}
+    function die {
+        kill_tmux
+        echo -e "\n💀 \x1b[1;31m$1\x1b[0m"
+        shift
+        echo "$@"
+        exit 1
+    }
 
-function show_help {
-    local f F a A
-    F="F"
-    A="A"
-    f="$(grep "#$F " <"$me" | sed -e 's/#F//g' | sed -e 's/^    //g')"
-    a="$(grep "#$A " <"$me" | sed -e 's/#A//g' | sed -e 's/^    //g')"
-    f="$(echo -e "${d_/<FUNCS>/$f}")"
-    echo -e "${f/<ACTIONS>/$a}"
-    if [[ "${1:-x}" == "--help" ]]; then
-        echo -e "${det_help}"
-    fi
-}
+    function show_help {
+        local f F a A
+        F="F"
+        A="A"
+        f="$(grep "#$F " <"$me" | sed -e 's/#F//g' | sed -e 's/^    //g')"
+        a="$(grep "#$A " <"$me" | sed -e 's/#A//g' | sed -e 's/^    //g')"
+        f="$(echo -e "${d_/<FUNCS>/$f}")"
+        echo -e "${f/<ACTIONS>/$a}"
+        if [[ "${1:-x}" == "--help" ]]; then
+            echo -e "${det_help}"
+        fi
+    }
+fi
+
 function disk {
     du -h "$1" | tail -n 1
 }
-function install_plugins {
-    export setup_mode=true
-    nvim +PackerSync
-}
-
 function set_pds_function_to_user_shell {
     local a fn h
     for fn in "$HOME/.bashrc" "$HOME/.zshrc"; do
@@ -434,16 +456,16 @@ function ensure_tool {
     export pds_mamba_prefer_system_tools="$p1"
     have "$1" "$(type "$1")"
 }
-function ensure_tmux {
-    ensure_tool tmux "tmux -V | grep -q 'tmux 3'"
-}
-function ensure_git {
-    ensure_tool git "git --version"
+function ensure_tmux { ensure_tool tmux "tmux -V | grep -q 'tmux 3'"; }
+function ensure_git { ensure_tool git "git --version"; }
+function install_pips {
+    # todo: versions... For now we need those, for vpe vi plugin
+    TMIF pip install --upgrade emoji-fzf pyyaml
+    have PIPs "emoji-fzf pyyaml"
 }
 
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
 function install_binary_tools {
-    echo "tools $pds_mamba_tools"
     local f v pkg name spkgs pkgs vers vt
     vt=""
     for f in "$here/$pds_distri" "$here"; do
@@ -536,7 +558,7 @@ function lsp() {
         sleep 0.5
         T send-keys Escape
         TSK ":LspInstall $1"
-        until test -e "$fn"; do sleep 0.1; done
+        wait_dt=0.2 wait_for_file "$fn"
         T send-keys Escape
     }
     have LSP "$1"
@@ -550,9 +572,9 @@ function install_astronvim {
     test -e "$d" 2>/dev/null || {
         # we just start it, install begins autom:
         TSK "$pds_d_mamba/bin/vi"
-        until (C | grep Mason); do sleep 0.2; done
+        wait_for 'C | grep Mason'
         hint "Waiting for: 'Mason' to disappear"
-        while (C | grep Mason >/dev/null); do sleep 0.2; done
+        wait_for 'C | grep -v Mason'
         sleep 0.1
         TSK ':q!'
         sleep 0.1
@@ -567,7 +589,7 @@ function install_astronvim {
     for ts in $(echo "$tss" | xargs); do
         fn="$d/$ts.so"
         test -e "$fn" && {
-            hint "Have $ts"
+            hint "Have already: $ts"
             continue
         }
         TSK ":TSInstall $ts"
@@ -582,15 +604,21 @@ function install_astronvim {
     lsp sumneko_lua "lua-language-server"
     lsp tsserver "typescript-language-server"
     lsp vimls "vim-language-server"
-    T send-keys Escape
-    T send-keys Escape
-    TSK ':q!'
-    TSK ':q!'
+    safe_quit_vi
     start_time="$t0"
     have t AstroNvim "$(ls --format=commas "$d")"
 }
+function safe_quit_vi {
+    T send-keys Escape
+    T send-keys Escape
+    TSK ':q!'
+    sleep 0.1
+    TSK ':q!'
+    sleep 0.1
+    TSC 'echo done'
+}
 
-function install_vim_user {
+function install_pds_flavor {
     set_symlinks() {
         local s=""
         local S="$here/$pds_distri"
@@ -606,15 +634,11 @@ function install_vim_user {
         ln -s "$here/../assets/spell" "$T/spell"
         have 'User Config' "Symlinks:$s"
     }
-    set_symlinks
-    TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
-    #TSC "$pds_d_mamba/bin/vi +PackerSync"
+    sh set_symlinks
+    wait_dt=0.3 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
     TSK "$pds_d_mamba/bin/vi"
     lsp ruff_lsp "ruff-lsp"
-    T send-keys Escape
-    T send-keys Escape
-    TSK ':q!'
-    TSK ':q!'
+    safe_quit_vi
     have "User Packages" "$S/plugins/init.lua"
 }
 
@@ -670,106 +694,121 @@ function unstash {
     set +x
     have "Copied back config" "Name $name"
 }
-
-function run_in_tmux {
-    hint 'Switching into tmux'
-    local silent
-    silent=false
-    test "$1" == "silent" && {
-        silent=true
-        shift
-    }
-    rm -f "$tmux_sock.log"
-    touch "$tmux_sock.log"
-    T ls 2>/dev/null && {
-        sh kill_tmux_session
-        sleep 0.4
-    }
-    export SHELL="/bin/bash"
-
-    if [ -z "$TMXBGDT" ]; then
-        T -f "$here/tmux.conf" new "$@"
+function q {
+    local f
+    f="$1"
+    shift
+    if [ "$f" = "12" ]; then
+        "$@" 1>/dev/null 2>/dev/null
+    elif [ "$f" = "2" ]; then
+        "$@" 2>/dev/null
+    elif [ "$f" = "1" ]; then
+        "$@" 1>/dev/null
     else
-
-        # github runner mode:
-        local tailer
-        export TERM="xterm-256color"
-        tmux -S "$tmux_sock" -f "$here/tmux.conf" new-session -d "/bin/bash"
-        sleep 0.5
-        # important. Otherwise we get 'Press Enter to continue...'
-        T resize-window -y 40 -x 100
-        TSK "$*"
-        local out outo
-        tail -f "$tmux_sock.log" & #| sed -r "/^\r?$/d;s/^/💻 /g" &
-        tailer=$!
-        out=''
-        outo=''
-        while true; do
-            sleep "$TMXBGDT"
-            tmux -S "$tmux_sock" ls >/dev/null 2>&1 || break
-            $silent && continue
-            out="$(C)"
-            test "$out" != "$outo" && echo -e "$out" || hintn '.'
-            outo="$out"
-        done
-        kill $tailer
-        sleep 0.1
+        "$f" "$@" 1>/dev/null
     fi
-    have 'Tmux fin'
 }
 
+function start_tmux {
+    q 2 T ls && sh kill_tmux
+    export SHELL="/bin/bash"
+    export TERM="xterm-256color"
+    T -f "$here/tmux.conf" new-session -d "/bin/bash"
+    TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
+    T set-environment "fn_done" "$fn_done"
+    # important. Otherwise we get 'Press Enter to continue...'
+    T resize-window -y 40 -x 100
+    have_tmux=true
+    sh start_tmux_screenshotter >>"$captures" &
+    have Tmux "$(T ls)"
+}
+
+function start_tmux_screenshotter {
+    local int
+    int=0.5
+    local out outo
+    #tail -f "$pds_tmux_cmds_log" & #| sed -r "/^\r?$/d;s/^/💻 /g" &; tailer=$!
+    out=''
+    outo=''
+    while true; do
+        out="$(q 2 C)"
+        test "$out" != "$outo" && echo -e "$out" || hintn '.'
+        outo="$out"
+        q 12 T ls || return
+        sleep "$int"
+    done #kill $tailer
+    have 'Screenshotter' "Interval: $int. Captures:  tail -f $captures"
+}
+
+function core_tests {
+    # run in bg to not stand still - we want auto role back
+    "$me" test -f "test-p1-tmux" || die 'core tests failed'
+    have Tests "Core functionality tests passed"
+}
+
+function rm_logs {
+    rm -f "$inst_log"
+    test "${1:-}" = "all" || return
+    rm -f "$captures"
+    rm -f "$pds_tmux_cmds_log"
+}
+function enter {
+    local key
+    echo 'hit a key to continue'
+    read -r key
+}
 function Install {
-    #T -f "$here/tmux.conf" new "$0" in_tmux install "$@"
-    #tmux new-session -f "$here/tmux.conf" -d /bin/bash
-    test "$in_tmux" == "false" && {
-        export start_time
-        export pds_installing=true
-        start_time=$(date +%s)
-        rm -f "$inst_log"
-        sh ensure_dirs
-        sh install_mamba_binary_pkg_mgr
-        sh activate_mamba
-        sh ensure_tmux
-
-        run_in_tmux "$0" in_tmux install "$@"
-        start_time=$(date +%s)
-        sh set_pds_function_to_user_shell
-        title 'Finished.'
-        echo -e '\n\nInstall Settings\n'
-        env | grep pds_ | sort
-
-        echo -e '\n\nInstall Progress Log\n'
-        cat "$inst_log"
-        echo ''
-        echo -e "- Size: $(disk "$pds_d_mamba") - you may delete the pkgs folder."
-        echo -e "- Source your ~/.bashrc or ~/.zshrc, to have pds function available."
-        echo -e "- ${M}pds vi$O to start editor with all tools."
-        echo -e "${L}\nDocs: "
-        echo -e "- https://mamba.readthedocs.io"
-        echo -e "- https://astronvim.github.io"
-        echo -e "- $pds_repo $O"
-        rm -f "$inst_log"
-        return $?
+    rm_logs all
+    function inst {
+        rm_logs
+        # subshell since may die (exit):
+        (sh try_install "$@") && echo -e "Version: $1" && rm_logs all && return 0
+        echo -e "Failure, with $1"
+        return 1
     }
-    tmx_split_pane
-    sh activate_mamba_in_tmux
+    inst 'nightly, newest plugins' && return
+    hint 'Plugins to snapshot versions'
+    # can't use Packer in vi, might be broken. We do our own:
+    source "$here/tools.sh"
+    q 2 sh plugins-revert-to-snapshot
+    inst 'nightly, versioned plugins' && return
+    die "No more options to stabilize the install. Now show me who's the man 💪😎 ..."
+}
+function set_installing_flag { TSC 'export pds_installing=true'; }
+function unset_installing_flag { TSC 'unset pds_installing'; }
+function try_install {
+    start_time=$(date +%s)
+    sh ensure_dirs
+    sh install_mamba_binary_pkg_mgr
+    sh activate_mamba
+    sh ensure_tmux
+    sh start_tmux
     sh install_binary_tools
+    sh install_pips
     sh install_neovim
+    sh set_installing_flag
     sh clone_astronvim
     sh install_astronvim
     sh install_shfmt
-    sh install_vim_user
-    sh kill_tmux_session
-}
+    sh install_pds_flavor
+    sh unset_installing_flag
+    TSK echo "$pds_installing"
+    sh core_tests
+    sh set_pds_function_to_user_shell
+    title 'Finished.'
+    echo -e '\n\nInstall Settings\n'
+    env | grep pds_ | sort
 
-function tmx_split_pane {
-    # in tmux from here
-    export tmx_pane=2
-    T set-environment "done" "$done"
-    T split-pane -h
-    #T resize-window -x 200
-    T resize-pane -x 90
-    sleep 0.1
+    echo -e '\n\nInstall Progress Log\n'
+    cat "$inst_log"
+    echo ''
+    echo -e "- Size: $(disk "$pds_d_mamba") - you may delete the pkgs folder."
+    echo -e "- Source your ~/.bashrc or ~/.zshrc, to have pds function available."
+    echo -e "- ${M}pds vi$O to start editor with all tools."
+    echo -e "${L}\nDocs: "
+    echo -e "- https://mamba.readthedocs.io"
+    echo -e "- https://astronvim.github.io"
+    echo -e "- $pds_repo $O"
 }
 
 function status {
@@ -778,13 +817,8 @@ function status {
     for k in $(ls "$d_stash"); do disk "$d_stash/$k"; done
 }
 
-function activate_mamba_in_tmux {
-    TSC ". $HOME/.bashrc"
-    TSC "conda activate $pds_d_mamba"
-}
-function kill_tmux_session {
-    T kill-session
-}
+function kill_tmux { T kill-server || true; }
+
 function shell {
     activate_mamba
     have "Mamba" "Shell"
@@ -817,11 +851,23 @@ function Bootstrap {
     hint 'Calling installer...'
     sh "$D/pds/setup/pds.sh" install "$@"
 }
-function main {
-    test "$1" == "in_tmux" && {
-        in_tmux=true
+function run_tests {
+    local fnm
+    fnm=""
+    kill_tmux
+    test "${1:-}" == '-f' && {
+        fnm="$2"
+        shift
         shift
     }
+    IFS=' ' && for t in "$(ls "$HOME/.config/pds/test" | grep test | grep -E "$fnm")"; do
+        title "Test: $t"
+        (cd "$HOME/.config/pds" && "test/$t" "$@") || die "Failed: $t"
+    done
+    kill_tmux
+}
+
+function main {
     set_constants
     if [[ -d "$here/../.git" && -d "$here/../setup" && -d "$here/../ftplugin" ]]; then
         req_bootstrap=false
@@ -836,9 +882,9 @@ function main {
     action="${1:-x}"
     shift
     case "$action" in
-        #A clean-all [-f]:      Removes all nvim
+        #A clean-all [-f]:          Removes all nvim
         clean-all) clean_all "$@" ;;
-        #A i|install:           Installs a personal dev sandbox on this machine
+        #A i|install:               Installs a personal dev sandbox on this machine
         \i | install)
             if [[ $req_bootstrap == true ]]; then
                 sh Bootstrap "$@"
@@ -846,16 +892,18 @@ function main {
                 sh Install "$@"
             fi
             ;;
-        #A shell:               Enters a shell with pds tools available
+        #A shell:                   Enters a shell with pds tools available
         shell) shell ;;
         source) return ;;
-        #A stash <name>:        Moves away an existing install, restorable
+        #A stash <name>:            Moves away an existing install, restorable
         stash) stash "$@" ;;
-        #A r|restore <name>:    Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
+        #A test [-f <m>] [m]: Runs all test scripts (optional -f filematchregex, test match)
+        test) run_tests "$@" ;;
+        #A r|restore <name>:        Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
         \r | restore) unstash "$@" ;;
-        #A status:              Status infos
+        #A status:                  Status infos
         status) status "$@" ;;
-        #A -h|--help:           Help (detailed with --help)
+        #A -h|--help:               Help (detailed with --help)
         --help) show_help --help ;;
         *) show_help "$@" ;;
     esac
