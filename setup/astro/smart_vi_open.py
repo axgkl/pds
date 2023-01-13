@@ -47,14 +47,19 @@ os.unlink(fn_log) if exists(fn_log) else 0
 
 
 def exit(*a):
-    return sys.exit(0)
+    send_exit('') # otherwise line problems in vim
 
 
 def pth_join(dir, fn): return str(Path(dir).joinpath(Path(fn)))
 
 
-def browse(lnk): return os.system(
-    '%s "%s" >/dev/null 2>/dev/null &' % (browser, lnk))
+def browse(lnk):
+    while lnk[0] == '*':
+        lnk = lnk[1:]
+    while lnk[-1] == '*':
+        lnk = lnk[:-1]
+    return os.system(
+        '%s "%s" >/dev/null 2>/dev/null &' % (browser, lnk))
 
 
 def send_exit(fn_or_vim_cmd):
@@ -62,7 +67,7 @@ def send_exit(fn_or_vim_cmd):
     log('sending back: %s' % fn_or_vim_cmd)
     with open(fn_from_lua, 'w') as fd:
         fd.write(fn_or_vim_cmd)
-    exit()
+    sys.exit(0)
 
 
 def validate_and_complete(m):
@@ -119,6 +124,8 @@ def is_markdown_dragshot_req(word, fn, dn=os.path.dirname, **_):
     if not word.startswith('shot:'):
         return
     tofn = fni = word.split('shot:', 1)[1]
+    if not fni.endswith('.png'):
+        fni += '.png'
     if not tofn.startswith('/'):
         fni = os.path.abspath(dn(fn) + '/' + fni)
     os.makedirs(dn(fni), exist_ok=True)
@@ -167,6 +174,14 @@ def is_man_page(word, fn, **_):
 
 
 def is_markdown_link(word, dir, **kw):
+
+    # [foo]: http://... ?
+    line = kw['line']
+    if word and word[0]+word[-2:] == '[]:' and line.startswith(word + ' '):
+        line = line[len(word)+1:]
+        if line.startswith('http') and not ' ' in line.strip():
+            exit(browse(line.strip()))
+
     # word = '[foo](bar.md)' ? then find or create it:
     # first [ missing from vim, when its like [**foo**](./bar.md):
     m = re.match(r'.*(.*\])(\(.*\)).*', word)
