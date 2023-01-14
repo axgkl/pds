@@ -77,7 +77,6 @@ function run-tools {
     eval "$ts $*"
 }
 
-
 function handle_sourced {
     local r func
     func="${1:--h}"
@@ -836,13 +835,14 @@ function status {
     for k in $(ls "$d_stash"); do disk "$d_stash/$k"; done
 }
 
-function kill_tmux { 
-  hint "Killing tmux server"
-  T list-session | grep -q attached && {
-    echo -e '\nThere is a session attached - not killing tmux. Enter a key here to continue'
-    read -r key
-  }
-  T kill-server || true
+function kill_tmux {
+    T list-sessions 2>/dev/null || return 0
+    hint "Killing tmux server"
+    T list-session | grep -q attached && {
+        echo -e '\nThere is a session attached - not killing tmux. Enter a key here to continue'
+        read -r key
+    }
+    T kill-server || true
 }
 
 function shell {
@@ -880,23 +880,33 @@ function Bootstrap {
 function run_tests {
     local fnm
     fnm=""
-    kill_tmux
+    kill_tmux || true
     test "${1:-}" == '-f' && {
         fnm="$2"
-        shift
-        shift
+        shift 2
     }
-    IFS=' ' && for t in "$(ls "$HOME/.config/pds/test" | grep test | grep -E "$fnm")"; do
-        title "Test: $t"
-        (cd "$HOME/.config/pds" && "test/$t" "$@") || die "Failed: $t"
-    done
+    (
+        cd "$HOME/.config/pds/test"
+        for t in $(ls); do
+            grep -q test <<<"$t" || continue
+            grep -q "$fnm" <<<"$t" || continue
+            title "Test: $t"
+            "./$t" "$@" || die "Failed: $t"
+        done
+    )
     kill_tmux
 }
 
 function att {
-  test -z "$1" && { $r tmux -S "$pds_tmux_sock" att ; return $?; }
-  echo 'Reattach loop starting...'
-  while true; do att; sleep 0.5; done
+    test -z "$1" && {
+        $r tmux -S "$pds_tmux_sock" att
+        return $?
+    }
+    echo 'Reattach loop starting...'
+    while true; do
+        att
+        sleep 0.5
+    done
 }
 
 function main {
@@ -915,7 +925,7 @@ function main {
     shift
     case "$action" in
         #A att [-l]:                Attach to pds tmux socket
-        att) att "$@";;
+        att) att "$@" ;;
         #A clean-all [-f]:          Removes all nvim
         clean-all) clean_all "$@" ;;
         #A i|install:               Installs a personal dev sandbox on this machine
@@ -931,7 +941,7 @@ function main {
         source) return ;;
         #A stash <name>:            Moves away an existing install, restorable
         stash) stash "$@" ;;
-        #A test [-f <m>] [m]: Runs all test scripts (optional -f filematchregex, test match)
+        #A test [-f <m>] [m]: Runs all test scripts (optional -f filematch, test match)
         test) run_tests "$@" ;;
         #A r|restore <name>:        Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
         \r | restore) unstash "$@" ;;

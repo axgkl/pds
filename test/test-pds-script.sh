@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -o errexit
-source test/tools.sh
+. "$(dirname "$0")/tools.sh"
 function bootstrap_nvim_again {
     cd
     rm -rf pds.sh
