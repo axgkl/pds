@@ -1,6 +1,9 @@
 # Personal Development Sandbox
 
-![build](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
+[![gh-ci][gh-ci_img]][gh-ci]
+
+[gh-ci]: https://github.com/AXGKl/pds/actions/workflows/main.yml
+[gh-ci-img]: https://github.com/AXGKl/pds/actions/workflows/main.yml/badge.svg
 
 This installs an IDE and tools, organized so that it won't collide with anything else on the system.
 

@@ -878,7 +878,7 @@ function Bootstrap {
     sh "$D/pds/setup/pds.sh" install "$@"
 }
 function run_tests {
-    local fnm
+    local fnm ret
     fnm=""
     kill_tmux || true
     test "${1:-}" == '-f' && {
@@ -894,7 +894,9 @@ function run_tests {
             "./$t" "$@" || die "Failed: $t"
         done
     )
+    ret=$?
     kill_tmux
+    return $ret
 }
 
 function att {
