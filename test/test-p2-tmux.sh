@@ -50,4 +50,14 @@ function test-diag-show-toggle {
     vi_quit
 }
 
+function test-pds-plugs-list {
+    TSK 'pds s plugins-list'
+    sleep 0.05
+    TSK "'mason-null-ls.nvim"
+    📷
+    T send-keys Enter
+    TSC pwd
+    ✔️ shows "$HOME/.local/share/nvim/site/pack/packer/opt/mason-null-ls.nvim"
+}
+
 return 2>/dev/null || test_in_tmux "$@"

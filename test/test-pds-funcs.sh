@@ -3,45 +3,50 @@ set -o errexit
 . "$(dirname "$0")/tools.sh"
 pds="$HOME/.config/pds/setup/pds.sh"
 
-function test-pds-act-add-path {
-    local v p; p="$PATH"; v="$HOME/pds/bin"
+function set-path {
+    PORIG="$PATH"
     export PATH=/usr/bin:/usr/sbin
-    . "$pds" a eval 'echo $PATH' >/dev/null
-    echo "$PATH" | grep -q "$v"
-    export PATH="$p"
 }
 
-function test-pds-run-any {
-    local p; p="$PATH"
-    export PATH=/usr/bin:/usr/sbin
-    . "$pds" env | grep 'PATH' | grep -q "$HOME/pds/bin:$PATH" || return 1
-    export PATH="$p"
+function reset-path {
+    export PATH="$PORIG"
+}
+
+function test-pds-act-add-path-in-subproc {
+    . "$pds" a eval 'echo $PATH' | grep pds || exit 1
+    grep pds <<<"$PATH" || return 0
+    exit 1
+}
+function test-pds-act-deact-path {
+    . "$pds" a
+    grep pds <<<$PATH || exit 1
+    type vi | grep pds || exit 1
+    . "$pds" d
+    grep pds <<<$PATH && exit 1 || true
 }
 
 function test-pds-source-not-all {
-     . "$pds" xfoox 2>/dev/null && return 1
-     type Install 2>/dev/null && return 1 || return 0
+    # only for the defined actions the whole file is being sourced
+    . "$pds" xfoox 2>/dev/null && return 1
+    type Install 2>/dev/null && return 1 || return 0
 }
 
 function test-pds-tools-exact-match {
-    local s="$SHELL" d="$(pwd)"
-    SHELL=echo
+    local s
+    s="$SHELL"
+    local d
+    d="$(pwd)"
+    SHELL="echo"
     . "$pds" s cd-swaps
     pwd | grep -q '/nvim/swap' || return 1
-    cd "$d"; SHELL="$s"
+    cd "$d"
+    SHELL="$s"
 }
 
-function test-pds-plugs-list {
-    TSK 'pds t plugins-list'
-    TSK "'mason-null-ls.nvim"
-    📷
-    T send-keys Enter
-    TSC pwd
-    ✔️ shows "$HOME/.local/share/nvim/site/pack/packer/opt/mason-null-ls.nvim"
+function ptst {
+    set-path
+    tst "$1"
+    reset-path
 }
-#test_in_tmux "$@"
-tst test-pds-tools-exact-match 
-tst test-pds-act-add-path
-tst test-pds-run-any
-tst test-pds-source-not-all
-echo ok
+
+all_testfuncs "$0" ptst

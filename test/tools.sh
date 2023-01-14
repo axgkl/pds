@@ -32,6 +32,10 @@ function tst_die {
     exit 1
 }
 
+function all_testfuncs {
+    for t in $(grep '^function test-' <"$1" | cut -d ' ' -f 2); do "$2" "$t"; done
+}
+
 function test_in_tmux {
 
     export wait_dt=0.01
@@ -44,9 +48,7 @@ function test_in_tmux {
     }
     q 12 T ls || sh start_tmux
     test_match="${1:-}"
-    for t in $(grep 'function test-' <"$0" | cut -d ' ' -f 2); do
-        tst "$t"
-    done
+    all_testfuncs "$0" tst
     safe_quit_vi
     sh kill_tmux
 }
