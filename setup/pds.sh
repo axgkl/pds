@@ -780,6 +780,7 @@ function Install {
         rm_logs
         # subshell since may die (exit):
         (sh try_install "$@") && echo -e "Version: $1" && rm_logs all && return 0
+        C
         echo -e "Failure, with $1"
         return 1
     }
@@ -810,8 +811,8 @@ function try_install {
     sh install_pds_flavor
     sh unset_installing_flag
     TSK echo "$pds_installing"
-    sh core_tests
     sh create_vman
+    sh core_tests
     sh set_pds_function_to_user_shell
     title 'Finished.'
     echo -e '\n\nInstall Settings\n'
@@ -836,10 +837,10 @@ function status {
 }
 
 function kill_tmux {
+    local key
     T list-sessions 2>/dev/null || return 0
-    hint "Killing tmux server"
-    T list-session | grep -q attached && {
-        echo -e '\nThere is a session attached - not killing tmux. Enter a key here to continue'
+    q 1 T list-session | grep -q attached && {
+        echo -e '\nThere is a session attached - not killing tmux. Enter a key here to continue, once done with inspections.'
         read -r key
     }
     T kill-server || true
@@ -887,7 +888,7 @@ function run_tests {
     }
     (
         cd "$HOME/.config/pds/test"
-        for t in $(ls); do
+        for t in *; do
             grep -q test <<<"$t" || continue
             grep -q "$fnm" <<<"$t" || continue
             title "Test: $t"
