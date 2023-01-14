@@ -236,10 +236,10 @@ end
 M.toggle_diag_displ = function()
 	local c = vim.diagnostic.config
 	if c()["virtual_text"] then
-	--say CursorHold,CursorHoldI * to get it while typing
-	vim.cmd([[autocmd CursorHold * lua vim.diagnostic.open_float(nil, {focus=false})]])
+		--say CursorHold,CursorHoldI * to get it while typing
+		vim.cmd([[autocmd CursorHold * lua vim.diagnostic.open_float(nil, {focus=false})]])
 	else
-	vim.cmd([[autocmd CursorHold * autocmd!]])
+		vim.cmd([[autocmd CursorHold * autocmd!]])
 	end
 	c({ virtual_text = not c()["virtual_text"] })
 end

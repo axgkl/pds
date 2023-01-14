@@ -36,7 +36,7 @@ here="$(builtin cd "$(dirname "$me")" && pwd)"
 pds_tmux_sock="/tmp/pds_inst_tmux.$UID.sock"
 
 function run_with_pds_bin_path {
-    # conda activate got slow
+    # conda activate too slow to start vim. We need the tools as well, so we add to path:
     local p="$pds_d_mamba/bin"
     if [[ "$PATH" != *"$p"* ]]; then
         test -z "$1" && echo "pds tools at $p in \$PATH" >&2

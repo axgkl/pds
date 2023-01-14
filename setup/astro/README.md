@@ -113,7 +113,6 @@ You can view man pages in vim like so: alias man='pds vman'
 - `,b`: Breakpoint, correctly indented
 - `,e`: Wrap line into try-except block 
 
-
 ---
 
 ## Vim Helpers
@@ -124,7 +123,8 @@ You can view man pages in vim like so: alias man='pds vman'
 
 Available as `:lua require('user.utils')` or `:lua UU`
 
-- `dump(<table)`: Prints table recursively. Ex: `:Redir lua UU.dump(vim.lsp)`
+- `dump(<table)`: Prints table recursively. Ex: `:lua UU.dump(vim.lsp)`
+- `P(<table)`: Prints table recursively. Ex: `:lua P(vim.lsp)`
 
 
 
@@ -174,6 +174,8 @@ To move it away to a backup dir:
 - `:echo &tw`    Shows the set value of a vim variable 
 - `:echo &tw`    Shows the set value of a vim variable 
 - `vip<Ctrl>VI`  Block mode vertical editing (rendered for all selected lines after <ESC>)
+- `:lua vim.inspect(package.loaded)` Print loaded packages, e.g. Python's "sys.modules".
+  Setting one to nil here will trigger a reload at next require of it.
 
 ...and 1 Mio others. [Live is a lesson. You learned it when you're through][lp] 🥲
 

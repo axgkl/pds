@@ -1,3 +1,8 @@
+P = function(v)
+	print(vim.inspect(v))
+	return v
+end
+
 UU = require("user.utils") -- allows :lua U.dump(vim.lsp)
 if os.getenv("pds_installing") then
 	return {}
