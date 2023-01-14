@@ -77,6 +77,7 @@ function run-tools {
     eval "$ts $*"
 }
 
+
 function handle_sourced {
     local r func
     func="${1:--h}"
@@ -87,8 +88,6 @@ function handle_sourced {
     case "$func" in
         #F a|activate:    Adds pds bin dir to $PATH
         \a | activate) $r "$@" ;;
-        #F att:           Attach to pds tmux socket
-        att) $r tmux -S "$pds_tmux_sock" att ;;
         #F d|deactivate:  Removes from $PATH
         \d | deactivate) $r deact ;;
         #F e|edit:        cd to user dir, edit init.lua
@@ -100,11 +99,11 @@ function handle_sourced {
         source) return ;;
         #F s|tools:       Opens tools menu, except when exact match
         \s | tools) run-tools "$@" ;;
-        -x | -s | -h | --help | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status)
+        -x | -s | -h | --help | att | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status)
             "$here/pds.sh" "$func" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
-        *) $r "$func" "$@" ;;
+        *) ($r "$func" "$@") ;;
     esac
 }
 
@@ -837,7 +836,14 @@ function status {
     for k in $(ls "$d_stash"); do disk "$d_stash/$k"; done
 }
 
-function kill_tmux { T kill-server || true; }
+function kill_tmux { 
+  hint "Killing tmux server"
+  T list-session | grep -q attached && {
+    echo -e '\nThere is a session attached - not killing tmux. Enter a key here to continue'
+    read -r key
+  }
+  T kill-server || true
+}
 
 function shell {
     activate_mamba
@@ -887,6 +893,12 @@ function run_tests {
     kill_tmux
 }
 
+function att {
+  test -z "$1" && { $r tmux -S "$pds_tmux_sock" att ; return $?; }
+  echo 'Reattach loop starting...'
+  while true; do att; sleep 0.5; done
+}
+
 function main {
     set_constants
     if [[ -d "$here/../.git" && -d "$here/../setup" && -d "$here/../ftplugin" ]]; then
@@ -902,6 +914,8 @@ function main {
     action="${1:-x}"
     shift
     case "$action" in
+        #A att [-l]:                Attach to pds tmux socket
+        att) att "$@";;
         #A clean-all [-f]:          Removes all nvim
         clean-all) clean_all "$@" ;;
         #A i|install:               Installs a personal dev sandbox on this machine
