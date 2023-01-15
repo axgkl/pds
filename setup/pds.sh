@@ -468,8 +468,10 @@ function install_pips {
 }
 function create_vman {
     # this only required alias man='pds vman'
-    local fn; fn="$HOME/pds/bin/vman"
-    local s; echo '#!/usr/bin/env bash
+    local fn
+    fn="$HOME/pds/bin/vman"
+    local s
+    echo '#!/usr/bin/env bash
     if [ $# -eq 0 ]; then
         echo "What manual page do you want?"
         exit 0
@@ -732,8 +734,10 @@ function start_tmux {
     export SHELL="/bin/bash"
     export TERM="xterm-256color"
     T -f "$here/tmux.conf" new-session -d "/bin/bash"
-    TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
+    sleep 0.05
     T set-environment "fn_done" "$fn_done"
+    sleep 0.05
+    TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
     # important. Otherwise we get 'Press Enter to continue...'
     T resize-window -y 40 -x 100
     have_tmux=true
@@ -781,7 +785,6 @@ function Install {
         rm_logs
         # subshell since may die (exit):
         (sh try_install "$@") && echo -e "Version: $1" && rm_logs all && return 0
-        C
         echo -e "Failure, with $1"
         return 1
     }
