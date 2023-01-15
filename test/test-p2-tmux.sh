@@ -26,9 +26,11 @@ function test-man-pages {
     TSC "alias man='pds vman'"
     TSC man
     ✔️ shows 'What manual page do you want'
+    TSK "set -x"
     TSK "man ls"
-    ✔️ max 0.4 shows "list directory contents"
+    ✔️ max 0.4 shows "SYNOPSIS"
     vi_quit
+    TSK "set +x"
 }
 
 function test-diag-show-toggle {

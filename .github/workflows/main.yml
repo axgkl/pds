@@ -35,8 +35,7 @@ jobs:
 
       - name: Bootstrap
         shell: bash -l {0}
-        #run: "wget 'https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh' && chmod +x pds.sh && ./pds.sh install && rm -rf $HOME/pds/pkgs"
-        run: "man ls"
+        run: "wget 'https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh' && chmod +x pds.sh && ./pds.sh install && rm -rf $HOME/pds/pkgs"
 
       - name: Prio 1 Tests
         shell: bash -l {0}
