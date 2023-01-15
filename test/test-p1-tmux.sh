@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ## These tests may *never* fail
-set -x
+#set -x
 set -o errexit
 . "$(dirname "$0")/tools.sh"
 

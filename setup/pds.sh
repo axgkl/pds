@@ -116,6 +116,7 @@ $pds_is_sourced && {
     }
 }
 # --------------------------------------------------------------------------------------- PROCESS
+set -e
 pds_is_traced="${pds_is_traced:-false}"
 pds_is_stepped="${pds_is_stepped:-false}"
 
@@ -140,7 +141,7 @@ function set_constants {
     inst_log="$HOME/pds_install.log"      # cmds sent
     captures="/tmp/pds_captures.$UID.log" # tmux shots
     set +a
-    d_="$T\nPDS Tools $O
+    d_="$H1\nPDS Tools $O
         $I
         USAGE$O: pds [-x] [-s] [-h] <function|action> [params]
         $I
@@ -296,9 +297,9 @@ if true; then
         true
     }
 fi
-if true; then
+true && {
     O="\x1b["
-    T="$O;1;32;40m"
+    H1="$O;1;32;40m"
     M="$O;1;32m"
     I="$O;1;31m"
     L="$O;2;37m"
@@ -309,6 +310,7 @@ if true; then
     function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
     function sh {
         local m out
+        T -q rename-window "⚙️ $*" || true
         out="\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
         echo -e "$out" | tee "$captures"
 
@@ -333,7 +335,7 @@ if true; then
             fi
 
         }
-        "$@"
+        "$@" || die "Failed: $*"
     }
 
     function have {
@@ -375,7 +377,7 @@ if true; then
             echo -e "${det_help}"
         fi
     }
-fi
+}
 
 function disk {
     du -h "$1" | tail -n 1
@@ -463,7 +465,7 @@ function ensure_tmux { ensure_tool tmux "tmux -V | grep -q 'tmux 3'"; }
 function ensure_git { ensure_tool git "git --version"; }
 function install_pips {
     # todo: versions... For now we need those, for vpe vi plugin
-    TMIF pip install --upgrade emoji-fzf pyyaml
+    q 12 source "$me" a python -c 'import yaml' || TMIF pip install --upgrade emoji-fzf pyyaml
     have PIPs "emoji-fzf pyyaml"
 }
 function create_vman {
@@ -560,16 +562,6 @@ function install_neovim {
     have NeoVim "$d" "$(vi -v | head -n 1)"
 }
 
-function clone_astronvim {
-    if [ -e "$d_conf_nvim" ]; then
-        TSC "( builtin cd '$d_conf_nvim' && git pull )"
-    else
-        TSC "git clone 'https://github.com/AstroNvim/AstroNvim' '$d_conf_nvim'"
-    fi
-    $pds_pin_distri && TSC "( builtin cd '$d_conf_nvim' && git status && git reset --hard '$pds_v_distri'; )"
-    have "AstroNvim Repo" "Pinned: $pds_pin_distri. $(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
-}
-
 function lsp() {
     local fn
     fn="$HOME/.local/share/nvim/mason/bin/${2:-$1}"
@@ -584,26 +576,50 @@ function lsp() {
     have LSP "$1"
 }
 
-function install_astronvim {
-    #t resize-window -x 150 -y 50
-    local d t0 ts fn tss
-    t0=$(date +%s) # total
-    d="$HOME/.local/share/nvim/mason/bin"
-    test -e "$d" 2>/dev/null || {
-        # we just start it, install begins autom:
-        TSK "$pds_d_mamba/bin/vi"
-        wait_for 'C | grep Mason'
-        hint "Waiting for: 'Mason' to disappear"
-        wait_for 'C | grep -v Mason'
-        sleep 0.1
-        TSK ':q!'
-        sleep 0.1
-        TSK ':q!'
-        sleep 0.1
+function clone_astronvim_version {
+    test -e "$d_conf_nvim" || TSC "git clone 'https://github.com/AstroNvim/AstroNvim' '$d_conf_nvim'"
+    TSC 'here="$(pwd)"'
+    TSC "builtin cd '$d_conf_nvim'"
+    TSC 'git fetch'
+    TSC "git checkout '$pds_inst_astro_branch'"
+    test -n "$pds_inst_astro_ver" && {
+        wait_dt=0.01
+        TSC "git checkout '$pds_inst_astro_ver'"
     }
-    have "Mason Binary Pkg Tool"
+    #$pds_pin_distri && TSC "( builtin cd '$d_conf_nvim' && git status && git reset --hard '$pds_v_distri'; )"
+    TSC 'cd "$here"'
+    have "AstroNvim $branch version" "$(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
+}
+
+function first_start_astronvim {
+    # not so sexy looking but pretty safe:
+    wait_dt=0.2 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+    have "AstroNVim self install" "Plugins and Mason Binary Pkg Tool"
+    #
+    # #t resize-window -x 150 -y 50
+    # local d t0 ts fn tss
+    # d="$HOME/.local/share/nvim/mason/bin"
+    # local want_mason=false
+    # set -x
+    # q 12 test -e "$d" || want_mason=true
+    # set +x
+    # #t0=$(date +%s) # total
+    # TSK "$pds_d_mamba/bin/vi"
+    # echo "want mason: $want_mason"
+    # $want_mason && {
+    #     # we just start it, install begins autom:
+    #     wait_for 'C | grep Mason'
+    #     hint "Waiting for: 'Mason' to disappear"
+    #     wait_for 'C | grep -v Mason'
+    # }
+    # set -x
+    # safe_quit_vi
+    # set +x
+    # echo done
+}
+
+function install_treesitter_parsers {
     TSK "$pds_d_mamba/bin/vi"
-    sleep 1
     d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
     tss="python bash css javascript vim help"
     for ts in $(echo "$tss" | xargs); do
@@ -616,18 +632,23 @@ function install_astronvim {
         until test -e "$fn"; do sleep 0.1; done
         sleep 0.1
     done
-    have "Treesitter parsers" "$tss"
-
-    lsp bashls "bash-language-server"
-    lsp marksman
-    lsp pylsp
-    lsp sumneko_lua "lua-language-server"
-    lsp tsserver "typescript-language-server"
-    lsp vimls "vim-language-server"
     safe_quit_vi
-    start_time="$t0"
-    have t AstroNvim "$(ls --format=commas "$d")"
+    have "Treesitter parsers" "$tss"
 }
+
+function install_lsps {
+    TSK "$pds_d_mamba/bin/vi"
+    sh lsp bashls "bash-language-server"
+    sh lsp marksman
+    sh lsp pylsp
+    sh lsp sumneko_lua "lua-language-server"
+    sh lsp tsserver "typescript-language-server"
+    sh lsp vimls "vim-language-server"
+    sh lsp ruff_lsp "ruff-lsp"
+    safe_quit_vi
+    have "LSPs" "$tss"
+}
+
 function safe_quit_vi {
     T send-keys Escape
     T send-keys Escape
@@ -639,9 +660,9 @@ function safe_quit_vi {
 }
 
 function install_pds_flavor {
-    set_symlinks() {
+    local S="$here/$pds_distri"
+    function set_user_symlinks {
         local s=""
-        local S="$here/$pds_distri"
         local T="$d_conf_nvim"
         rm -f "$T/lua/user"
         ln -s "$S" "$T/lua/user"
@@ -654,12 +675,14 @@ function install_pds_flavor {
         ln -s "$here/../assets/spell" "$T/spell"
         have 'User Config' "Symlinks:$s"
     }
-    sh set_symlinks
-    wait_dt=0.3 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
-    TSK "$pds_d_mamba/bin/vi"
-    lsp ruff_lsp "ruff-lsp"
-    safe_quit_vi
-    have "User Packages" "$S/plugins/init.lua"
+    function install_user_plugins {
+        wait_dt=0.3 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+        have "User Packages" "see $S/plugins/init.lua"
+    }
+    sh set_user_symlinks
+    sh install_user_plugins
+    #TSK "$pds_d_mamba/bin/vi"
+    #lsp ruff_lsp "ruff-lsp"
 }
 
 function clean_all {
@@ -732,17 +755,14 @@ function q {
 function start_tmux {
     sh kill_tmux
     export SHELL="/bin/bash"
-    export TERM="xterm-256color"
     T -f "$here/tmux.conf" new-session -d "/bin/bash"
-    sleep 1
     T set-environment "fn_done" "$fn_done"
-    sleep 1
-    TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
-    sleep 1
     # important. Otherwise we get 'Press Enter to continue...'
     T resize-window -y 40 -x 100
+    T set -g status-position top
     have_tmux=true
     sh start_tmux_screenshotter >>"$captures" &
+    TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
     have Tmux "$(T ls)"
 }
 
@@ -763,12 +783,6 @@ function start_tmux_screenshotter {
     have 'Screenshotter' "Interval: $int. Captures:  tail -f $captures"
 }
 
-function core_tests {
-    # run in bg to not stand still - we want auto role back
-    "$me" test -f "test-p1-tmux" || die 'core tests failed'
-    have Tests "Core functionality tests passed"
-}
-
 function rm_logs {
     rm -f "$inst_log"
     test "${1:-}" = "all" || return
@@ -780,26 +794,45 @@ function enter {
     echo 'hit a key to continue'
     read -r key
 }
-function Install {
-    rm_logs all
-    function inst {
-        rm_logs
-        # subshell since may die (exit):
-        (sh try_install "$@") && echo -e "Version: $1" && rm_logs all && return 0
-        echo -e "Failure, with $1"
-        return 1
-    }
-    inst 'nightly, newest plugins' && return
-    hint 'Plugins to snapshot versions'
-    # can't use Packer in vi, might be broken. We do our own:
-    source "$here/tools.sh"
-    q 2 sh plugins-revert-to-snapshot
-    inst 'nightly, versioned plugins' && return
-    die "No more options to stabilize the install. Now show me who's the man 💪😎 ..."
-}
+# function nstall {
+#     rm_logs all
+#     function inst {
+#         rm_logs
+#         # subshell since may die (exit):
+#         (sh try_install "$@") && echo -e "Version: $1" && rm_logs all && return 0
+#         echo -e "Failure, with $1"
+#         return 1
+#     }
+#     inst 'nightly, newest plugins' && return
+#     hint 'Plugins to snapshot versions'
+#     # can't use Packer in vi, might be broken. We do our own:
+#     source "$here/tools.sh"
+#     q 2 sh plugins-revert-to-snapshot
+#     inst 'nightly, versioned plugins' && return
+#     die "No more options to stabilize the install. Now show me who's the man 💪😎 ..."
+# }
+
 function set_installing_flag { TSC 'export pds_installing=true'; }
 function unset_installing_flag { TSC 'unset pds_installing'; }
-function try_install {
+function parse_install_opts {
+    pds_inst_astro_branch="main"
+    pds_inst_astro_ver=""
+    while test -n "$1"; do
+        case "$1" in
+            -av | astro-ver)
+                pds_inst_astro_ver="$2"
+                shift 2
+                ;;
+            -ab | astro-branch)
+                pds_inst_astro_branch="$2"
+                shift 2
+                ;;
+            *) die "$1 not supported" ;;
+        esac
+    done
+}
+function Install {
+    parse_install_opts "$@"
     start_time=$(date +%s)
     sh ensure_dirs
     sh install_mamba_binary_pkg_mgr
@@ -810,12 +843,13 @@ function try_install {
     sh install_pips
     sh install_neovim
     sh set_installing_flag
-    sh clone_astronvim
-    sh install_astronvim
-    sh install_shfmt
+    sh clone_astronvim_version
+    sh first_start_astronvim
     sh install_pds_flavor
     sh unset_installing_flag
-    TSK echo "$pds_installing"
+    sh install_treesitter_parsers
+    sh install_lsps
+    sh install_shfmt
     sh create_vman
     sh core_tests
     sh set_pds_function_to_user_shell
@@ -843,8 +877,8 @@ function status {
 
 function kill_tmux {
     local key
-    T list-sessions 2>/dev/null || return 0
-    q 1 T list-session | grep -q attached && {
+    q 12 T list-sessions || return 0
+    T list-session | grep -q attached && {
         echo -e '\nThere is a session attached - not killing tmux. Enter a key here to continue, once done with inspections.'
         read -r key
     }
@@ -883,6 +917,12 @@ function Bootstrap {
     hint 'Calling installer...'
     sh "$D/pds/setup/pds.sh" install "$@"
 }
+function core_tests {
+    # run in bg to not stand still - we want auto role back
+    "$me" test -f "test-p1-tmux" || die 'core tests failed'
+    have Tests "Core functionality tests passed"
+}
+
 function run_tests {
     local fnm ret
     fnm=""
@@ -906,13 +946,17 @@ function run_tests {
 }
 
 function att {
+    local tm
+    # have to use THE SAME TMUX THAN THE SERVER. Otherwise option incompatibilities
+    tm="$(run_with_pds_bin_path which tmux)"
+    echo "Using $tm"
     test -z "$1" && {
-        $r tmux -S "$pds_tmux_sock" att
+        "$tm" -S "$pds_tmux_sock" att
         return $?
     }
     echo 'Reattach loop starting...'
     while true; do
-        att
+        att || true
         sleep 0.5
     done
 }

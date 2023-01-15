@@ -142,5 +142,5 @@ function 🚫 { fail=true && tst_loop "$@"; }
 function ⌨️ { TSK "$@"; }
 # shellcheck disable=SC1083
 function 📷 { #C is capture (pds.sh)
-    C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$inst_log"
+    C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$captures"
 }
