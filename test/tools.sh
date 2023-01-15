@@ -42,15 +42,11 @@ function test_in_tmux {
     export test_mode=true
     rm -f "$HOME"/.local/state/nvim/swap/%tmp%pds.vi*
     . "$HOME/.config/pds/setup/pds.sh" source
-    test "$1" == "-k" && {
-        shift
-        kill_tmux
-    }
-    q 12 T ls || sh start_tmux
+    q 12 T ls || sh start_tmux # don't kill when running, want to retest
+    hint 'tmux started'
     test_match="${1:-}"
     all_testfuncs "$0" tst
     safe_quit_vi
-    sh kill_tmux
 }
 
 function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; }

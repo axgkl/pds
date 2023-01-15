@@ -730,14 +730,15 @@ function q {
 }
 
 function start_tmux {
-    q 2 T ls && sh kill_tmux
+    sh kill_tmux
     export SHELL="/bin/bash"
     export TERM="xterm-256color"
     T -f "$here/tmux.conf" new-session -d "/bin/bash"
-    sleep 0.05
+    sleep 1
     T set-environment "fn_done" "$fn_done"
-    sleep 0.05
+    sleep 1
     TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
+    sleep 1
     # important. Otherwise we get 'Press Enter to continue...'
     T resize-window -y 40 -x 100
     have_tmux=true
