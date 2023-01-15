@@ -468,7 +468,8 @@ function install_pips {
 }
 function create_vman {
     # this only required alias man='pds vman'
-    local fn='#!/usr/bin/env bash
+    local fn; fn="$HOME/pds/bin/vman"
+    local s; echo '#!/usr/bin/env bash
     if [ $# -eq 0 ]; then
         echo "What manual page do you want?"
         exit 0
