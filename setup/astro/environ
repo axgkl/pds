@@ -1,5 +1,3 @@
 # vim:ft=sh
-pds_v_distri="6a08bd1d49028169e5182a60e30e85439301ded2"
-
-
-
+pds_v_distri_fallback="4f4269d174d85df8b278a6e09d05daeef840df4a"
+pds_v_distri="latest"
