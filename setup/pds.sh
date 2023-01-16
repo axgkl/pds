@@ -593,7 +593,7 @@ function clone_astronvim_version {
 
 function first_start_astronvim {
     # not so sexy looking but pretty safe:
-    wait_dt=0.2 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+    wait_dt=0.4 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
     have "AstroNVim self install" "Plugins and Mason Binary Pkg Tool"
     #
     # #t resize-window -x 150 -y 50
