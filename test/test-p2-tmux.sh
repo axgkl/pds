@@ -85,7 +85,7 @@ function test-diag-show-toggle { # diag off at start up. <spc>lx enables
     class foo(noexist):
         stuff=42
     '
-    open 'p1.py' "$M1" pylsp
+    open 'p1.py' "$M1"  # do NOT wait for 'pyslp'. With our width this won't be shown!!
     ✔️ shows stuff
     ⌨️ G
     🚫 diag
