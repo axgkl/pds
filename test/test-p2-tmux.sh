@@ -24,7 +24,7 @@ function test-markdown-folds { # initially, folds shall stay open
     vi_quit
 }
 
-function test-markdown-tables { # initially, folds shall stay open
+function test-markdown-tables { # tables with ; ,t autoformats
     M1='
     ; can be used for |
 
