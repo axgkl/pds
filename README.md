@@ -54,6 +54,23 @@ later restoration via `pds restore mybackup`.
 [Here](./setup/astro/README.md) is what you get, currently.
 
 
+## Usage
+
+At install we set a function to your `.bashrc`:
+
+    function pds { source "/home/gk/.config/pds/setup/pds.sh" "$@"; }
+
+This allows to call vi in 3 different ways:
+
+- `$HOME/bin/vi`: runs neovim - but additional tools are not in your $PATH
+- `pds <tool, e.g. vi>`: calls `( insert ~/pds/bin to $PATH && <tool> )`, i.e. you have
+  the PATH set, while executing vi.
+- `pds a`, later `vi` (recommended): Adds the path permanently, i.e. will find `vi` (or
+  other tools later)
+
+
+
+
 ## Further Personalization
 
 TBD
