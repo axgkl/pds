@@ -107,8 +107,8 @@ function open {
     echo -e "$2" >"$fn"
     TSK 'pds vi "'$fn'"'
     for i in {1..10}; do
-        C | grep "${3:-no_init_match_given}" && return
-        sleep 0.1
+        C | grep "${3:-}" && return
+        sleep 0.2
     done
     tst_die "Opening the file I did not even see '"$3"'"
 }

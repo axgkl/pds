@@ -23,14 +23,14 @@ h4 stuff
 }
 
 function test-man-pages {
-    $HOME/pds/bin/vi -c '! echo $VIMRUNTIME>foo1' -c 'q'
-    ls -lts $HOME/pds/bin/nvimfs/usr/share/nvim/runtime/ftplugin/man.vim
+    #$HOME/pds/bin/vi -c '! echo $VIMRUNTIME>/tmp/vimrt' -c 'q'
+    ls -lta "$HOME/pds/bin/nvimfs/usr/share/nvim/runtime/ftplugin/man.vim"
     TSC "alias man='pds vman'"
     TSC man
     ✔️ shows 'What manual page do you want'
     TSK "set -x"
     TSK "man ls"
-    ✔️ max 1.4 shows "SYNOPSIS"
+    ✔️ max 1.5 shows "SYNOPSIS"
     vi_quit
     TSK "set +x"
 }
