@@ -835,6 +835,15 @@ function parse_install_opts {
     done
 }
 function Install {
+    (DoInstall "$@") && return
+    echo 'Install Failure'
+    title Captures:
+    cat "$captures"
+    title Log:
+    cat "$inst_log"
+    die 'Install failed'
+}
+function DoInstall {
     rm_logs all
     parse_install_opts "$@"
     start_time=$(date +%s)
