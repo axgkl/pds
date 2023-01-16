@@ -34,9 +34,9 @@ function test-pds-source-not-all {
 }
 
 function test-pds-tools-exact-match {
-    local s
+    local d s
+    mkdir -p "$HOME/.local/state/nvim/swap" # at first install, no file open, not present
     s="$SHELL"
-    local d
     d="$(pwd)"
     SHELL="echo"
     . "$pds" s cd-swaps
@@ -44,6 +44,7 @@ function test-pds-tools-exact-match {
     pwd
     cd "$d"
     SHELL="$s"
+    pwd
 }
 
 function ptst {

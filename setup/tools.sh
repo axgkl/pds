@@ -5,7 +5,9 @@ function lsp-show-all { # open null-ls BUILTINS in browser
 }
 
 function cd-swaps { # cs: cd to swapfiles dir
-    cd "$HOME/.local/state/nvim/swap" && "$SHELL"
+    local sd
+    sd="$HOME/.local/state/nvim/swap"
+    mkdir -p "$sd" && cd "$sd" && "$SHELL"
 }
 function plugins-list { # pl: fzf over all plugins, then cd into selected
     cd "$d_packer" && cd "$(fd . -t d -E .git | fzf)" && tree -L 2
