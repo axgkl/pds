@@ -753,7 +753,7 @@ function q {
 }
 
 function start_tmux {
-    sh kill_tmux
+    kill_tmux
     export SHELL="/bin/bash"
     T -f "$here/tmux.conf" new-session -d "/bin/bash"
     T set-environment "fn_done" "$fn_done"
@@ -762,7 +762,8 @@ function start_tmux {
     T set -g status-position top
     have_tmux=true
     sh start_tmux_screenshotter >>"$captures" &
-    sleep 0.1
+    sleep 0.2
+    TSC 'echo "New tmux session. Defining pds function:"'
     TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
     have Tmux "$(T ls)"
 }
