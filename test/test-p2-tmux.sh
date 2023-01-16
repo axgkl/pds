@@ -67,7 +67,7 @@ function test-markdown-tables { # tables with ; ,t autoformats
 }
 
 # -------------------------------------------------------------------- Man
-function test-man-pages {
+function test-man-pages { # we have some tweaks for :Man
     #$HOME/pds/bin/vi -c '! echo $VIMRUNTIME>/tmp/vimrt' -c 'q'
     ls -lta "$HOME/pds/bin/nvimfs/usr/share/nvim/runtime/ftplugin/man.vim"
     TSC "alias man='pds vman'"
@@ -78,8 +78,7 @@ function test-man-pages {
     vi_quit
 }
 
-function test-diag-show-toggle {
-    # diag off at start up.
+function test-diag-show-toggle { # diag off at start up. <spc>lx enables
     # have to wait hover timeout vim.o.update
     function diag { shows "Undefined"; }
     M1='
@@ -99,7 +98,7 @@ function test-diag-show-toggle {
     vi_quit
 }
 
-function test-pds-plugs-list-and-fzf {
+function test-pds-plugs-list-and-fzf { # pds s function some tools, based on fzf et al
     TSK 'pds s plugins-list'
     sleep 0.05
     TSK "'mason-null-ls.nvim"
