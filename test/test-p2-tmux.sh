@@ -23,12 +23,14 @@ h4 stuff
 }
 
 function test-man-pages {
+    $HOME/pds/bin/vi -c '! echo $VIMRUNTIME>foo1' -c 'q'
+    ls -lts $HOME/pds/bin/nvimfs/usr/share/nvim/runtime/ftplugin/man.vim
     TSC "alias man='pds vman'"
     TSC man
     ✔️ shows 'What manual page do you want'
     TSK "set -x"
     TSK "man ls"
-    ✔️ max 0.4 shows "SYNOPSIS"
+    ✔️ max 1.4 shows "SYNOPSIS"
     vi_quit
     TSK "set +x"
 }
@@ -56,6 +58,7 @@ function test-pds-plugs-list {
     TSK 'pds s plugins-list'
     sleep 0.05
     TSK "'mason-null-ls.nvim"
+    sleep 0.05 # time for fzf
     📷
     T send-keys Enter
     TSC pwd

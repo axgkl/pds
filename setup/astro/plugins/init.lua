@@ -110,7 +110,7 @@ return {
 	-- "easymotion/vim-easymotion",
 	--"edluffy/hologram.nvim", (images in buffers)
 	-- "voldikss/vim-floaterm",
-	"jez/vim-superman",
+	--"jez/vim-superman",
 	"michaeljsmith/vim-indent-object",
 	"vim-python/python-syntax",
 	-- { "wakatime/vim-wakatime", event = "BufRead" },

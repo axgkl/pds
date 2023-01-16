@@ -110,7 +110,7 @@ augroup END
 "   autocmd BufWritePost plugins.lua source <afile> | PackerSync
 " augroup end
 
-
+" stolen from superman plugin:
 function! SuperMan(...)
   if exists(":Man") != 2 " No :Man command defined
     " Needed to get access to Man
@@ -145,7 +145,7 @@ function! SuperMan(...)
 endfunction
 
 command! -nargs=+ SuperMan call SuperMan(<f-args>)
-
+"
 
 "TSDisableAll indent
 " -----------------------------------------------------------------

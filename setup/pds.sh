@@ -138,7 +138,7 @@ function set_constants {
     d_stash="$HOME/.local/share/stashed_nvim"
     d_conf_nvim="$HOME/.config/nvim"
     d_nvim_dirs=("${d_conf_nvim:-/tmp/x}" "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim")
-    inst_log="$HOME/pds_install.log"      # cmds sent
+    inst_log="/tmp/pds_install.$UID.log"  # cmds sent
     captures="/tmp/pds_captures.$UID.log" # tmux shots
     set +a
     d_="$H1\nPDS Tools $O
@@ -305,14 +305,14 @@ true && {
     L="$O;2;37m"
     O="$O;0m"
 
-    function hintn { echo -en "$L$*$O"; }
-    function hint { hintn "$*\n"; }
+    function hintn { echo -en "$L$*$O"; } # .... dots
+    function hint { hintn "$*\n"; }       # hint with new line
     function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
     function sh {
         local m out
         T -q rename-window "⚙️ $*" || true
         out="\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
-        echo -e "$out" | tee "$captures"
+        echo -e "$out" | tee -a "$captures" | tee -a "$inst_log"
 
         $pds_is_stepped && {
             $have_tmux && hint "Hint: Attach via tmux -S $pds_tmux_sock att"
@@ -342,10 +342,11 @@ true && {
         local dt b args
         test -z "$start_time" && start_time=$(date +%s)
         b=s
+        # time is total
         test "$1" == "t" && {
             shift
             b=t
-        } # time is total
+        }
         dt=$(($(date +%s) - start_time))
         start_time=$(date +%s)
         local msg h="$1"
@@ -353,8 +354,7 @@ true && {
         #have="$(echo -n "$have" | sed -e 's/1m/2m/g')"
         args="$(echo "$*" | xargs)"
         msg="$(printf "\x1b[2m%5s$b\x1b[0m \x1b[1;34m✔️\x1b[0m %-30s %s\x1b[0m\n" "$dt" "\x1b[1m$h" "\x1b[2m $args")"
-        echo -e "$msg"
-        echo -e "$msg" >>"$inst_log"
+        echo -e "$msg" | tee -a "$captures" | tee -a "$inst_log"
     }
 
     function die {
@@ -832,6 +832,7 @@ function parse_install_opts {
     done
 }
 function Install {
+    rm_logs all
     parse_install_opts "$@"
     start_time=$(date +%s)
     sh ensure_dirs

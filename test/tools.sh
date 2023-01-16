@@ -6,7 +6,6 @@
 fn_vi_file="/tmp/pds.vi.$UID"
 
 function shows {
-    📷
     C | grep "$1"
 }
 function print {
@@ -142,5 +141,10 @@ function 🚫 { fail=true && tst_loop "$@"; }
 function ⌨️ { TSK "$@"; }
 # shellcheck disable=SC1083
 function 📷 { #C is capture (pds.sh)
-    C | sed -r "/^\r?$/d;s/^/💻 /g" >>"$captures"
+    #C | sed -r "/^\r?$/d;s/^/out: /g" | tee -a "$captures"
+    (
+        echo -e "\x1b[32m📷\x1b[0m\x1b[48;5;242m"
+        C | sed -r "/^\r?$/d"
+        echo -e "\x1b[0m"
+    ) | tee -a "$captures"
 }
