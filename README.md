@@ -1,6 +1,6 @@
 # Personal Development Sandbox
 
-![gh-ci][gh-ci_img]
+![gh-ci][gh-ci-img]
 
 [gh-ci]: https://github.com/AXGKl/pds/actions/workflows/main.yml
 [gh-ci-img]: https://github.com/AXGKl/pds/actions/workflows/main.yml/badge.svg
