@@ -1,5 +1,16 @@
 # Personal Development Sandbox
 
+<!--toc:start-->
+- [Personal Development Sandbox](#personal-development-sandbox)
+  - [Bootstrap Installation](#bootstrap-installation)
+    - [Existing NeoVim Install](#existing-neovim-install)
+  - [Features](#features)
+  - [Usage](#usage)
+  - [Further Personalization](#further-personalization)
+  - [Writing Tests](#writing-tests)
+    - [Gotchas](#gotchas)
+<!--toc:end-->
+
 [![gh-ci][gh-ci-img]][gh-ci]
 
 [gh-ci]: https://github.com/AXGKl/pds/actions/workflows/main.yml
@@ -51,7 +62,9 @@ later restoration via `pds restore mybackup`.
 
 ## Features
 
-[Here](./setup/astro/README.md) is what you get, currently.
+- [Here](./setup/astro/README.md) is what you get, config wise, currently.
+- pds offers to assert on your config working via tests, see the 'tmux' tests.
+
 
 
 ## Usage
@@ -80,6 +93,18 @@ AND the ones from pds - in the right search order - available in your editor.
 ## Further Personalization
 
 TBD
+
+
+## Writing Tests
+
+See the tmux tests for some blueprints.
+
+### Gotchas
+
+Note the screen size! Try your tests with the same tmux geometry than in `pds.sh`'s
+`run_tmux` function (40x100 by default).
+
+⚠️ Do not assert on content shown only at wider screensizes!
 
 
 ---
