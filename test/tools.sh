@@ -105,7 +105,8 @@ function testit {
 function open {
     # puts given content into a file with given name then opens vi on it
     local fn="$fn_vi_file.$1"
-    echo -e "$2" >"$fn"
+    # default (no other currently supported): 4 deindent (for folding) and first line removed:
+    echo -e "$2" | tail -n +2 | sed -e 's/^    //g' >"$fn"
     TSK 'pds vi "'$fn'"'
     for i in {1..10}; do
         C | grep "${3:-}" && return

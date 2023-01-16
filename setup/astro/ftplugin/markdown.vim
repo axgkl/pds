@@ -64,7 +64,8 @@ endfunction
 " Mappings
 nmap <silent><buffer> ,p :call TogglePresent()<CR>
 nmap <silent><buffer> ,P :MarkdownPreviewToggle<CR>
-nnoremap ,t vip:Tabularize/\|<CR>
+" you can use ; for pipes. have to create a ; to not make s fail:
+nnoremap ,t    0r;vip:s/;/\|/g<CR>vip:Tabularize/\|<CR>
 
 " Syntax
 " In syntax markdown.vim, must be loaded after
