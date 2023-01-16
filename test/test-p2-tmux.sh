@@ -61,6 +61,7 @@ function test-markdown-tables { # tables with ; ,t autoformats
     ✔️ shows '| A    | bbbb    | c'
     ✔️ shows '| Aasd | aasdfaa | aad'
 
+    ✔️ shows '; can be used for |' # not replaced, clear
     📷
     vi_quit
 }
