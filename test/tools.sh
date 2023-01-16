@@ -114,6 +114,7 @@ function open {
     tst_die "Opening the file I did not even see '"$3"'"
 }
 function vi_quit {
+    sleep 0.05
     TSK ':q!'
     TSC echo # the && touch done will be failing if not on shell again
 }
@@ -145,7 +146,7 @@ function 📷 { #C is capture (pds.sh)
     #C | sed -r "/^\r?$/d;s/^/out: /g" | tee -a "$captures"
     (
         echo -e "\x1b[32m📷\x1b[0m\x1b[48;5;242m"
-        C | sed -r "/^\r?$/d"
+        C | sed -r "/^\r?$/d;s/^/| /g "
         echo -e "\x1b[0m"
     ) | tee -a "$captures"
 }
