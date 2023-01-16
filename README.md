@@ -97,7 +97,7 @@ TBD
 
 ## Writing Tests
 
-See the tmux tests for some blueprints.
+See the `*-tmux-*` tests for some blueprints.
 
 ### Gotchas
 
@@ -106,7 +106,15 @@ See the tmux tests for some blueprints.
 ⚠️ Do not assert on content shown only at wider screensizes! Try your tests with the same
 tmux geometry than in `pds.sh`'s `run_tmux` function (40x100 by default).
 
+- Popups may not always show
 
+See the LSP Diagnostics user test. Since we got intermittend failures, where in deed the
+diagnostics popup did not show up, we let first attempt die within a subshell, then retry once like this:
+
+```
+# type j k, then the popup *must* show up:
+(✔️ max 1000 diag) || { ⌨️ j k; ✔️ max 1000 diag; }
+```
 
 ---
 
