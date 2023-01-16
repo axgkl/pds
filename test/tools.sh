@@ -109,7 +109,9 @@ function open {
     # default (no other currently supported): 4 deindent (for folding) and first line removed:
     echo -e "$2" | tail -n +2 | sed -e 's/^    //g' >"$fn"
     TSK 'pds vi "'$fn'"'
-    wait_dt=0.2 wait_for 'C | grep "'$3'"' || tst_die "Opening the file I did not even see '"$3"'"
+    sleep 0.05
+    T send-keys Escape
+    wait_for 'C | grep "'$3'"' || tst_die "Opening the file I did not even see '"$3"'"
 }
 
 function vi_quit {
