@@ -22,6 +22,7 @@ out() {
 }
 function tst_die {
     # die is in pds.sh
+    echo -e 'tst_die. will exit 1'
     set +x
     C
     #tail -n 100 "${tmux_cmds_log:-}" || true

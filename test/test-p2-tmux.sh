@@ -28,11 +28,9 @@ function test-man-pages {
     TSC "alias man='pds vman'"
     TSC man
     ✔️ shows 'What manual page do you want'
-    TSK "set -x"
     TSK "man ls"
     ✔️ max 1.5 shows "SYNOPSIS"
     vi_quit
-    TSK "set +x"
 }
 
 function test-diag-show-toggle {
@@ -52,9 +50,10 @@ function test-diag-show-toggle {
     ⌨️ ' lx' # switch it on
     ✔️ max 1 diag
     vi_quit
+    ls /
 }
 
-function test-pds-plugs-list {
+function test-pds-plugs-list-and-fzf {
     TSK 'pds s plugins-list'
     sleep 0.05
     TSK "'mason-null-ls.nvim"
