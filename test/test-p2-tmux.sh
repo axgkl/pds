@@ -47,7 +47,7 @@ function test-markdown-tables { # tables with ; ,t autoformats
     ⌨️ 4j
     ⌨️ ,t
 
-    ✔️ max 0.4 shows '| foo  | bar     | baz'
+    ✔️ max 1000 shows '| foo  | bar     | baz'
     ✔️ shows '| -    | -       | -'
     ✔️ shows '| a    | bbbb    | c'
     ✔️ shows '| aasd | aasdfaa | aad'
@@ -56,7 +56,7 @@ function test-markdown-tables { # tables with ; ,t autoformats
     ⌨️ 4k
     ⌨️ ,t
 
-    ✔️ max 0.4 shows '| Foo  | bar     | baz'
+    ✔️ max 1000 shows '| Foo  | bar     | baz'
     ✔️ shows '| -    | -       | -'
     ✔️ shows '| A    | bbbb    | c'
     ✔️ shows '| Aasd | aasdfaa | aad'
@@ -74,7 +74,7 @@ function test-man-pages { # we have some tweaks for :Man
     TSC man
     ✔️ shows 'What manual page do you want'
     TSK "man ls"
-    ✔️ max 1.5 shows "SYNOPSIS"
+    ✔️ max 1500 shows "SYNOPSIS"
     vi_quit
 }
 
@@ -82,19 +82,25 @@ function test-diag-show-toggle { # diag off at start up. <spc>lx enables
     # have to wait hover timeout vim.o.update
     function diag { shows "Undefined"; }
     M1='
-    class foo(noexist):
+    xlass foo(noexist):
         stuff=42
     '
     open 'p1.py' "$M1"  # do NOT wait for 'pyslp'. With our width this won't be shown!!
     ✔️ shows stuff
     ⌨️ G
     🚫 diag
-    ⌨️ gg
-    ✔️ max 1 diag
+    ⌨️ g g 0 r c
+    ✔️ shows class
+    # Every 20to 30 times or so in a continuous test test loop this popup failed :-(, the hover did not come
+    # So we go down up at failure. Then it seems safely there always:
+    (✔️ max 1000 diag) || {
+        ⌨️ j k
+        ✔️ max 1000 diag
+    }
     ⌨️ G
-    🚫 max 1 diag
-    ⌨️ ' lx' # switch it on
-    ✔️ max 1 diag
+    🚫 max 1000 diag
+    ⌨️ ' ' l x # switch it on
+    ✔️ max 1000 diag
     vi_quit
 }
 

@@ -754,6 +754,7 @@ function q {
 
 function start_tmux {
     kill_tmux
+    sleep 0.5
     export SHELL="/bin/bash"
     T -f "$here/tmux.conf" new-session -d "/bin/bash"
     T set-environment "fn_done" "$fn_done"

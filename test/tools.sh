@@ -3,7 +3,7 @@
 # # if we need a joint file
 # function fn_tres_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.res.log"; }
 #fn_tmux_err_exit="/tmp/pds.tmux.$UID.err"
-fn_vi_file="/tmp/pds.vi.$UID"
+d_vi_file="/tmp/pdstests.$UID"
 
 function shows {
     C | grep "$1"
@@ -40,13 +40,14 @@ function test_in_tmux {
 
     export wait_dt=0.01
     export test_mode=true
-    rm -f "$HOME"/.local/state/nvim/swap/%tmp%pds.vi*
+    mkdir -p "$d_vi_file"
+    rm -f "$HOME"/.local/state/nvim/swap/%tmp*
     . "$HOME/.config/pds/setup/pds.sh" source
-    q 12 T ls || sh start_tmux # don't kill when running, want to retest
-    hint 'tmux started'
+    (cd "$d_vi_file" && q 12 git init || true) # lsps are sensitive here
+    q 12 T ls || sh start_tmux                 # don't kill when running, want to retest
     test_match="${1:-}"
     all_testfuncs "$0" tst
-    safe_quit_vi
+    q 12 safe_quit_vi
 }
 
 function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; }
@@ -58,14 +59,14 @@ function tst {
         return
     }
     out 119 "Test" "$*"
-    "$@" || exit 1
+    "$@" 2>/dev/null 1>/dev/null || exit 1
 }
-tst_tries=1
-tst_dt=0.1
+#tst_tries=1
+tst_dt=''
 function parse_args() {
+    tst_dt=
     test "$1" = "max" && {
-        tst_tries=10
-        tst_dt="$(bc <<<"scale=3; $2 / $tst_tries")"
+        tst_dt="$2"
         shift 2
     }
     cmd=()
@@ -105,7 +106,7 @@ function testit {
 
 function open {
     # puts given content into a file with given name then opens vi on it
-    local fn="$fn_vi_file.$1"
+    local fn="$d_vi_file/$1"
     # default (no other currently supported): 4 deindent (for folding) and first line removed:
     echo -e "$2" | tail -n +2 | sed -e 's/^    //g' >"$fn"
     TSK 'pds vi "'$fn'"'
@@ -119,21 +120,26 @@ function vi_quit {
     TSK ':q!'
     TSC "echo 'vi done'" # the && touch done will be failing if not on shell again
 }
-function set_test_dt {
-    test_dt=$(($(date +%s) - test_start))
-}
+
+function now { date +%s%N | cut -b1-13; } # millis
 
 function tst_loop {
     # sometimes max is given, then we have to loop
-    local test_start
-    test_start=$(date +%s)
+    local test_end
     parse_args "$@"
-    for i in $(seq $tst_tries); do
-        #date -I"ns"
-        testit && set_test_dt && return
-        sleep $tst_dt
-    done
-    set_test_dt
+    if [[ -z "$tst_dt" ]]; then
+        testit && return
+    else
+        test_end=$(($(now) + tst_dt + 10)) # 10 millis for the start time
+        echo $(now)
+        echo $test_end
+        while true; do
+            testit && return
+            if [[ $(now) -gt $test_end ]]; then break; fi
+            sleep 0.1 # we fix this, since smaller causes trouble with a single cpu runner doing nothing else
+        done
+    fi
+    echo $(now)
     $fail || tst_die "Failed: $errmsg"
     tst_die "Should have failed: $errmsg"
 }
@@ -141,7 +147,13 @@ function tst_loop {
 # shellcheck disable=SC1083
 function ✔️ { fail=false && tst_loop "$@"; }
 function 🚫 { fail=true && tst_loop "$@"; }
-function ⌨️ { TSK "$*"; }
+function ⌨️ {
+    while test -n "$1"; do
+        T send-keys "$1"
+        sleep 0.05
+        shift
+    done
+}
 # shellcheck disable=SC1083
 function 📷 { #C is capture (pds.sh)
     #C | sed -r "/^\r?$/d;s/^/out: /g" | tee -a "$captures"
