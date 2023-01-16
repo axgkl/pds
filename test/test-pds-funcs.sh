@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
+
 set -o errexit
+
 . "$(dirname "$0")/tools.sh"
 pds="$HOME/.config/pds/setup/pds.sh"
 
@@ -39,14 +41,18 @@ function test-pds-tools-exact-match {
     SHELL="echo"
     . "$pds" s cd-swaps
     pwd | grep -q '/nvim/swap' || return 1
+    pwd
     cd "$d"
     SHELL="$s"
 }
 
 function ptst {
+    local ret
     set-path
     tst "$1"
+    ret=$?
     reset-path
+    return $?
 }
 
 all_testfuncs "$0" ptst
