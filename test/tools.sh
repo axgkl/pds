@@ -114,9 +114,9 @@ function open {
     tst_die "Opening the file I did not even see '"$3"'"
 }
 function vi_quit {
-    sleep 0.05
+    sleep 0.1
     TSK ':q!'
-    TSC echo # the && touch done will be failing if not on shell again
+    TSC echo 'vi done' # the && touch done will be failing if not on shell again
 }
 function set_test_dt {
     test_dt=$(($(date +%s) - test_start))
