@@ -101,10 +101,11 @@ See the tmux tests for some blueprints.
 
 ### Gotchas
 
-Note the screen size! Try your tests with the same tmux geometry than in `pds.sh`'s
-`run_tmux` function (40x100 by default).
+- Mind Test Screen Size
 
-⚠️ Do not assert on content shown only at wider screensizes!
+⚠️ Do not assert on content shown only at wider screensizes! Try your tests with the same
+tmux geometry than in `pds.sh`'s `run_tmux` function (40x100 by default).
+
 
 
 ---
