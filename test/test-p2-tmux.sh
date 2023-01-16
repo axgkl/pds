@@ -49,7 +49,10 @@ function test-diag-show-toggle {
     🚫 max 1 diag
     ⌨️ ' lx' # switch it on
     ✔️ max 1 diag
+    sleep 1
+    📷
     vi_quit
+    📷
     ls /
 }
 
