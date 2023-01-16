@@ -762,6 +762,7 @@ function start_tmux {
     T set -g status-position top
     have_tmux=true
     sh start_tmux_screenshotter >>"$captures" &
+    sleep 0.1
     TSC 'pds () { . "$HOME/.config/pds/setup/pds.sh" "$@"; }'
     have Tmux "$(T ls)"
 }

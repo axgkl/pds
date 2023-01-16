@@ -13,11 +13,11 @@ It is intended for
 - local and server operation, based on [Mamba][mamba] and [NeoVim][neovim].
 - Neovim is your IDE
 - Mamba is the package manager for underlying tools the IDE is based upon, incl. a compiler
-- python, javascript, lua, shell, markdown lsp support ootb but extendable
+- python, javascript, lua, shell, markdown lsp support ootb - but extendable
 
 It does not require elevated perms to install.
 
-Customization of NeoVim is based on a distri, currently [AstroNVim][astronvim]
+Customization of NeoVim is based on the **[AstroNVim][astronvim]** distribution.
 
 ## Bootstrap Installation
 
@@ -31,7 +31,7 @@ Requirements: bash, wget.
 
 OS: Currently only tested on Linux.
 
-💡 OSX and BSDs should work as well. We do use the Linux style config directories though.
+💡 OSX and BSDs *should* work as well. We do use the Linux style configuration directories though.
 
 
 This is a run on a minimal debian server:
@@ -56,18 +56,24 @@ later restoration via `pds restore mybackup`.
 
 ## Usage
 
-At install we set a function to your `.bashrc`:
+vi (opening neovim) is installed callable from the app image into `~/pds/bin/vi`.
+
+At pds install time, we've set a function to your `.bashrc` (and `.zshrc`, if in use):
 
     function pds { source "/home/gk/.config/pds/setup/pds.sh" "$@"; }
 
-This allows to call vi in 3 different ways:
+This allows to call neovim in 3 different ways:
 
-- `$HOME/bin/vi`: runs neovim - but additional tools are not in your $PATH
+- `$HOME/bin/vi`: runs neovim - but additional mamba tools are not in your $PATH
 - `pds <tool, e.g. vi>`: calls `( insert ~/pds/bin to $PATH && <tool> )`, i.e. you have
   the PATH set, while executing vi.
-- `pds a`, later `vi` (recommended): Adds the path permanently, i.e. will find `vi` (or
-  other tools later)
+- `pds a[ctivate]` and subsequently `vi`: First adds the path permanently, then will find
+  `vi` (or other tools later)
 
+We recommend the last way, calling `pds a` e.g. in `.profile`:
+
+When activating virtual environments after `pds a`, you'll have their tools (e.g. python)
+AND the ones from pds - in the right search order - available in your editor.
 
 
 
