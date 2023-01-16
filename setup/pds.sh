@@ -940,6 +940,10 @@ function run_tests {
     local fnm ret
     fnm=""
     kill_tmux || true
+    test "${1:-}" == '-v' && {
+        export verbose=true
+        shift
+    }
     test "${1:-}" == '-f' && {
         fnm="$2"
         shift 2
@@ -989,7 +993,7 @@ function main {
     action="${1:-x}"
     shift
     case "$action" in
-        #A att [-l]:                Attach to pds tmux socket
+        #A att [-l]:                Watch install and test progress by attaching to tmux (-l in a loop).
         att) att "$@" ;;
         #A clean-all [-f]:          Removes all nvim
         clean-all) clean_all "$@" ;;
@@ -1006,7 +1010,7 @@ function main {
         source) return ;;
         #A stash <name>:            Moves away an existing install, restorable
         stash) stash "$@" ;;
-        #A test [-f <m>] [m]: Runs all test scripts (optional -f filematch, test match)
+        #A test [-v] [-f <m>] [m]:  Runs all test scripts (optional -f filematch, test match)
         test) run_tests "$@" ;;
         #A r|restore <name>:        Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
         \r | restore) unstash "$@" ;;

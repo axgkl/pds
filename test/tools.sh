@@ -4,6 +4,7 @@
 # function fn_tres_log { test -z "${tmux_sock:-}" && echo '/dev/null' || echo "$tmux_sock.res.log"; }
 #fn_tmux_err_exit="/tmp/pds.tmux.$UID.err"
 d_vi_file="/tmp/pdstests.$UID"
+verbose="${verbose:-false}"
 
 function shows {
     C | grep "$1"
@@ -59,7 +60,11 @@ function tst {
         return
     }
     out 119 "Test" "$*"
-    "$@" 2>/dev/null 1>/dev/null || exit 1
+    if [[ "$verbose" == "false" ]]; then
+        "$@" 2>/dev/null 1>/dev/null || exit 1
+    else
+        "$@" || exit 1
+    fi
 }
 #tst_tries=1
 tst_dt=''
@@ -125,21 +130,23 @@ function now { date +%s%N | cut -b1-13; } # millis
 
 function tst_loop {
     # sometimes max is given, then we have to loop
-    local test_end
+    local t0 test_end
+    t0="$(now)"
     parse_args "$@"
     if [[ -z "$tst_dt" ]]; then
         testit && return
     else
         test_end=$(($(now) + tst_dt + 10)) # 10 millis for the start time
-        echo $(now)
-        echo $test_end
+        #echo $(now)
+        #echo $test_end
         while true; do
             testit && return
             if [[ $(now) -gt $test_end ]]; then break; fi
             sleep 0.1 # we fix this, since smaller causes trouble with a single cpu runner doing nothing else
         done
     fi
-    echo $(now)
+    echo -e "Started: $t0"
+    echo -e "Now    : $(now)"
     $fail || tst_die "Failed: $errmsg"
     tst_die "Should have failed: $errmsg"
 }

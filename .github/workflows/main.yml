@@ -39,12 +39,16 @@ jobs:
 
       - name: Core Tests
         shell: bash -l {0}
-        run: "cd $HOME/.config/pds && test/test-p1-tmux.sh"
+        run: "cd $HOME/.config/pds && test/test-core-tmux.sh"
 
       - name: PDS Script Tests
         shell: bash -l {0}
-        run: "cd $HOME/.config/pds && test/test-pds-script.sh"
+        run: "$HOME/.config/pds/setup/pds.sh test -f pds-script"
+
+      - name: PDS Function Tests
+        shell: bash -l {0}
+        run: "$HOME/.config/pds/setup/pds.sh test -f pds-funcs"
 
       - name: User Tests
         shell: bash -l {0}
-        run: "$HOME/.config/pds/setup/pds.sh -f user"
+        run: "$HOME/.config/pds/setup/pds.sh test -f user"
