@@ -587,8 +587,8 @@ function clone_astronvim_version {
         TSC "git checkout '$pds_inst_astro_ver'"
     }
     #$pds_pin_distri && TSC "( builtin cd '$d_conf_nvim' && git status && git reset --hard '$pds_v_distri'; )"
-    TSC 'cd "$here"'
-    have "AstroNvim $branch version" "$(cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
+    TSC 'builtin cd "$here"'
+    have "AstroNvim $branch version" "$(builtin cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
 }
 
 function first_start_astronvim {
@@ -925,7 +925,7 @@ function Bootstrap {
     export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
     mkdir -p "$D"
     hint "Trying ssh clone first, https is fallback"
-    (cd "$D" && { git clone "git@$pds_repo" || git clone "https://${pds_repo/://}"; })
+    (builtin cd "$D" && { git clone "git@$pds_repo" || git clone "https://${pds_repo/://}"; })
     title 'Finished Bootstrapping.'
     hint 'Calling installer...'
     sh "$D/pds/setup/pds.sh" install "$@"
@@ -949,7 +949,7 @@ function run_tests {
         shift 2
     }
     (
-        cd "$HOME/.config/pds/test"
+        builtin cd "$HOME/.config/pds/test"
         for t in *; do
             grep -q test <<<"$t" || continue
             grep -q "$fnm" <<<"$t" || continue
