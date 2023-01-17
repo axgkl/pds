@@ -18,6 +18,7 @@ function test-markdown-folds { # initially, folds shall stay open
     '
     open 'm1.md' "$M1" Head1
     ✔️ shows intro
+    ✔️ shows intro
     ✔️ shows H2
     ✔️ shows H3
     ✔️ shows 'h4 stuff'
@@ -45,24 +46,26 @@ function test-markdown-tables { # tables with ; ,t autoformats
     open 'm1.md' "$M1" Marker
     ⌨️ gg
     ⌨️ 4j
-    ⌨️ ,t
+    ⌨️ ,t # does the magic
 
-    ✔️ max 1000 shows '| foo  | bar     | baz'
-    ✔️ shows '| -    | -       | -'
-    ✔️ shows '| a    | bbbb    | c'
-    ✔️ shows '| aasd | aasdfaa | aad'
+    👁️ '| foo  | bar     | baz' 1000
+    👁️ '| -    | -       | -'
+    👁️ '| a    | bbbb    | c'
+    👁️ '| aasd | aasdfaa | aad'
+
+    😵 '|bar; baz'
 
     ⌨️ G
     ⌨️ 4k
     ⌨️ ,t
 
-    ✔️ max 1000 shows '| Foo  | bar     | baz'
-    ✔️ shows '| -    | -       | -'
-    ✔️ shows '| A    | bbbb    | c'
-    ✔️ shows '| Aasd | aasdfaa | aad'
+    👁️ '| Foo  | bar     | baz' 1000
+    👁️ '| -    | -       | -'
+    👁️ '| A    | bbbb    | c'
+    👁️ '| Aasd | aasdfaa | aad'
 
-    ✔️ shows '; can be used for |' # not replaced, clear
-    📷
+    👁️ '; can be used for |' # not replaced, clear
+    📷                        # screenshot
     vi_quit
 }
 
@@ -86,6 +89,7 @@ function test-diag-show-toggle { # diag off at start up. <spc>lx enables
         stuff=42
     '
     open 'p1.py' "$M1"  # do NOT wait for 'pyslp'. With our width this won't be shown!!
+    :eye
     ✔️ shows stuff
     ⌨️ G
     🚫 diag

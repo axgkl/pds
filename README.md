@@ -97,7 +97,70 @@ TBD
 
 ## Writing Tests
 
-See the `*-tmux-*` tests for some blueprints.
+You can check correct behaviour of your install, using tmux backed tests.
+
+See `*-tmux-*` tests for some blueprints.
+
+tmux is started on a special socket `/tmp/pds...` and therefore should not interfere with
+any other session.
+
+The tests are shellscripts and can be executed standalone.
+
+`pds test -v -f <filematch> <testmatch>` for some convenience. 
+
+- With -v we produce verbose output.
+- But better it is to check what is going on by staring tmux attached session, started (and restarted) via  `pds att -l` .
+- The main program, when wanting to kill tmux, waits for a key entry, when a session is
+  attached.
+
+
+### Test Helper Functions
+
+Open a test file in vim:
+
+- Deindent and write string `$M1` into a file p1.py
+- Open it in vi
+- Wait until '' is shown on the screen:
+
+```
+open p1.py "$M1"    
+```
+
+Typing and assertions: For improved fun and since we can we use some symbols for function names:
+
+```
+⌨️  j k                 # enter j then k (0.05 in between keystrokes)
+✔️ shows stuff          # fail when not 'stuff' is on the screen
+✔️ max 0.2 shows stuff  # fail when not within 0.2 secs
+🚫 max 0.5 shows stuff # fail when 'stuff' is still on screen after max 0.5
+```
+
+Convenience:
+
+```
+👁️ foo     # eq to: ✔️ shows foo  
+👁️ foo 0.4 # eq to: ✔️ max 0.4 shows foo  
+😵 foo     # eq to: 🚫 shows foo 
+```
+
+
+The min time deltas are not very small: When waiting for max dts we capture and inspect only every 0.1 seconds.
+
+Lower level commands:
+
+```
+T <cmds> # tmux -S <our testsocket> <cmds>
+TSC <cmds> # Tmux send command and verify exit code (via && touch <marker file>)
+TSK <cmds> # Tmux send keys
+```
+
+The cmds sent with `TSC` and `TSK` are safely sent as hex.
+
+
+### Tips:
+
+- insert simple `read -r foo` to the test program stop at a point, then inspect visually, using `pds att`
+- Using `pds att -l` will show you what's going on, even over tmux restarts
 
 ### Gotchas
 

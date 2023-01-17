@@ -153,6 +153,9 @@ function tst_loop {
 # shellcheck disable=SC1083
 function ✔️ { fail=false && tst_loop "$@"; }
 function 🚫 { fail=true && tst_loop "$@"; }
+function 👁️ { if [ -n "$2" ]; then ✔️ max "$2" shows "$1"; else ✔️ shows "$1";   fi; }
+function 😵 { if [ -n "$2" ]; then 🚫 max "$2" shows "$1"; else 🚫 shows "$1"; fi; }
+
 function ⌨️ {
     while test -n "$1"; do
         T send-keys "$1"
