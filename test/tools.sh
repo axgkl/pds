@@ -108,11 +108,16 @@ function testit {
     return 1
 }
 
+function deindent { echo -e "$1" | tail -n +2 | sed -e 's/^    //g'; }
 function open {
     # puts given content into a file with given name then opens vi on it
-    local fn="$d_vi_file/$1"
+    local cont fn
+    cont="$3"
     # default (no other currently supported): 4 deindent (for folding) and first line removed:
-    echo -e "$2" | tail -n +2 | sed -e 's/^    //g' >"$fn"
+    # disabled with $1=nd
+    test "$1" = 'nd' && shift || cont="$(deindent "$2")"
+    fn="$d_vi_file/$1"
+    echo -e "$cont" >"$fn"
     TSK 'pds vi "'$fn'"'
     sleep 0.05
     T send-keys Escape
@@ -153,7 +158,7 @@ function tst_loop {
 # shellcheck disable=SC1083
 function ✔️ { fail=false && tst_loop "$@"; }
 function 🚫 { fail=true && tst_loop "$@"; }
-function 👁️ { if [ -n "$2" ]; then ✔️ max "$2" shows "$1"; else ✔️ shows "$1";   fi; }
+function 👁️ { if [ -n "$2" ]; then ✔️ max "$2" shows "$1"; else ✔️ shows "$1"; fi; }
 function 😵 { if [ -n "$2" ]; then 🚫 max "$2" shows "$1"; else 🚫 shows "$1"; fi; }
 
 function ⌨️ {

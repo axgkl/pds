@@ -81,6 +81,7 @@ function test-man-pages { # we have some tweaks for :Man
     vi_quit
 }
 
+# -------------------------------------------------------------------- Python
 function test-diag-show-toggle { # diag off at start up. <spc>lx enables
     # have to wait hover timeout vim.o.update
     function diag { shows "Undefined"; }
@@ -105,6 +106,20 @@ function test-diag-show-toggle { # diag off at start up. <spc>lx enables
     🚫 max 1000 diag
     ⌨️ ' ' l x # switch it on
     ✔️ max 1000 diag
+    vi_quit
+}
+
+function test-lsp-blue { # line-len respected for blue, not pylsp
+    echo -e '[tool.blue]\nline-length = 90\n' >"$d_vi_file/pyproject.toml"
+    M1='
+    ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "bbbbbbbbbbbbbbbbbbbbb"]
+    ["AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBBBBBBBB"]'
+    open 'p1.py' "$M1" 
+    ⌨️ ,w                       # write format
+    👁️ '\aaa'\'', '\''bbb' 1000 # was not wrapped, fits to 90
+    😵 '   '\''aaa' 1000         # was wrapped
+    😵 '\AAA'\'', '\''BBB' 1000  # was wrapped, one char too much
+    👁️ '   '\''BBB' 1000        # was wrapped
     vi_quit
 }
 
