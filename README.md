@@ -8,6 +8,8 @@
   - [Usage](#usage)
   - [Further Personalization](#further-personalization)
   - [Writing Tests](#writing-tests)
+    - [Test Helper Functions](#test-helper-functions)
+    - [Tips:](#tips)
     - [Gotchas](#gotchas)
 <!--toc:end-->
 
