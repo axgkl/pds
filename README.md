@@ -122,10 +122,10 @@ Open a test file in vim:
 
 - Deindent and write string `$M1` into a file p1.py
 - Open it in vi
-- Wait until '' is shown on the screen:
+- Wait until 'foo' is shown on the screen:
 
 ```
-open p1.py "$M1"    
+open p1.py "$M1" foo   
 ```
 
 Typing and assertions: For improved fun and since we can we use some symbols for function names:
