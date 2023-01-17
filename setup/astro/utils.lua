@@ -84,17 +84,19 @@ M.smart_open = function(arg)
 		io.input(file)
 		local s = io.read()
 		io.close(file)
-		file = io.open(s, "r")
-		-- if its a file: edit it
-		-- else its a vim command
-		if file ~= nil then
-			io.close(file)
-			vim.cmd("edit " .. s)
-		else
-			vim.cmd(s)
+		if s ~= nil then
+			file = io.open(s, "r")
+			-- if its a file: edit it
+			-- else its a vim command
+			if file ~= nil then
+				io.close(file)
+				vim.cmd("edit " .. s)
+			else
+				vim.cmd(s)
+			end
 		end
 	end
-	-- return ""
+	return ""
 end
 
 M.merge = function(t1, t2)

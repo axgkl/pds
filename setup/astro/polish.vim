@@ -32,8 +32,8 @@ nnoremap fj $mx<cmd>join<CR>0$[`dmx
 
 " Universal python scriptable file or browser opener over word:
 "nmap ,g viW"ay:lua require('utils').smart_open([[<C-R>a]])<CR><CR>
-nmap ,g viW"ay:lua require('user.utils').smart_open([[<C-R>a]])<CR>
-vmap ,g :lua require('user.utils').smart_open([[visualsel]])<CR><CR>
+nmap <silent> ,g viW"ay:lua require('user.utils').smart_open([[<C-R>a]])<CR>
+vmap <silent>  ,g :lua require('user.utils').smart_open([[visualsel]])<CR><CR>
 "Replaced by :ASToggle
 "nmap ,s :lua require('user.utils').autosave()<CR>
 
