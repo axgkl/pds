@@ -53,7 +53,7 @@ function test-markdown-tables { # tables with ; ,t autoformats
     👁️ '| a    | bbbb    | c'
     👁️ '| aasd | aasdfaa | aad'
 
-    😵 '|bar; baz'
+    📴 '|bar; baz'
 
     ⌨️ G
     ⌨️ 4k
@@ -117,12 +117,11 @@ function test-lsp-blue { # line-len respected for blue, not pylsp
     open 'p1.py' "$M1" 
     ⌨️ ,w                       # write format
     👁️ '\aaa'\'', '\''bbb' 1000 # was not wrapped, fits to 90
-    😵 '   '\''aaa' 1000         # was wrapped
-    😵 '\AAA'\'', '\''BBB' 1000  # was wrapped, one char too much
-    👁️ '   '\''BBB' 1000        # was wrapped
+    📴 '   '\''aaa' 1000         # was not wrapped, we don't see this
+    📴 '\AAA'\'', '\''BBB' 1000  # was wrapped, one char too much, don't see this
+    👁️ '   '\''BBB' 1000        # but we see this
     vi_quit
 }
-
 function test-pds-plugs-list-and-fzf { # pds s function some tools, based on fzf et al
     TSK 'pds s plugins-list'
     sleep 0.05
