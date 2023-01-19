@@ -28,9 +28,16 @@ It is intended for
 - Mamba is the package manager for underlying tools the IDE is based upon, incl. a compiler
 - python, javascript, lua, shell, markdown lsp support ootb - but extendable
 
-It does not require elevated perms to install.
-
 Customization of NeoVim is based on the **[AstroNVim][astronvim]** distribution.
+
+Value Proposition:
+
+- It installs all tools required to turn neovim into an IDE into a directory (`~/pds`)
+- It does not require elevated perms to install.
+- There are zero requirements on the host (wget and bash), i.e. works on stripped down
+  cloud hosts as well
+- Comes with tmux based test functions, verifying correct working of the IDE
+
 
 ## Bootstrap Installation
 
@@ -38,7 +45,10 @@ Customization of NeoVim is based on the **[AstroNVim][astronvim]** distribution.
 wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh
 chmod +x pds.sh
 ./pds.sh i[nstall]
+pds vi # or, recommended: export PATH="~/pds/bin:$PATH, then vi"
 ```
+
+
 
 Requirements: bash, wget.
 
@@ -85,7 +95,10 @@ This allows to call neovim in 3 different ways:
 - `pds a[ctivate]` and subsequently `vi`: First adds the path permanently, then will find
   `vi` (or other tools later)
 
-We recommend the last way, calling `pds a` e.g. in `.profile`:
+We recommend the last way
+
+- calling `pds a` e.g. in `.bashrc` or
+- `export PATH=$HOME/pds/bin:$PATH` in `.profile`
 
 When activating virtual environments after `pds a`, you'll have their tools (e.g. python)
 AND the ones from pds - in the right search order - available in your editor.
