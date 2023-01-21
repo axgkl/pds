@@ -192,8 +192,9 @@ vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
 " map gm :call SynStack()<CR>
 
 
-" go to the position I was when last editing the file
-au BufRead * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g'\"" | endif
+" go to the position I was when last editing the file, done in init.lua, this
+" here kills first gd:
+"au BufRead * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g'\"" | endif
 
 
 

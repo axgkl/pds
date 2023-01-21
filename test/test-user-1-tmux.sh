@@ -122,6 +122,36 @@ function test-lsp-blue { # line-len respected for blue, not pylsp
     👁️ '   '\''BBB' 1000        # but we see this
     vi_quit
 }
+
+function test-store-last-position { # will at reopen last position be stored AND gd works
+    # spotted that first gd after cursor restore with g'" was screwed, except when done in lua
+    # => we verify it working here. We test where we are by checking the <row>:<col> display in vim
+    M1='
+    def foo(): pass
+    baz = 1
+    baz = 2
+    test = foo
+    # end
+    '
+    open 'p1.py' "$M1" 
+    ⌨️ 'gg' 0
+    👁️ '1:1' 500
+    ⌨️ '/foo' Enter
+    👁️ '1:5' 500
+    ⌨️ 'n'
+    👁️ '4:8' 500
+    ⌨️ ',d'              # our done (write quit) shortcut
+    touch p1.py          # just any command where we can safely test success
+    open 'p1.py' "$M1"  # does not matter that rewritten
+    ⌨️ 'l'
+    👁️ '4:9' 500 # yes, we are at second test = foo, second o
+    ⌨️ 'gd' 500
+    👁️ '1:5' 500       # gd worked
+    T send-keys Escape # required here, sometimes in strange mode still
+    vi_quit
+}
+
+# -------------------------------------------------------------------- pds function
 function test-pds-plugs-list-and-fzf { # pds s function some tools, based on fzf et al
     TSK 'pds s plugins-list'
     sleep 0.05

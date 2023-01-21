@@ -375,6 +375,13 @@ local config = {
 		vim.lsp.set_log_level("info")
 		require("vim.lsp.log").set_format_func(vim.inspect)
 
+		-- Restore cursor position
+		vim.api.nvim_create_autocmd({ "BufReadPost" }, {
+			pattern = { "*" },
+			callback = function()
+				vim.api.nvim_exec('silent! normal! g`"zv', false)
+			end,
+		})
 		-- don't get flooded by diag
 		vim.o.updatetime = 250
 		UU.toggle_diag_displ()
