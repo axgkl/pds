@@ -121,12 +121,21 @@ any other session.
 
 The tests are shellscripts and can be executed standalone.
 
-`pds test -v -f <filematch> <testmatch>` for some convenience. 
+For more output use `pds test -v`, e.g.:
+
+`pds test -v -f <filematch> <testmatch>`
 
 - With -v we produce verbose output.
-- But better it is to check what is going on by staring tmux attached session, started (and restarted) via  `pds att -l` .
+- But better it is to check what is going on by staring tmux attached session, started
+  (and restarted) via  `pds att -l` .
 - The main program, when wanting to kill tmux, waits for a key entry, when a session is
   attached.
+
+
+A testsession might light like so
+
+[![asciicast](https://asciinema.org/a/IPb1eZQ7Ss1Xr3qeWaDhOJAaD.svg)](https://asciinema.org/a/IPb1eZQ7Ss1Xr3qeWaDhOJAaD)
+
 
 
 ### Test Helper Functions

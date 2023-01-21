@@ -147,6 +147,7 @@ function test-store-last-position { # will at reopen last position be stored AND
     👁️ '4:9' 500 # yes, we are at second test = foo, second o
     ⌨️ 'gd' 500
     👁️ '1:5' 500       # gd worked
+    #read -r foo
     T send-keys Escape # required here, sometimes in strange mode still
     vi_quit
 }
