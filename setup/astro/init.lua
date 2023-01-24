@@ -305,7 +305,7 @@ local config = {
 		-- :silent verbose map # gk: or imap or vmap
 		-- :redir END
 		n = {
-			["f"] = { "<cmd>HopChar1<CR>", desc = "hop-char" },
+			["ff"] = { "<cmd>HopChar1<CR>", desc = "hop-char" },
 			["fl"] = { "<cmd>HopLine<CR>", desc = "hop-line" },
 			-- second key is the lefthand side of the map
 			-- TAB IS Ctrl-I -> this would loose jump previous:
@@ -342,20 +342,20 @@ local config = {
 	-- good place to configuring augroups/autocommands and custom filetypes
 	polish = function()
 		-- place this in one of your configuration file(s)
-		-- local hop = require("hop")
-		-- local directions = require("hop.hint").HintDirection
-		-- vim.keymap.set("", "f", function()
-		-- 	hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
-		-- end, { remap = true })
-		-- vim.keymap.set("", "F", function()
-		-- 	hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
-		-- end, { remap = true })
-		-- vim.keymap.set("", "t", function()
-		-- 	hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
-		-- end, { remap = true })
-		-- vim.keymap.set("", "T", function()
-		-- 	hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
-		-- end, { remap = true })
+		local hop = require("hop")
+		local directions = require("hop.hint").HintDirection
+		vim.keymap.set("", "f", function()
+			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
+		end, { remap = true })
+		vim.keymap.set("", "F", function()
+			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
+		end, { remap = true })
+		vim.keymap.set("", "t", function()
+			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
+		end, { remap = true })
+		vim.keymap.set("", "T", function()
+			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
+		end, { remap = true })
 		-- Set key binding
 		-- Set autocommands
 		-- vim.api.nvim_create_augroup("ftplugs", { clear = true })

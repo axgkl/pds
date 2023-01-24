@@ -67,7 +67,7 @@ nnoremap 1 ^
 " nnoremap <M-8> 8gt
 " nnoremap <M-9> 9gt
 
-nmap <silent> ff <Leader>ff
+" nmap <silent> ff <Leader>ff
 " :Telescope buffers<cr>
 " nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers({ sort_lastused = true, ignore_current_buffer = true }) <CR>
 "nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers({ sort_lastused = true }) <CR>
