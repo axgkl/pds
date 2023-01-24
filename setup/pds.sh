@@ -98,7 +98,7 @@ function handle_sourced {
         source) return ;;
         #F s|tools:       Opens tools menu, except when exact match
         \s | tools) run-tools "$@" ;;
-        -x | -s | -h | --help | att | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status)
+        -x | -s | -h | --help | att | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status | \u | update)
             "$here/pds.sh" "$func" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
@@ -977,6 +977,11 @@ function att {
         sleep 0.5
     done
 }
+function update {
+    cd "$HOME/.config/pds"
+    git pull || die 'Could not git pull'
+    pds tools pis
+}
 
 function main {
     set_constants
@@ -1016,6 +1021,8 @@ function main {
         \r | restore) unstash "$@" ;;
         #A status:                  Status infos
         status) status "$@" ;;
+        #A -u|--update:             Update and sync pluings
+        \u | update) update "$@" ;;
         #A -h|--help:               Help (detailed with --help)
         --help) show_help --help ;;
         *) show_help "$@" ;;
