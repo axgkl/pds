@@ -149,7 +149,6 @@ command! -nargs=+ SuperMan call SuperMan(<f-args>)
 
 "TSDisableAll indent
 " -----------------------------------------------------------------
-"colorscheme iceberg
 
 autocmd! FileType TelescopeResults setlocal nofoldenable
 " set notermguicolors
@@ -157,7 +156,6 @@ autocmd! FileType TelescopeResults setlocal nofoldenable
 " https://discordapp.com/channels/939594913560031363/939857762043695165/958793017932800061
 "execute "TSDisableAll indent"
 
-" colorscheme pinkmare
 " autopairing: consider tmsvg/pear-tree
 "
 nnoremap          ,r  :PythonEval<CR>
@@ -176,8 +174,6 @@ vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
 " hi DiagnosticInfo  guifg=Blue
 " hi DiagnosticHint  guifg=Green
 
-"colorscheme rose-pine
-"colorscheme tokyonight
 " function! SynStack ()
 "     echo 'foo'
 "     " does not work in nvim
@@ -200,3 +196,5 @@ vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
 
 " leave here:
 nnoremap  G        :$<CR><bar>:silent! ?begin_archive<CR>
+"colorscheme catppuccin-mocha
+colorscheme catppuccin-macchiato
