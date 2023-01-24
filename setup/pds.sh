@@ -980,7 +980,7 @@ function att {
 function update {
     cd "$HOME/.config/pds"
     git pull || die 'Could not git pull'
-    tools pis
+    run-tools pis
 }
 
 function main {
