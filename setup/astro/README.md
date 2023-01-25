@@ -47,21 +47,26 @@ Foldmethod is "indent", globally, except for markdown
  
 ### Navigation
 
-- `;`       Currently open buffers
-- `<Ctl>o`  Go back 
-- `<Alt>o`  Go forward
-- ` ↩️`  Last edited buffer
-- `<Alt>w`  Close buffer
-- `,c`      Close window, close buffer
-- `,d`      Done, write quit.
-- `G`       Jump to end of file - except to string `"begin__archive"` (but with ONE underscore), when found in buffer
-- `J` `K`   Paragraph (next, previous)
-- `H` `L`   Window left/right selection
-- `,g`      Smart open[1]
-- `,q`      ":q!" Leave file, forget changes
-- `,Q`      ":quitall!" Leave all buffers, forget changes
-- `,u`      Undo Tree
-- `,w`      Autoformat file, then write
+👉 Note the leading space key, e.g. ` foo` is `<SPACE>foo`
+
+- ` ff`      Open file (from your start dir)
+- `;`        Currently open buffers
+- `<Ctl>o`   Go back 
+- `<Alt>o`   Go forward
+- ` ↩️`       Last edited buffer
+- `<Alt>w`   Close buffer
+- `,c`       Close window, close buffer
+- `,d`       Done, write quit.
+- `G`        Jump to end of file - except to string `"begin__archive"` (but with ONE underscore), when found in buffer
+- `J` `K`    Paragraph (next, previous)
+- `H` `L`    Window left/right selection
+- `,g`       Smart open[1] (vi's `gf` is unchanged)
+- `,q`       ":q!" Leave file, forget changes
+- `,Q`       ":quitall!" Leave all buffers, forget changes
+- `,u`       Undo Tree
+- `,w`       Autoformat file, then write
+- `ff<char>` [Hop](https://github.com/phaazon/hop.nvim) to word containing `<char>`
+- `fl`       Hop to line
 
 [1]: e.g. in browser if URL, or nvim if file, resolves md links) via smart_vi_open.py
 
