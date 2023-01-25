@@ -883,9 +883,24 @@ function DoInstall {
 }
 
 function status {
+    local d
     $req_bootstrap && die "Require bootstrap"
+    title 'Version pds:'
+    test -e "$HOME/.config/pds" && (cd "$HOME/.config/pds" && git show -s -2) || echo "(no pds repo)"
+    title 'Version astronvim:'
+    test -e "$HOME/.config/nvim" && (cd "$HOME/.config/nvim" && git show -s -2) || echo "(no pds repo)"
     title 'Stashes:'
-    for k in $(ls "$d_stash"); do disk "$d_stash/$k"; done
+    [ "$(ls -A "$d_stash")" ] && for k in "$d_stash"/*; do disk "$k"; done || echo "(no stashed installs)"
+    title 'Tools:'
+    test -e "$HOME/pds" && disk "$HOME/pds" || echo "(no pds tools dir)"
+    d="$HOME/.local/share/nvim/site/pack/packer"
+    test -e "$d/start" && title "Start plugins" && ls "$d/start"
+    test -e "$d/opt" && title "Optional plugins" && ls "$d/opt"
+    d="$HOME/.local/share/nvim/mason/bin"
+    test -e "$d" && title "LSPs" && ls "$d"
+    d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
+    test -e "$d" && title "Treesitter parsers" && ls "$d"
+    hint '\nTip: In vi run :checkhealth'
 }
 
 function kill_tmux {
