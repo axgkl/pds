@@ -412,6 +412,10 @@ local config = {
 		-- don't get flooded by diag
 		vim.o.updatetime = 250
 		UU.toggle_diag_displ()
+		local userfn = os.getenv("PDS_USER")
+		if userfn then
+			vim.cmd('luafile '..userfn)
+		end
 	end,
 }
 

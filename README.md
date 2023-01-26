@@ -8,6 +8,9 @@
   - [Features](#features)
   - [Usage](#usage)
   - [Further Personalization](#further-personalization)
+    - [Via $PDS_USER](#via-pdsuser)
+    - [More Tools](#more-tools)
+    - [Forking the Repo](#forking-the-repo)
   - [Writing Tests](#writing-tests)
     - [Test Helper Functions](#test-helper-functions)
     - [Tips:](#tips)
@@ -124,8 +127,45 @@ AND the ones from pds - in the right search order - available in your editor.
 
 ## Further Personalization
 
-TBD
+### Via $PDS_USER
 
+If `$PDS_USER` is exported (pointing to any lua file), we run it at the end of the `init.lua`.
+
+Example:
+
+```bash
+export PDS_USER="/tmp/personal.lua"
+~ ❯ cat  $PDS_USER                                                                                                ✘ INT
+vim.cmd('colorscheme kanagawa')
+```
+
+will change  the colorscheme.
+
+### More Tools
+
+Before install you may parametrize to get more tools by exporting `$pds_mamba_tools`.
+
+Default is: "bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip"
+
+Post install you can install new tools via `mamba install`.  
+💡 You may want to check the [Mamba][mamba] docs, regarding how to create version files for reproducable installs.
+
+### Forking the Repo
+
+Always an option. Please export `$pds_repo` away from the default "github.com:AXGKl/pds",
+in order to have the "wget based install" (w/o git on the target system) work.
+
+
+
+2. You 
+pds_distri="${pds_distri:-astro}"
+pds_d_mamba="${pds_d_mamba:-$HOME/pds}"
+pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
+pds_v_nvim="${pds_v_nvim:-0.8.1}"
+pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
+pds_mamba_tools="${pds_mamba_tools:-bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip}"
+pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-false}
+p
 
 ## Writing Tests
 
