@@ -53,16 +53,15 @@ function run_with_pds_bin_path {
 }
 
 function run-tools {
-    # access to further tools
+    # access to further tools. w/o $1 we display fzf,  with match we  call it directly.
     local funcs ts
     . "$here/tools.sh"
     test -n "$1" && {
-        type "$1" >/dev/null && {
+        type "$1" >/dev/null 2>&1 && {
             "$@"
             return $?
         }
     }
-    type
     funcs="$(grep -E "^function " <"$here/tools.sh" | grep '\{ #')" # only documented ones
     if [[ "$2" = "nomenu" ]]; then
         shift 2
@@ -995,7 +994,7 @@ function att {
 function update {
     cd "$HOME/.config/pds"
     git pull || die 'Could not git pull'
-    run-tools pis
+    run-tools pis 2>/dev/null
 }
 
 function main {

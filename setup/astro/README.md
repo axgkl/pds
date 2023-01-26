@@ -33,8 +33,8 @@ All in ~/.config/nvim/lua/user
 
 Some defined in our `init.lua` (mappings, lsp.mappings) most still in `polish.vim`
 
-👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings 👉 `:map`
-lists them all
+👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings  
+👉 `:map` lists them all
 
 
 
@@ -68,7 +68,8 @@ Foldmethod is "indent", globally, except for markdown
 - `ff<char>` [Hop](https://github.com/phaazon/hop.nvim) to word containing `<char>`
 - `fl`       Hop to line
 
-[1]: e.g. in browser if URL, or nvim if file, resolves md links) via smart_vi_open.py
+[1]: `,g`: Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file. Resolves md links) via `smart_vi_open.py`.   
+⚠️ Non locally (e.g. on servers) browser opening is not available.
 
 ### Editing
 
@@ -80,6 +81,7 @@ Foldmethod is "indent", globally, except for markdown
 - `ysiw]`   [Wrap word into (e.g. here: foo -> [foo])][vim-surround]
 - `,s`      [Autosave mode on: Write after insert mode leave][autosave]
 - `ga,`     [Align selected lines on sth, e.g. here: on ","][tabularize]
+- ` d`      In visual or normal mode, delete w/o overwriting your "pasteable content"
 
 
 ### LSP
@@ -99,9 +101,16 @@ Foldmethod is "indent", globally, except for markdown
 - `,2`      Opens our init.lua
 - `,3`      Terminal in dir of current buffer
 - `,C`      Colors (theme picker)
-- `,r`      Evaluates as python, see https://github.com/axiros/vpe
+- `,r`      Evaluates as python or as vim cmd, see https://github.com/axiros/vpe
 
 ### File Type Specific
+
+#### Explorer ([NeoTree][neotree])
+
+- ` o`: Open the explorer (`,c` or `alt-w` closes)
+- `P`: Enter preview mode
+- `?`: Help
+
 
 #### Man Pages
 
@@ -193,4 +202,4 @@ To move it away to a backup dir:
 [whichkey]: https://github.com/folke/which-key.nvim
 [tabularize]: https://github.com/godlygeek/tabular
 [lp]: https://www.youtube.com/watch?v=HtPL2YhK6h0&t=165s
-
+[neotree]: https://github.com/nvim-neo-tree/neo-tree.nvim

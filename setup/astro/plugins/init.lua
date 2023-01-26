@@ -40,6 +40,12 @@ return {
 	-- },
 	-- { "nvim-zh/md-nanny" },
 	--{ "edluffy/hologram.nvim", { config = function () require("hologram").setup({ auto_display = true }) end }},
+	{'phaazon/mind.nvim',
+  branch = 'v2.2',
+  config = function()
+    require'mind'.setup()
+  end
+},
 	{
 		"phaazon/hop.nvim",
 		branch = "v2",

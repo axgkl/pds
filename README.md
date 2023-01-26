@@ -63,6 +63,12 @@ This is a run on a minimal debian server:
 
 💡 The installation look and feel may be further improved in the future but you get the idea...
 
+Edit: Dropped the 2 pane tmux view. If you want to see what is going on during install,
+use `pds att -l`, in another terminal (will cause the installer to wait for confirmation
+before each tmux close)
+
+
+
 ### Existing NeoVim Install
 
 Before installing pds, you might want to run `pds.sh stash mybackup`.
@@ -127,7 +133,7 @@ For more output use `pds test -v`, e.g.:
 
 - With -v we produce verbose output.
 - But better it is to check what is going on by staring tmux attached session, started
-  (and restarted) via  `pds att -l` .
+  (and restarted) via  `pds att -l` (`-l: loop`) .
 - The main program, when wanting to kill tmux, waits for a key entry, when a session is
   attached.
 

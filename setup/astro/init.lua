@@ -8,7 +8,8 @@ if os.getenv("pds_installing") then
 	return {}
 end
 
--- TS = require("telescope.builtin")
+TS = require("telescope.builtin")
+
 local config = {
 	header = {
 		"                  ◢ ▨ ▨ ◣         ◢ ▨ ▨ ▨ ◤  ",
@@ -305,6 +306,15 @@ local config = {
 		-- :silent verbose map # gk: or imap or vmap
 		-- :redir END
 		n = {
+			["<leader>fg"] = {
+				function()
+					TS.git_files()
+				end,
+				desc = "Git files",
+			},
+			["<leader>mm"] = { "<cmd>MindOpenMain<CR>", desc = "Mind Main" },
+			["<leader>mp"] = { "<cmd>MindOpenSmartProject<CR>", desc = "Mind Project" },
+			["<leader>d"] = { '"_d', desc = "Delete noregister" }, -- when u have stuff in your clipboard
 			["ff"] = { "<cmd>HopChar1<CR>", desc = "hop-char" },
 			["fl"] = { "<cmd>HopLine<CR>", desc = "hop-line" },
 			-- second key is the lefthand side of the map
@@ -318,19 +328,20 @@ local config = {
 			-- ["<CR>"] = { "zA", desc = "Toggle Global Fold" },
 			[",D"] = {
 				function()
-					require("telescope.builtin").diagnostics({ bufnr = 0 })
+					TS.diagnostics({ bufnr = 0 })
 				end,
 				desc = "BufferDiagnostics",
 			},
 			[",C"] = {
 				function()
-					require("telescope.builtin").colorscheme({ enable_preview = true })
+					TS.colorscheme({ enable_preview = true })
 				end,
 				desc = "ColorSchemes",
 			},
 		},
 		v = {
 			["<CR>"] = { "zO", desc = "Fold all open" },
+			["<leader>d"] = { '"_d', desc = "Delete noregister" }, -- when u have stuff in your clipboard
 		},
 		t = {
 			-- setting a mapping to false will disable it
@@ -341,21 +352,18 @@ local config = {
 	-- This function is run last
 	-- good place to configuring augroups/autocommands and custom filetypes
 	polish = function()
-		-- place this in one of your configuration file(s)
 		local hop = require("hop")
-		local directions = require("hop.hint").HintDirection
-		vim.keymap.set("", "f", function()
-			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
-		end, { remap = true })
-		vim.keymap.set("", "F", function()
-			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
-		end, { remap = true })
-		vim.keymap.set("", "t", function()
-			hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
-		end, { remap = true })
-		vim.keymap.set("", "T", function()
-			hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
-		end, { remap = true })
+		local function hopk(k, dir, offs)
+			vim.keymap.set("", k, function()
+				hop.hint_char1({ direction = k, current_line_only = true, hint_offset = offs })
+			end, { remap = true })
+		end
+
+		local d = require("hop.hint").HintDirection
+		hopk("f", d.AFTER_CURSOR, 0)
+		hopk("t", d.AFTER_CURSOR, -1)
+		hopk("F", d.BEFORE_CURSOR, 0)
+		hopk("T", d.BEFORE_CURSOR, -1)
 		-- Set key binding
 		-- Set autocommands
 		-- vim.api.nvim_create_augroup("ftplugs", { clear = true })
