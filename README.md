@@ -129,25 +129,40 @@ AND the ones from pds - in the right search order - available in your editor.
 
 ### Via $PDS_USER
 
-If `$PDS_USER` is exported (pointing to any lua file), we run it at the end of the `init.lua`.
+If `$PDS_USER` is exported, then we require it as module and call it's setup function in
+`init.lua`. We hand over the full config and a reference to the polish function, which you
+might overwrite.
 
 Example:
 
-```bash
-export PDS_USER="/tmp/personal.lua"
-~ ❯ cat  $PDS_USER                                                                                                ✘ INT
-vim.cmd('colorscheme kanagawa')
+```lua
+~/.config/astronvim/lua ❯ export PDS_USER=gk
+~/.config/astronvim/lua ❯ cat gk.lua
+local M = {}
+M.setup = function(config, polish)
+  config["colorscheme"] = "blue"
+  config["polish"] = function()
+    -- polish() -- opt. run original polish
+    vim.notify("gk's config done")
+  end
+end
+return M
 ```
 
-will change  the colorscheme.
+💡 `polish` is imperative code, run after all config is done, while `config` is a
+declarative dict, [understood][astronvim] by AstroNVim. 
 
 ### More Tools
 
-Before install you may parametrize to get more tools by exporting `$pds_mamba_tools`.
+Before install, you may parametrize pds to get [more tools](https://conda-forge.org/) - by exporting `$pds_mamba_tools`.
 
 Default is: "bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip"
 
+💡 `pkg:cmd` may be used, when package name differs from cmd name. This allows PDS to
+"see" if a tool is already present on the host, then skip install.
+
 Post install you can install new tools via `mamba install`.  
+
 💡 You may want to check the [Mamba][mamba] docs, regarding how to create version files for reproducable installs.
 
 ### Forking the Repo

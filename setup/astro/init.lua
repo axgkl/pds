@@ -366,31 +366,7 @@ local config = {
 		hopk("t", d.AFTER_CURSOR, -1)
 		hopk("F", d.BEFORE_CURSOR, 0)
 		hopk("T", d.BEFORE_CURSOR, -1)
-		-- Set key binding
-		-- Set autocommands
-		-- vim.api.nvim_create_augroup("ftplugs", { clear = true })
-		-- vim.api.nvim_create_autocmd("BufEnter", {
-		-- 	desc = "Load ft plugs",
-		-- 	group = "ftplugs",
-		-- 	pattern = "*.md",
-		-- 	-- command = "source ~/.config/nvim/lua/user/ftplugin/mdown.vim",
-		-- 	command = function()
-		-- 		print("adsfa")
-		-- 	end,
-		-- })
-		-- https://neovim.io/doc/user/lua.html#lua-filetype
-		-- Set up custom filetypes
-		-- vim.filetype.add {
-		--   extension = {
-		--     foo = "fooscript",
-		--   },
-		--   filename = {
-		--     ["Foofile"] = "fooscript",
-		--   },
-		--   pattern = {
-		--     ["~/%.config/foo/.*"] = "fooscript",
-		--   },
-		-- }
+
 		local cnf = require("auto-save.config").opts
 		cnf.enabled = false
 		cnf.write_all_buffers = false
@@ -412,11 +388,13 @@ local config = {
 		-- don't get flooded by diag
 		vim.o.updatetime = 250
 		UU.toggle_diag_displ()
-		local userfn = os.getenv("PDS_USER")
-		if userfn then
-			vim.cmd('luafile '..userfn)
-		end
 	end,
 }
+
+local userfn = os.getenv("PDS_USER")
+if userfn then
+	u = require(userfn)
+	u.setup(config, config['polish'])
+end
 
 return config
