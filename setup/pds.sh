@@ -97,7 +97,7 @@ function handle_sourced {
         source) return ;;
         #F s|tools:       Opens tools menu, except when exact match
         \s | tools) run-tools "$@" ;;
-        -x | -s | -h | --help | att | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status | \u | update)
+        -x | -s | -h | --help | att | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status | \u | update | \v | version)
             "$here/pds.sh" "$func" "$@"
             ;;
         #F any, except action:  Runs the argument(s) with activated pds
@@ -309,7 +309,7 @@ true && {
     function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
     function sh {
         local m out
-        T -q rename-window "⚙️ $*" || true
+        T -q rename-window "⚙️ $*" 2>/dev/null || true
         out="\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
         echo -e "$out" | tee -a "$captures" | tee -a "$inst_log"
 
@@ -368,8 +368,8 @@ true && {
         local f F a A
         F="F"
         A="A"
-        f="$(grep "#$F " <"$me" | sed -e 's/#F//g' | sed -e 's/^    //g')"
-        a="$(grep "#$A " <"$me" | sed -e 's/#A//g' | sed -e 's/^    //g')"
+        f="$(grep "#$F " <"$me" | sed -e 's/#F/\x1b[1;33m/g' | sed -e 's/^    //g' | sed -e 's/:/\x1b[2m/' | sed -e 's/$/\x1b[0m/')"
+        a="$(grep "#$A " <"$me" | sed -e 's/#A/\x1b[1;37m/g' | sed -e 's/^    //g' | sed -e 's/:/\x1b[2m/' | sed -e 's/$/\x1b[0m/')"
         f="$(echo -e "${d_/<FUNCS>/$f}")"
         echo -e "${f/<ACTIONS>/$a}"
         if [[ "${1:-x}" == "--help" ]]; then
@@ -1002,11 +1002,43 @@ function att {
     done
 }
 function update {
-    cd "$HOME/.config/pds"
-    git pull || die 'Could not git pull'
-    run-tools pis 2>/dev/null
+    function update_repo {
+        local fn="$HOME/.config/$1"
+        hint "Repo: $fn"
+        cd "$fn"
+        git branch -vv | grep detached && git checkout -
+        git pull || die "Could not git pull $1"
+    }
+    for k in pds nvim; do sh update_repo "$k"; done
+    source "$here/tools.sh"
+    packer-interactive-sync 2>/dev/null
 }
-
+function version_write {
+    local fn="$1"
+    echo "first 2 are: 1. pds, 2. astro" >"$fn"
+    (cd "$HOME/.config/pds" && git rev-parse --short HEAD >>"$fn")
+    (cd "$HOME/.config/nvim" && git rev-parse --short HEAD >>"$fn")
+    plugins-create-snapshot >>"$fn"
+    hint "Written $fn"
+}
+function version_use {
+    local v fn="$1"
+    test -e "$fn" || die "Not found: $fn"
+    hint "Setting .config/pds and .config/nvim:"
+    v="$(cat "$fn" | head -n 2 | tail -n 1)"
+    (cd "$HOME/.config/pds" && git checkout "$v")
+    v="$(cat "$fn" | head -n 3 | tail -n 1)"
+    (cd "$HOME/.config/nvim" && git checkout "$v")
+    sh packer-sync # so that we *have* all plugins, that should work - always￼
+    sh plugins-revert-to-snapshot "$fn" 2>/dev/null
+}
+function version {
+    source "$here/tools.sh"
+    local act="${1:-x}"
+    local fn="${2:-$HOME/.config/pds/setup/$pds_distri/versions}"
+    test "$act" = "write" && sh version_write "$fn"
+    test "$act" = "use" && sh version_use "$fn"
+}
 function main {
     set_constants
     if [[ -d "$here/../.git" && -d "$here/../setup" && -d "$here/../ftplugin" ]]; then
@@ -1034,19 +1066,22 @@ function main {
                 sh Install "$@"
             fi
             ;;
+        #A r|restore <name>:        Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
+        \r | restore) unstash "$@" ;;
         #A shell:                   Enters a shell with pds tools available
         shell) shell ;;
         source) return ;;
         #A stash <name>:            Moves away an existing install, restorable
         stash) stash "$@" ;;
-        #A test [-v] [-f <m>] [m]:  Runs all test scripts (optional -f filematch, test match)
-        test) run_tests "$@" ;;
-        #A r|restore <name>:        Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
-        \r | restore) unstash "$@" ;;
         #A status:                  Status infos
         status) status "$@" ;;
-        #A -u|--update:             Update and sync pluings
+        #A test [-v] [-f <m>] [m]:  Runs all test scripts (optional -f filematch, test match)
+        test) run_tests "$@" ;;
+        #A u|update:                Update the pds config repo & sync plugins
         \u | update) update "$@" ;;
+        #A v|version write [file]:  Write versions of all repos to a file
+        #A      "    use   [file]:  Fallback all versions to given file
+        \v | version) version "$@" ;;
         #A -h|--help:               Help (detailed with --help)
         --help) show_help --help ;;
         *) show_help "$@" ;;
