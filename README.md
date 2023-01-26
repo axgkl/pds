@@ -266,3 +266,4 @@ diagnostics popup did not show up, we let first attempt die within a subshell, t
 [mamba]:  https://github.com/mamba-org/mamba
 [neovim]: https://neovim.io
 [pde]: https://www.youtube.com/watch?v=IK_-C0GXfjo
+ 
