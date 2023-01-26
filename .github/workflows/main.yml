@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v2
         env:
           # Count up to have bootstrap test build a new mamba:
-          cache_name: mamba-1
+          cache_name: mamba-2
         with:
           path: ~/pds
           key: ${{ runner.os }}-build-${{ env.cache_name }}
