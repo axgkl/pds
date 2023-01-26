@@ -4,6 +4,7 @@
 - [Personal Development Sandbox](#personal-development-sandbox)
   - [Bootstrap Installation](#bootstrap-installation)
     - [Existing NeoVim Install](#existing-neovim-install)
+    - [Fallback to Working Version](#fallback-to-working-version)
   - [Features](#features)
   - [Usage](#usage)
   - [Further Personalization](#further-personalization)
@@ -48,8 +49,6 @@ chmod +x pds.sh
 pds vi # or, recommended: export PATH="~/pds/bin:$PATH, then vi"
 ```
 
-
-
 Requirements: bash, wget.
 
 OS: Currently only tested on Linux.
@@ -67,8 +66,6 @@ Edit: Dropped the 2 pane tmux view. If you want to see what is going on during i
 use `pds att -l`, in another terminal (will cause the installer to wait for confirmation
 before each tmux close)
 
-
-
 ### Existing NeoVim Install
 
 Before installing pds, you might want to run `pds.sh stash mybackup`.
@@ -77,6 +74,20 @@ This moves `~/.config/nvim`, `~/.local/state/nvim`, `~/.local/share/nvim` to an 
 later restoration via `pds restore mybackup`.
 
 `pds clean-all` would erase the existing install.
+
+### Fallback to Working Version
+
+Plugins are installed in "latest and greatest" mode, i.e. not version pinned.
+
+In order to cover your back when something fails, you can go back to a working version like so:
+
+```bash
+pds v[ersion] use 
+```
+
+This checks out the versions of all plugins, astronvim and pds, from a versions file maintained by the author, kept [within the repo](./setup/astro/versions).
+You can create such a file on your own, anytime: `pds v write <filename>` - and use it as fallback via `pds v use <filename>`.
+
 
 ## Features
 
