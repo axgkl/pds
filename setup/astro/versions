@@ -3,7 +3,7 @@ first 2 are: 1. pds, 2. astro
 4f4269d
 979b6c8 :auto-save.nvim:
 7f5d35a :goyo.vim:
-e863942 :gruvbox.nvim:
+925b496 :gruvbox.nvim:
 90db1b2 :hop.nvim:
 e01ac08 :iceberg.vim:
 c90e273 :impatient.nvim:
@@ -30,7 +30,7 @@ feadbc8 :vim-markdown:
 24afe92 :vim-repeat:
 6bc3dd1 :vim-signature:
 3d188ed :vim-surround:
-c249bfc :vpe:
+8f52d25 :vpe:
 3eafbd2 :aerial.nvim:
 21a0f25 :alpha-nvim:
 6fed338 :better-escape.nvim:
