@@ -8,7 +8,9 @@ if os.getenv("pds_installing") then
 	return {}
 end
 
-TS = require("telescope.builtin")
+TS = function()
+	return require("telescope.builtin")
+end
 
 local config = {
 	header = {
@@ -308,14 +310,14 @@ local config = {
 		n = {
 			["<leader>fg"] = {
 				function()
-					TS.git_files()
+					TS().git_files()
 				end,
 				desc = "Git files",
 			},
 			["<leader>mm"] = { "<cmd>MindOpenMain<CR>", desc = "Mind Main" },
 			["<leader>mp"] = { "<cmd>MindOpenSmartProject<CR>", desc = "Mind Project" },
 			["<leader>d"] = { '"_d', desc = "Delete noregister" }, -- when u have stuff in your clipboard
-			["ff"] = { "<cmd>HopChar1<CR>", desc = "hop-char" },
+			["fk"] = { "<cmd>HopChar1<CR>", desc = "hop-char" },
 			["fl"] = { "<cmd>HopLine<CR>", desc = "hop-line" },
 			-- second key is the lefthand side of the map
 			-- TAB IS Ctrl-I -> this would loose jump previous:
@@ -328,13 +330,13 @@ local config = {
 			-- ["<CR>"] = { "zA", desc = "Toggle Global Fold" },
 			[",D"] = {
 				function()
-					TS.diagnostics({ bufnr = 0 })
+					TS().diagnostics({ bufnr = 0 })
 				end,
 				desc = "BufferDiagnostics",
 			},
 			[",C"] = {
 				function()
-					TS.colorscheme({ enable_preview = true })
+					TS().colorscheme({ enable_preview = true })
 				end,
 				desc = "ColorSchemes",
 			},

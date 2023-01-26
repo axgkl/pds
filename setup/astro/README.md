@@ -49,7 +49,8 @@ Foldmethod is "indent", globally, except for markdown
 
 👉 Note the leading space key, e.g. ` foo` is `<SPACE>foo`
 
-- ` ff`      Open file (from your start dir)
+- `ff`       Open file (from your start dir)
+- ` fg`      Open git managed file
 - `;`        Currently open buffers
 - `<Ctl>o`   Go back 
 - `<Alt>o`   Go forward
@@ -65,8 +66,6 @@ Foldmethod is "indent", globally, except for markdown
 - `,Q`       ":quitall!" Leave all buffers, forget changes
 - `,u`       Undo Tree
 - `,w`       Autoformat file, then write
-- `ff<char>` [Hop](https://github.com/phaazon/hop.nvim) to word containing `<char>`
-- `fl`       Hop to line
 
 [1]: `,g`: Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file. Resolves md links) via `smart_vi_open.py`.   
 ⚠️ Non locally (e.g. on servers) browser opening is not available.
@@ -83,6 +82,14 @@ Foldmethod is "indent", globally, except for markdown
 - `ga,`     [Align selected lines on sth, e.g. here: on ","][tabularize]
 - ` d`      In visual or normal mode, delete w/o overwriting your "pasteable content"
 
+#### Hopping Around
+
+Since `f` alone is already "find forward char on current line", we cannot display help for those:
+
+- `fk<char>` [Hop](https://github.com/phaazon/hop.nvim) to position with `<char>`
+- `fl`       Hop to line
+- `F<char>`  Hop back on current line to char
+- `t` `T`    Offset f, F by one char. E.g. for selecting: `vtx`: select until char "x"
 
 ### LSP
 
