@@ -416,8 +416,16 @@ function install_mamba {
 
 # we support d_mamba v_mamba pin_mamba
 function install_mamba_binary_pkg_mgr {
-    local hv_mamba fn crl url name
-    crl=false
+    local hv_mamba fn url name
+    # prevent accidental nightmares:
+    test "$pds_d_mamba" == "$HOME" && die "$pds_d_mamba cannot be equal to \$HOME"
+
+    test -e "$pds_d_mamba/bin/mamba" || {
+        test -d "$pds_d_mamba" && {
+            hint "removing non functional $pds_d_mamba dir"
+            rm -rf "$pds_d_mamba"
+        }
+    }
     test -d "$pds_d_mamba" || {
         name="Mambaforge-$pds_v_mamba-$(uname)-$(uname -m).sh"
         url="https://github.com/conda-forge/miniforge/releases/download/$pds_v_mamba/$name"
@@ -429,6 +437,8 @@ function install_mamba_binary_pkg_mgr {
         echo "Installer: $name"
         fn="$HOME/.cache/$name"
         test -f "$fn" || (
+            local crl
+            crl=false #  have curl
             type curl 2>/dev/null 1>&2 && crl=true
             echo "Not present - downloading $url"
             $crl && curl -L -o "$fn" "$url"
@@ -438,7 +448,7 @@ function install_mamba_binary_pkg_mgr {
         )
         sh install_mamba "$fn"
     }
-    test -e "$pds_d_mamba/bin/mamba" || die "No mamba dir: $pds_d_mamba"
+    test -e "$pds_d_mamba/bin/mamba" || die "Mamba install at $pds_d_mamba failed."
     hv_mamba="$("$pds_d_mamba/bin/mamba" --version | xargs)"
     test -z "$hv_mamba" && die "mamba not executable here"
     # die when pinned but different:
