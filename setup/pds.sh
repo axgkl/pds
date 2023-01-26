@@ -1015,7 +1015,7 @@ function update {
 }
 function version_write {
     local fn="$1"
-    echo "first 2 are: 1. pds, 2. astro" >"$fn"
+    echo "written: $(date). first 2 are: 1. pds, 2. astro" >"$fn"
     (cd "$HOME/.config/pds" && git rev-parse --short HEAD >>"$fn")
     (cd "$HOME/.config/nvim" && git rev-parse --short HEAD >>"$fn")
     plugins-create-snapshot >>"$fn"
