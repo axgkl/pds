@@ -14,11 +14,4 @@ local mm = {
   end,
 }
 
-return {
-  defaults = {
-    mappings = {
-      i = mm,
-      n = mm,
-    },
-  },
-}
+return { defaults = { mappings = { i = mm, n = mm } } }
