@@ -43,6 +43,7 @@ M.write_dom = function()
 	-- end
 end
 
+
 --[[ M.autosave = function(arg) ]]
 --[[ 	os.execute("notify-send" .. " 'writing dom...'") ]]
 --[[ 	local get_ls = vim.tbl_filter(function(buf) ]]
