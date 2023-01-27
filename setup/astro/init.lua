@@ -393,8 +393,8 @@ local config = {
 
 local userfn = os.getenv("PDS_USER")
 if userfn then
-	u = require(userfn)
-	u.setup(config, config['polish'])
+	local u = require(userfn)
+	u.setup(config, config["polish"])
 end
 
 return config

@@ -49,7 +49,7 @@ Foldmethod is "indent", globally, except for markdown
 
 👉 Note the leading space key, e.g. ` foo` is `<SPACE>foo`
 
-- `ff`       Open file (from your start dir)
+- `ff`       [Open file][1] (from your start dir)
 - ` fg`      Open git managed file
 - `;`        Currently open buffers
 - `<Ctl>o`   Go back 
@@ -61,14 +61,17 @@ Foldmethod is "indent", globally, except for markdown
 - `G`        Jump to end of file - except to string `"begin__archive"` (but with ONE underscore), when found in buffer
 - `J` `K`    Paragraph (next, previous)
 - `H` `L`    Window left/right selection
-- `,g`       Smart open[1] (vi's `gf` is unchanged)
+- `,g`       [Smart open][2] (vi's `gf` is unchanged)
 - `,q`       ":q!" Leave file, forget changes
 - `,Q`       ":quitall!" Leave all buffers, forget changes
 - `,u`       Undo Tree
 - `,w`       Autoformat file, then write
 
-[1]: `,g`: Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file. Resolves md links) via `smart_vi_open.py`.   
+[1]: You can open many files at once, by selecting them with TAB in the picker
+[2]: `,g`: Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file. Resolves md links) via `smart_vi_open.py`.   
 ⚠️ Non locally (e.g. on servers) browser opening is not available.
+
+
 
 ### Editing
 
