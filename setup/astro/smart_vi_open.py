@@ -7,6 +7,7 @@ We try hard to find a matching file and bring it up in vim
 Else we open in browser.
 """
 
+
 import os
 import re
 import sys
@@ -14,16 +15,21 @@ import sys
 # http://heise.de
 from pathlib import Path
 
-browser = os.environ.get('BROWSER', 'microsoft-edge')
+testmode = [0]
 user = os.environ.get('USER', 'user')
+fn_from_lua = '/tmp/smartopen'  # never change, it's in utils lua!
+fn_last_from_lua = '/tmp/smartopen_last_expression_from_lua'
+fn_log = f'/tmp/smartopen.{user}.log'
+sep = ':-:'
+browser = os.environ.get('BROWSER', 'microsoft-edge')
 exists = os.path.exists
 
 
 def log(s):
-    return open(fn_log, 'a').write('\ncwd: %s; %s\n' % (os.getcwd(), s))
-
-
-sep = ':-:'
+    msg = '\ncwd: %s; %s\n' % (os.getcwd(), s)
+    if sys.stdout and sys.stdout.isatty():
+        print(msg)
+    open(fn_log, 'a').write(msg)
 
 
 def clean(s):
@@ -37,17 +43,12 @@ def notify(title, msg=''):
     os.system(cmd % (clean(title), clean(msg), __file__))
 
 
-# 'foo/bar'
-
-fn_from_lua = '/tmp/smartopen'
-fn_last_from_lua = '/tmp/last_smartopen_expression_from_lua'
-fn_log = f'/tmp/smartopen.{user}.log'
 # '/etc/hosts'
 os.unlink(fn_log) if exists(fn_log) else 0
 
 
 def exit(*a):
-    send_exit('') # otherwise line problems in vim
+    send_exit('')  # otherwise line problems in vim
 
 
 def pth_join(dir, fn): return str(Path(dir).joinpath(Path(fn)))
@@ -62,31 +63,45 @@ def browse(lnk):
         '%s "%s" >/dev/null 2>/dev/null &' % (browser, lnk))
 
 
+class TestEnd(Exception):
+    pass
+
+
 def send_exit(fn_or_vim_cmd):
     """vim opens fn now if present else run vim.cmd:"""
     log('sending back: %s' % fn_or_vim_cmd)
     with open(fn_from_lua, 'w') as fd:
         fd.write(fn_or_vim_cmd)
-    sys.exit(0)
+    if testmode[0]:
+        raise TestEnd
+    else:
+        sys.exit(0)
 
 
-def validate_and_complete(m):
+def set_dir(m):
     log('got: %s' % str(m))
     if not exists(m['fn']) and "://" not in m["fn"]:
         # may not exist, e.g. in packer plugins overlay, with urls we want to ,g on:
         m['dir'] = os.environ['HOME']
-        #exit(notify('bug: file does not exist: %s' % m['fn']))
+        # exit(notify('bug: file does not exist: %s' % m['fn']))
     else:
         m['dir'] = os.path.abspath(os.path.dirname(m['fn']))
+
+
+def rm_spam_chars_in_word(m):
     w, l = m['word'], m['line']
-    for spam in "'", '"':
-        w.replace(spam, '')
+    w = ''.join([c for c in w if c not in {"'", '"'}])
+    wc = ''.join([c for c in w if c not in ''.join(brkts_and_apos)])
 
     if w and w[0] == '[' and "]" not in w:
         w = w + l.split(w, 1)[1].split(')', 1)[0] + ')'
-        pass
     m['word'] = w
+    m['clean_word'] = wc
     log('parsed %s' % m)
+
+
+def tilde_is_home_dir(m):
+    m['word'] = m['word'].replace('~', os.environ['HOME'])
 
 
 def try_(f, **m):
@@ -95,7 +110,9 @@ def try_(f, **m):
     # notify(f.__name__, k)
     try:
         f(**m)
-    except Exception as ex:
+    except TestEnd:
+        raise
+    except Exception:
         pass
         # notify('Exception', str(ex))
 
@@ -138,7 +155,7 @@ def is_markdown_dragshot_req(word, fn, dn=os.path.dirname, **_):
     send_exit(f'%s/shot:{w}/![]({w})/g')
 
 
-def is_no_word_under_cursor_in_md_file_open_browser_in_ds(word, fn, **_):
+def on_empty_in_md_file_do_mkdocs_serve(word, fn, **_):
     if word:
         return
     if '/docs/' in fn and '/repos/' in fn and fn.endswith('.md'):
@@ -221,32 +238,30 @@ def is_markdown_link(word, dir, **kw):
     send_exit(pth)
 
 
-def is_absolute_path(word, **kw):
-    w = word.replace('~', os.environ.get('HOME', '~'))
-    if exists(w):
-        send_exit(w)
+def is_absolute_path(clean_word, word, **kw):
+    [send_exit(w) for w in {clean_word, word} if exists(w)]
 
 
-def is_relative_path(word, dir, fn, first=True, **kw):
-    f = pth_join(dir, word)
+def is_relative_path(clean_word, dir, fn, first=True, **kw):
+    f = pth_join(dir, clean_word)
     if exists(f):
         send_exit(f)
     d = dir + '/docs'
-    if word.endswith('.md'):
-        k = pth_join(d, word)
+    if clean_word.endswith('.md'):
+        k = pth_join(d, clean_word)
         if first and fn.endswith('mkdocs.yml') and not exists(k):
-            touch_new_md_file(k, word)
+            touch_new_md_file(k, clean_word)
 
         if exists(d):
-            try_(is_relative_path, **dict(dir=d, word=word, fn=fn, first=False))
+            try_(is_relative_path, **dict(dir=d, word=clean_word, fn=fn, first=False))
 
 
 # check for an lcdoc lp line:
 def st(l, s): return l.startswith(s)
 
 
-def is_lp(l): return (st(l, '```') and ' lp ' in l) or (
-    st(l, '`') and ' lp:' in l)
+def is_lp(l):
+    return (st(l, '```') and ' lp ' in l) or (st(l, '`') and ' lp:' in l)
 
 
 def is_lcdoc_lp_line(word, dir, fn, line, **kw):
@@ -258,7 +273,6 @@ def is_lcdoc_lp_line(word, dir, fn, line, **kw):
         return
     try:
         import lcdoc
-
         d = os.path.abspath(lcdoc.__file__).rsplit('/', 1)[0]
         os.system('cd "%s" && nohup st 2>/dev/null &' % d)
         exit()
@@ -281,8 +295,8 @@ def is_lcdoc_lp_line(word, dir, fn, line, **kw):
 def remove_brackets_around_word(m):
     word = m['word']
     # remove all brackets:
-    # resolves "[title](./file.md)": ( before [:
-    for k in "''", '""', '()', '[]', '{}':
+    # see [doc1]
+    for k in brkts_and_apos:
         word = word.replace(k, '')
         while k[0] in word:
             # log(k + s)
@@ -291,30 +305,49 @@ def remove_brackets_around_word(m):
     m['word'] = word
 
 
+def read_file(fn):
+    if exists(fn):
+        with open(fn) as fd:
+            return fd.read()
+    return ''
+
+
+def url_github(word):
+    return 'https://github.com/' + word
+
+
+def url_search(word):
+    return 'https://www.google.com/search?client=%s-b-d&q=' + word
+
+
 def main():
-    with open(fn_from_lua) as fd:
-        expression = fd.read().strip()
-    # To debug: copy this to /tmp/smartopen and run __file__ in foreground to debug:
+    '''If an execution from vi did not work,
+    simply call me w/o arguments in foreground, with breakpoints.
+    We'll be running the last expression'''
+    expression = read_file(fn_from_lua)
+    if not sep in expression:
+        expression = read_file(fn_last_from_lua)
+    assert sep in expression
     with open(fn_last_from_lua, 'w') as fd:
         fd.write(expression)
     log('got string from lua:\n' + expression)
-    # os.system('bash')
-    os.unlink(fn_from_lua)
+    os.unlink(fn_from_lua) if exists(fn_from_lua) else 0
     m = {'word': '', 'fn': '', 'line': ''}
     for k in m:
         m[k] = expression.split(''.join((sep, k, sep)), 1)[
             1].split(sep, 1)[0].strip()
-    validate_and_complete(m)
+    tilde_is_home_dir(m)
+    set_dir(m)
+    rm_spam_chars_in_word(m)
     try_(is_markdown_dragshot_req, **m)
-    try_(is_no_word_under_cursor_in_md_file_open_browser_in_ds, **m)
+    try_(on_empty_in_md_file_do_mkdocs_serve, **m)
     try_(is_man_page, **m)
     try_(is_help, **m)
     try_(is_markdown_link, **m)
+    remove_brackets_around_word(m)
     try_(is_absolute_path, **m)
     try_(is_relative_path, **m)
     try_(is_lcdoc_lp_line, **m)
-
-    remove_brackets_around_word(m)
 
     # search the whole fckng directory tree:
     # try_fd(word)
@@ -326,13 +359,94 @@ def main():
         word = 'http' + word.split('http', 1)[1]
     # special case foo/bar , e.g. in plugins. Then github:
     elif len(word.split('/')) == 2:
-        word = 'https://github.com/' + word
+        word = url_github(word)
     else:
         o = word
-        word = 'https://www.google.com/search?client=%s-b-d&q=' + word
+        word = url_search(word)
         notify('Not found: %s' % o, 'Opening %s' % word)
     exit(browse(word))
 
 
+def run_tests():
+    testmode[0] = 1
+    ossys, se = [], []
+    sysexit = sys.exit
+    os.system = lambda cmd: ossys.append(cmd)
+    sys.exit = lambda ec=0: se.append(ec) or 1/0
+
+    def write_fn(word, fn='/etc/hosts', line=None):
+        if line is None:
+            line = f'xx {word} xx'
+        P = f':-:word:-:{word}:-:fn:-:{fn}:-:line:-:{line}:-:end:-:'
+        print(P)
+        with open(fn_from_lua, 'w') as fd:
+            fd.write(P)
+    nr = 0
+    for ErrMsg, tests in Tests.items():
+        for t in tests:
+            err_msg = t[2] if len(t) == 3 else ErrMsg
+            nr += 1
+            print(f'[{nr}] {X1B}1;30;43m {t}{X1B}0m')
+            ossys.clear() or se.clear()
+            write_fn(*t[0])
+            try:
+                print('{X1B}2;37m')
+                main()
+            except TestEnd:
+                print(f'{X1B}0m')
+                if len(t[1]) > 1:
+                    browse(t[1][1])
+                    o = ossys
+                    if o[-2] == o[-1] and browser in o[-1] and browser in o[-2]:
+                        pass
+                    else:
+                        print('browser exception')
+                        breakpoint()  # FIXME BREAKPOINT
+                fn = t[1][0]
+                if fn:
+                    r = read_file(fn_from_lua)
+                    if r != fn:
+                        raise Exception(f'{err_msg}: {t}. Got: "{r}". Wanted "{fn}"')
+                print(f'✔️ {t}')
+                continue
+            raise Exception(f'Did not exit {err_msg} {t}')
+
+    sys.exit = sysexit
+
+
+H = os.environ['HOME']
+Tests = {
+    # string: sets a new error message
+    # [[word, optional fn, opt line], [fn_content, opt browse content]]
+    'File path must be extracted': [
+        [['/etc/hosts'], ['/etc/hosts']],
+        [['some_func("/etc/hosts")'], ['/etc/hosts']],
+        [["some_func('/etc/hosts')"], ['/etc/hosts']],
+        [["some_func('''/etc/hosts''')"], ['/etc/hosts']],
+        [['"~/.bashrc"'], [H + '/.bashrc']],
+        [[f'"{H}/.bashrc"'], [H + '/.bashrc']]
+    ],
+    'Browser must open on word': [
+        [['http://foo.bar'], ['', 'http://foo.bar']],
+        [['foo'], ['', url_search('foo')]],
+        [['/x/y/z'], ['', url_search('/x/y/z')], 'url open on non existing file'],
+    ],
+}
+
+
+# because of a f*ck*ng treesitter bug with brackets, this breaks all indent:
+# => keep them all at the end, incl. the comments(!) below, e.g. doc1
+brkts_and_apos = "''", '""', '()', '[]', '{}'
+X1B = '\x1b['
+
+
 if __name__ == '__main__':
-    main()
+    if sys.argv[-1] == 'test':
+        sys.exit(run_tests())
+    try:
+        main()
+    except Exception as ex:
+        log(f'exception: {ex}')
+        send_exit(str(ex))
+
+# doc1:     # resolves "[title](./file.md)": ( before [:
