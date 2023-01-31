@@ -107,17 +107,28 @@ function testit {
     fi
     return 1
 }
+function rm_swaps {
+    ( cd "$HOME/.local/state/nvim/swap" && rm -f ./*tmp* )
+}
 
 function deindent { echo -e "$1" | tail -n +2 | sed -e 's/^    //g'; }
+# tool for other plugins to know it, e.g. vpe:
+function testdir { echo "$d_vi_file"; }
 function open {
     # puts given content into a file with given name then opens vi on it
     local cont fn
+    rm_swaps
     cont="$3"
     # default (no other currently supported): 4 deindent (for folding) and first line removed:
     # disabled with $1=nd
     test "$1" = 'nd' && shift || cont="$(deindent "$2")"
     fn="$d_vi_file/$1"
-    echo -e "$cont" >"$fn"
+    if [ -e "$cont" ]; then
+        cat "$cont" >"$fn"
+    else
+        echo -e "$cont" >"$fn"
+    fi
+    TSK 'cd "'$d_vi_file'"'
     TSK 'pds vi "'$fn'"'
     sleep 0.05
     T send-keys Escape
@@ -126,7 +137,7 @@ function open {
 
 function vi_quit {
     sleep 0.1
-    TSK ':q!'
+    TSK ':quitall!'
     TSC "echo 'vi done'" # the && touch done will be failing if not on shell again
 }
 
