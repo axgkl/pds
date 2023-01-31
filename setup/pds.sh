@@ -599,10 +599,32 @@ function clone_astronvim_version {
     TSC 'builtin cd "$here"'
     have "AstroNvim $branch version" "$(builtin cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
 }
+function packer_sync {
+    # not so sexy looking but pretty safe:
+    #wait_dt=0.4 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+    # nope. Ok to remove? in the screen. So, go visual:
+    TSK "$pds_d_mamba/bin/vi"
+    sleep 1
+    while C | grep 'Press ENTER'; do
+        T send-keys Enter
+        sleep 0.1
+    done
+    wait_for 'C | grep "Find File"'
+    TSK ":PackerSync"
+    until C | grep 'finished'; do
+        C | grep 'y/N' && TSK 'y'
+        sleep 0.1
+    done
+    sleep 0.1
+    TSK q
+    wait_for 'C | grep "Find File"'
+    TSK ":quitall!"
+    wait_for 'C | grep "$ "'
+    TSC ls
+}
 
 function first_start_astronvim {
-    # not so sexy looking but pretty safe:
-    wait_dt=0.4 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+    packer_sync
     have "AstroNVim self install" "Plugins and Mason Binary Pkg Tool"
     #
     # #t resize-window -x 150 -y 50
@@ -685,7 +707,8 @@ function install_pds_flavor {
         have 'User Config' "Symlinks:$s"
     }
     function install_user_plugins {
-        wait_dt=0.3 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+        packer_sync
+        #wait_dt=0.3 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
         have "User Packages" "see $S/plugins/init.lua"
     }
     sh set_user_symlinks
