@@ -1,6 +1,5 @@
 # Personal Development Sandbox
 
-
 <!--toc:start-->
 - [Personal Development Sandbox](#personal-development-sandbox)
   - [Bootstrap Installation](#bootstrap-installation)
