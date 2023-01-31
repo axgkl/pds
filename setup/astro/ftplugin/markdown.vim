@@ -7,10 +7,12 @@ TSDisable highlight
 colorscheme tokyonight
 setl colorcolumn=
 setl conceallevel=1
+" -- linebreak soft wrap at words
+setl linebreak 
 " using mikeboiko/vim-markdown-folding, fixing the original for header display
 "setl foldexpr=markdown#FoldExpression(v:lnum)
-setl foldmethod=expr
-setl foldexpr=NestedMarkdownFolds()
+" setl foldmethod=expr
+" setl foldexpr=NestedMarkdownFolds()
 setl foldlevel=2
 " autowrap at textwidth:
 setl formatoptions+=t 

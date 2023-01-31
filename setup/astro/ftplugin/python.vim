@@ -6,8 +6,7 @@
 " setlocal conceallevel=1
 
 setlocal textwidth=200
-setlocal foldmethod=indent
-setlocal foldlevel=99
+" setlocal foldmethod=indent
 setlocal foldenable
 let g:SimpylFold_docstring_preview = 1
 map ,b Obreakpoint() # FIXME BREAKPOINT<C-c>
