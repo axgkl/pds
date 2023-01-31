@@ -1,5 +1,33 @@
 # AX AstroNVim Flavor
 
+<!--toc:start-->
+
+- [AX AstroNVim Flavor](#ax-astronvim-flavor)
+  - [Leader Keys](#leader-keys)
+  - [Config Files](#config-files)
+  - [Custom Shortcuts](#custom-shortcuts)
+    - [mappings.md](#mappingsmd)
+    - [Folding](#folding)
+    - [Navigation](#navigation)
+    - [Editing](#editing)
+      - [Hopping Around](#hopping-around)
+    - [LSP](#lsp)
+    - [Misc](#misc)
+    - [File Type Specific](#file-type-specific)
+      - [Explorer ([NeoTree][neotree])](#explorer-neotreeneotree)
+      - [Man Pages](#man-pages)
+      - [Markdown](#markdown)
+      - [Python](#python)
+  - [Vim Helpers](#vim-helpers)
+  - [Lua Helpers](#lua-helpers)
+  - [Server Operation](#server-operation)
+    - [Clipbaord](#clipbaord)
+  - [Install](#install)
+    - [Handle Existing Installs](#handle-existing-installs)
+  - [Vim 4 Noobs](#vim-4-noobs)
+  - [Links](#links)
+  <!--toc:end-->
+
 Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 
 Usage:
@@ -36,7 +64,12 @@ Some defined in our `init.lua` (mappings, lsp.mappings) most still in `polish.vi
 👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings  
 👉 `:map` lists them all
 
+### mappings.md
 
+Appart from [./polish.vim](./polish.vim), we define most mappings in [this](./mappings.md)
+markdown(!) file.
+
+`,r` generates the [lua](./mappings.lua) file from it.
 
 ### Folding
 
@@ -44,74 +77,73 @@ Foldmethod is "indent", globally, except for markdown
 
 - `<TAB>`: Opens all folds. `zM` closes all.
 - `<Enter>`: Opens current fold
- 
+
 ### Navigation
+
+Note: Arrow keys resize split windows, i.e. **won't** work for navigation (hjkl ftw)
 
 👉 Note the leading space key, e.g. ` foo` is `<SPACE>foo`
 
-- `ff`       [Open file][1] (from your start dir)
-- ` fg`      Open git managed file
-- `;`        Currently open buffers
-- `<Ctl>o`   Go back 
-- `<Alt>o`   Go forward
-- ` ↩️`       Last edited buffer
-- `<Alt>w`   Close buffer
-- `,c`       Close window, close buffer
-- `,d`       Done, write quit.
-- `G`        Jump to end of file - except to string `"begin__archive"` (but with ONE underscore), when found in buffer
-- `J` `K`    Paragraph (next, previous)
-- `H` `L`    Window left/right selection
-- `,g`       [Smart open][2] (vi's `gf` is unchanged)
-- `,q`       ":q!" Leave file, forget changes
-- `,Q`       ":quitall!" Leave all buffers, forget changes
-- `,u`       Undo Tree
-- `,w`       Autoformat file, then write
+- `ff` [Open file][1] (from your start dir)
+- ` fg` Open git managed file
+- `;` Currently open buffers
+- `<Ctl>o` Jump last place
+- `<Alt>o` Jump newer place
+- ` ↩️` Last edited buffer in your open buffers (toggle back and forth)
+- `<Alt>w` Close buffer
+- `,c` Close window, close buffer
+- `,d` Done, write quit.
+- `G` Jump to end of file - except to string `"begin__archive"` (but with ONE underscore), when found in buffer
+- `J` `K` Paragraph (next, previous)
+- `H` `L` Window left/right selection
+- `,g` [Smart open][2] (vi's `gf` is unchanged)
+- `,q` ":q!" Leave file, forget changes
+- `,Q` ":quitall!" Leave all buffers, forget changes
+- `,u` Undo Tree
+- `,w` Autoformat file, then write
 
 [1]: You can open many files at once, by selecting them with TAB in the picker
-[2]: `,g`: Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file. Resolves md links) via `smart_vi_open.py`.   
-⚠️ Non locally (e.g. on servers) browser opening is not available.
-
-
+[2]: `,g`: Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file. Resolves md links) via `smart_vi_open.py`. ⚠️ Non locally (e.g. on servers) browser opening is not available.
 
 ### Editing
 
-- `0`       Start of line
-- `1`       First character in line (`^`)
-- `fj`      Better line concat, replacing J
-- `jk`      Same as `<ESC>` in insert mode
-- `ds]`     [Remove delimiters smartly (e.g. here: [foo bar] -> foo bar)][vim-surround] 
-- `ysiw]`   [Wrap word into (e.g. here: foo -> [foo])][vim-surround]
-- `,s`      [Autosave mode on: Write after insert mode leave][autosave]
-- `ga,`     [Align selected lines on sth, e.g. here: on ","][tabularize]
-- ` d`      In visual or normal mode, delete w/o overwriting your "pasteable content"
+- `0` Start of line
+- `1` First character in line (`^`)
+- `fj` Better line concat, replacing J
+- `jk` Same as `<ESC>` in insert mode
+- `ds]` [Remove delimiters smartly (e.g. here: [foo bar] -> foo bar)][vim-surround]
+- `ysiw]` [Wrap word into (e.g. here: foo -> [foo])][vim-surround]
+- `,s` [Autosave mode on: Write after insert mode leave][autosave]
+- `ga,` [Align selected lines on sth, e.g. here: on ","][tabularize]
+- ` d` In visual or normal mode, delete w/o overwriting your "pasteable content"
 
 #### Hopping Around
 
 Since `f` alone is already "find forward char on current line", we cannot display help for those:
 
 - `fk<char>` [Hop](https://github.com/phaazon/hop.nvim) to position with `<char>`
-- `fl`       Hop to line
-- `F<char>`  Hop back on current line to char
-- `t` `T`    Offset f, F by one char. E.g. for selecting: `vtx`: select until char "x"
+- `fl` Hop to line
+- `F<char>` Hop back on current line to char
+- `t` `T` Offset f, F by one char. E.g. for selecting: `vtx`: select until char "x"
 
 ### LSP
 
-- `gd`      Goto definition (e.g. over function name)
-- `,D`      All buffer Diagnostics
-- ` lr`     Rename e.g. function name
-- ` lR`     Find references
-- ` lx`     Diagnostics on/off toggle
-- `s`       Hover (code context help)
+- `gd` Goto definition (e.g. over function name)
+- `,D` All buffer Diagnostics
+- ` lr` Rename e.g. function name
+- ` lR` Find references
+- ` lx` Diagnostics on/off toggle
+- `s` Hover (code context help)
 
 👉 `:LSPInstall`
 
 ### Misc
 
-- `,1`      Sources our init.lua
-- `,2`      Opens our init.lua
-- `,3`      Terminal in dir of current buffer
-- `,C`      Colors (theme picker)
-- `,r`      Evaluates as python or as vim cmd, see https://github.com/axiros/vpe
+- `,1` Sources our init.lua
+- `,2` Opens our init.lua
+- `,3` Terminal in dir of current buffer
+- `,C` Colors (theme picker)
+- `,r` Evaluates as python or as vim cmd, see https://github.com/axiros/vpe
 
 ### File Type Specific
 
@@ -120,7 +152,6 @@ Since `f` alone is already "find forward char on current line", we cannot displa
 - ` o`: Open the explorer (`,c` or `alt-w` closes)
 - `P`: Enter preview mode
 - `?`: Help
-
 
 #### Man Pages
 
@@ -135,7 +166,7 @@ You can view man pages in vim like so: `alias man='pds vman'`
 #### Python
 
 - `,b`: Breakpoint, correctly indented
-- `,e`: Wrap line into try-except block 
+- `,e`: Wrap line into try-except block
 
 ---
 
@@ -150,13 +181,11 @@ Available as `:lua require('user.utils')` or `:lua UU`
 - `dump(<table)`: Prints table recursively. Ex: `:lua UU.dump(vim.lsp)`
 - `P(<table)`: Prints table recursively. Ex: `:lua P(vim.lsp)`
 
-
-
 ## Server Operation
 
 ### Clipbaord
 
-To copy selected stuff *OUT* of a vi session running on a server, we have set +unnamedplus. I.e.
+To copy selected stuff _OUT_ of a vi session running on a server, we have set +unnamedplus. I.e.
 nvim tries X tools to copy into your clipboard, on y.
 
 => Currently we expect a forwarded X session (`ssh -XY <host>` or via your `~/.ssh/config`)
@@ -179,7 +208,7 @@ This will add an pds function into your .bashrc. Call it to see supported action
 
 To remove existing nvim config in ~.config/nvim and .local/share/nvim:
 
-`~/.config/pds/setup/pds.sh clean-all` 
+`~/.config/pds/setup/pds.sh clean-all`
 
 To move it away to a backup dir:
 
@@ -189,21 +218,21 @@ To move it away to a backup dir:
 
 ## Vim 4 Noobs
 
-- `:messages`    Show all messages printed up to now
-- `:set tw=100`  Set width for wrapping
-- `gq`           Rewrap paragraph
-- `vip`          Select paragraph, e.g. `vipga=` to align on "="
-- `zM`           Closes all folds
-- `:!ls -lta`    Runs a command
-- `:echo &tw`    Shows the set value of a vim variable 
-- `:echo &tw`    Shows the set value of a vim variable 
-- `vip<Ctrl>VI`  Block mode vertical editing (rendered for all selected lines after <ESC>)
+- `:messages` Show all messages printed up to now
+- `:set tw=100` Set width for wrapping
+- `gq` Rewrap paragraph
+- `vip` Select paragraph, e.g. `vipga=` to align on "="
+- `zM` Closes all folds
+- `:!ls -lta` Runs a command
+- `:echo &tw` Shows the set value of a vim variable
+- `:echo &tw` Shows the set value of a vim variable
+- `vip<Ctrl>VI` Block mode vertical editing (rendered for all selected lines after <ESC>)
 - `:lua vim.inspect(package.loaded)` Print loaded packages, e.g. Python's "sys.modules".
   Setting one to nil here will trigger a reload at next require of it.
 
 ...and 1 Mio others. [Live is a lesson. You learned it when you're through][lp] 🥲
 
-----
+---
 
 ## Links
 
