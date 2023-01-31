@@ -4,11 +4,11 @@
 autocmd VimResized * wincmd = 
 
 " C-o jump older -> alt-o is jump newer (since C-i is tab which we need elsewhere)
-nnoremap <M-o>   <C-i>
+"nnoremap <M-o>   <C-i>
 "cnoremap <silent> x<CR>  :call ConfirmQuit(1)<CR>
 "  "Yank constent with D and C:
-nnoremap Y         y$
-nnoremap <M-H>     :edit ~/.config/nvim/lua/user/README.md<CR>
+"nnoremap Y         y$
+"nnoremap <M-H>     :edit ~/.config/nvim/lua/user/README.md<CR>
 nnoremap ,G        :TermExec cmd=lazygit<CR>
 nnoremap ,q        :q!<CR>
 nnoremap ,Q        :quitall!<cr>
@@ -21,7 +21,7 @@ nnoremap ,c        :close<CR>
 "folds
 nnoremap <C-i>   zR
 " all close:
-nmap     ,f        zM  
+"nmap     ,f        zM  
 " toggle:
 nnoremap <buffer> <Enter> za
 nnoremap <silent> ,3  :ToggleTerm dir=%:p:h<CR>
@@ -55,7 +55,6 @@ inoremap <M-k> <ESC><C-W><C-W>
 inoremap <C-E> <C-O>A 
 nnoremap <C-L> <C-W><C-J>
 nnoremap <C-H> <C-W><C-K>
-nnoremap 1 ^
 
 " nnoremap <M-1> 1gt
 " nnoremap <M-2> 2gt
