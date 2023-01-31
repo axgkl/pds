@@ -599,54 +599,75 @@ function clone_astronvim_version {
     TSC 'builtin cd "$here"'
     have "AstroNvim $branch version" "$(builtin cd "$d_conf_nvim" && git log | grep Date | head -n 1)"
 }
+
 function packer_sync {
+    _packer_sync
+    TSC 'echo synced'
+}
+function _packer_sync {
     # not so sexy looking but pretty safe:
-    #wait_dt=0.4 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
-    # nope. Ok to remove? in the screen. So, go visual:
-    TSK "$pds_d_mamba/bin/vi"
-    sleep 1
-    while C | grep 'Press ENTER'; do
-        T send-keys Enter
+    local pidfile=/tmp/pds.vi.$UID.pid
+    rm -f /tmp/pds.pid
+    for tries in  1 2 3; do
+        ps ax | grep PackerComplete | grep -v grep | xargs kill
+        ps ax | grep PackerComplete | grep -v grep | xargs kill -9
+        sleep 1
+        TSK "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
         sleep 0.1
+        local pid=$(cat $pidfile)
+        for i in {1..100}; do
+            ps ax | grep PackerComplete | grep -v grep || return
+            C | grep -C 3 'y/N' && TSK y
+            C | grep -C 3  'Y/n' && TSK y
+            C | grep -C 3 'Press ENTER' && T send-keys Enter
+            sleep 0.5
+        done
+        sleep 1
+        echo "retrying packer sync"
     done
-    wait_for 'C | grep "Find File"'
-    TSK ":PackerSync"
-    until C | grep 'finished'; do
-        C | grep 'y/N' && TSK 'y'
-        sleep 0.1
-    done
-    sleep 0.1
-    TSK q
-    wait_for 'C | grep "Find File"'
-    TSK ":quitall!"
-    wait_for 'C | grep "$ "'
-    TSC ls
+    C
+    die "Packer sync failed"
+    # 
+    # TSK "$pds_d_mamba/bin/vi"
+    # sleep 1
+    # while C | grep 'Press ENTER'; do
+    #     T send-keys Enter
+    #     sleep 0.1
+    # done
+    # wait_for 'C | grep "Find File"'
+    # TSK ":PackerSync"
+    # until C | grep 'finished'; do
+    #     C | grep 'y/N' && TSK 'y'
+    #     sleep 0.1
+    # done
+    # sleep 0.1
+    # TSK q
+    # wait_for 'C | grep "Find File"'
+    # TSK ":quitall!"
+    # wait_for 'C | grep "$ "'
+    # TSC ls
 }
 
 function first_start_astronvim {
-    packer_sync
     have "AstroNVim self install" "Plugins and Mason Binary Pkg Tool"
     #
     # #t resize-window -x 150 -y 50
-    # local d t0 ts fn tss
-    # d="$HOME/.local/share/nvim/mason/bin"
-    # local want_mason=false
-    # set -x
-    # q 12 test -e "$d" || want_mason=true
-    # set +x
-    # #t0=$(date +%s) # total
-    # TSK "$pds_d_mamba/bin/vi"
-    # echo "want mason: $want_mason"
-    # $want_mason && {
-    #     # we just start it, install begins autom:
-    #     wait_for 'C | grep Mason'
-    #     hint "Waiting for: 'Mason' to disappear"
-    #     wait_for 'C | grep -v Mason'
-    # }
-    # set -x
-    # safe_quit_vi
-    # set +x
-    # echo done
+    local d t0 ts fn tss
+    d="$HOME/.local/share/nvim/mason/bin"
+    local want_mason=false
+    q 12 test -e "$d" || want_mason=true
+    #t0=$(date +%s) # total
+    TSK "$pds_d_mamba/bin/vi"
+    echo "want mason: $want_mason"
+    $want_mason && {
+        # we just start it, install begins autom:
+        wait_for 'C | grep Mason'
+        hint "Waiting for: 'Mason' to disappear"
+        wait_for 'C | grep -v Mason'
+    }
+    safe_quit_vi
+    #read  -r foo
+    #packer_sync
 }
 
 function install_treesitter_parsers {
@@ -683,9 +704,9 @@ function install_lsps {
 function safe_quit_vi {
     T send-keys Escape
     T send-keys Escape
-    TSK ':q!'
+    TSK ':quitall!'
     sleep 0.1
-    TSK ':q!'
+    TSK ':quitall!'
     sleep 0.1
     TSC 'echo done'
 }
