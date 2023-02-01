@@ -8,7 +8,7 @@ return {
             desc = 'Hover symbol details',
         },
 
-        ['<leader>lx'] = { UU.toggle_diag_displ, desc = 'Toggle Diag. Display' },
+        ['<leader>lx'] = { require('user.utils').toggle_diag_displ, desc = 'Toggle Diag. Display' },
         -- ["gd"] = {
         -- 	function()
         -- 		vim.lsp.buf.definition()

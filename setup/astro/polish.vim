@@ -9,52 +9,52 @@ autocmd VimResized * wincmd =
 "  "Yank constent with D and C:
 "nnoremap Y         y$
 "nnoremap <M-H>     :edit ~/.config/nvim/lua/user/README.md<CR>
-nnoremap ,G        :TermExec cmd=lazygit<CR>
-nnoremap ,q        :q!<CR>
-nnoremap ,Q        :quitall!<cr>
-nnoremap ,d        :wq!<CR>
-nnoremap ,u        :UndotreeToggle<CR>
-nnoremap ,1        :source ~/.config/nvim/init.lua<CR>
-nnoremap ,2        :edit ~/.config/nvim/lua/user/init.lua<CR>
+"nnoremap ,G        :TermExec cmd=lazygit<CR>
+"nnoremap ,q        :q!<CR>
+"nnoremap ,Q        :quitall!<cr>
+"nnoremap ,d        :wq!<CR>
+"nnoremap ,u        :UndotreeToggle<CR>
+"nnoremap ,1        :source ~/.config/nvim/init.lua<CR>
+"nnoremap ,2        :edit ~/.config/nvim/lua/user/init.lua<CR>
 " close just a split or a tab
-nnoremap ,c        :close<CR> 
+"nnoremap ,c        :close<CR> 
 "folds
-nnoremap <C-i>   zR
+"nnoremap <C-i>   zR
 " all close:
 "nmap     ,f        zM  
 " toggle:
-nnoremap <buffer> <Enter> za
-nnoremap <silent> ,3  :ToggleTerm dir=%:p:h<CR>
+"nnoremap <buffer> <Enter> za
+"nnoremap <silent> ,3  :ToggleTerm dir=%:p:h<CR>
 
 "" Line join better, position cursor at join point:
 " (J is 5 lines jumps)
-nnoremap fj $mx<cmd>join<CR>0$[`dmx
+"nnoremap fj $mx<cmd>join<CR>0$[`dmx
 
 " Universal python scriptable file or browser opener over word:
 "nmap ,g viW"ay:lua require('utils').smart_open([[<C-R>a]])<CR><CR>
-nmap <silent> ,g viW"ay:lua require('user.utils').smart_open([[<C-R>a]])<CR>
-vmap <silent>  ,g :lua require('user.utils').smart_open([[visualsel]])<CR><CR>
+"nmap <silent> ,g viW"ay:lua require('user.utils').smart_open([[<C-R>a]])<CR>
+"vmap <silent>  ,g :lua require('user.utils').smart_open([[visualsel]])<CR><CR>
 "Replaced by :ASToggle
 "nmap ,s :lua require('user.utils').autosave()<CR>
 
 " tabularize:
-nmap ga   :Tabularize/
-xmap ga   :Tabularize/
-nmap tt  vip:s:,,:\|:ge<CR>vip:Tabularize/\|<CR>
+"nmap ga   :Tabularize/
+"xmap ga   :Tabularize/
+"nmap tt  vip:s:,,:\|:ge<CR>vip:Tabularize/\|<CR>
 " markdown table
-nnoremap ,ta       vip:s/$/\|/ge<CR>vip:s:,,:\|:ge<CR>vip:s:^:\|:ge<CR>vip:s:\|\|:\|:ge<CR>vip:Tabularize/\|<CR> 
+"nnoremap ,ta       vip:s/$/\|/ge<CR>vip:s:,,:\|:ge<CR>vip:s:^:\|:ge<CR>vip:s:\|\|:\|:ge<CR>vip:Tabularize/\|<CR> 
 " close window:
-nnoremap <M-w> :bd!<CR>
-nnoremap S :%s//gI<Left><Left><Left>
+"nnoremap <M-w> :bd!<CR>
+"nnoremap S :%s//gI<Left><Left><Left>
 " move between splits with alt-jk
-nnoremap <M-j> <C-W><C-h>
-nnoremap <M-k> <C-W><C-l>
-inoremap <M-j> <ESC><C-W><C-W>
-inoremap <M-k> <ESC><C-W><C-W>
+"nnoremap <M-j> <C-W><C-h>
+"nnoremap <M-k> <C-W><C-l>
+"inoremap <M-j> <ESC><C-W><C-W>
+"inoremap <M-k> <ESC><C-W><C-W>
 " Jump to end of line in insert mode:
-inoremap <C-E> <C-O>A 
-nnoremap <C-L> <C-W><C-J>
-nnoremap <C-H> <C-W><C-K>
+"inoremap <C-E> <C-O>A 
+"nnoremap <C-L> <C-W><C-J>
+"nnoremap <C-H> <C-W><C-K>
 
 " nnoremap <M-1> 1gt
 " nnoremap <M-2> 2gt
@@ -66,25 +66,25 @@ nnoremap <C-H> <C-W><C-K>
 " nnoremap <M-8> 8gt
 " nnoremap <M-9> 9gt
 
-nmap <silent> ff <Leader>ff
+"nmap <silent> ff <Leader>ff
 " :Telescope buffers<cr>
 " nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers({ sort_lastused = true, ignore_current_buffer = true }) <CR>
 "nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers({ sort_lastused = true }) <CR>
 "nnoremap <silent> <Leader>i :lua require("telescope.builtin").buffers() <CR>
 "nnoremap <silent> <Leader><Leader> :lua require("telescope.builtin").buffers() <CR>
-nnoremap <silent> ;                :lua require("telescope.builtin").buffers() <CR>
-nnoremap <silent> <Leader>g  :Telescope live_grep<cr>
+"nnoremap <silent> ;                :lua require("telescope.builtin").buffers() <CR>
+"nnoremap <silent> <Leader>g  :Telescope live_grep<cr>
 " previous buffer:
-nnoremap <silent> <space><enter>  :ls<cr>:b#<cr> 
+"nnoremap <silent> <space><enter>  :ls<cr>:b#<cr> 
 
 " Move paragraph wise. s is hover.
-nmap J }j
-nmap K {k{kkJ
+"nmap J }j
+"nmap K {k{kkJ
 
 "colorscheme pinkmare"colorscheme kanagawa
-nmap ,w  :FormatAndSave<CR>
+"nmap ,w  :FormatAndSave<CR>
 "save all buffers
-nmap ,W  :wa<CR> 
+"nmap ,W  :wa<CR> 
 function! s:format_and_save()
     " did NOT work (Not supported msgs were still popping up): vim.g.ui_notifications_enabled=false
     lua vim.notify = print
