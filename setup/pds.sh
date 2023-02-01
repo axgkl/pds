@@ -7,7 +7,7 @@ pds_d_mamba="${pds_d_mamba:-$HOME/pds}"
 pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
 pds_v_nvim="${pds_v_nvim:-0.8.1}"
 pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
-pds_mamba_tools="${pds_mamba_tools:-bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip}"
+pds_mamba_tools="${pds_mamba_tools:-bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier tmux tree unzip}"
 pds_mason_tools="${pds_mason_tools:-marksman prettierd python-lsp-server lua-language-server typescript-language-server vim-language-server ruff-lsp}"
 pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-false}
 pds_pin_distri=${pds_pin_distri:-true}
@@ -237,7 +237,7 @@ if true; then
         test "$1" == "-q" && shift || hint "tmux: $*"
         tmux -S "$pds_tmux_sock" "$@"
     }
-    function C { T -q capture-pane -t 1 -p; }
+    function C { eval T -q capture-pane -t 1 -p "${1:-}"; } # -e to have colors
 
     function hex {
         # tmux send-key convenience, this way we can send anything w/o space problems:
@@ -691,20 +691,44 @@ function open_vi {
     done
 }
 
+function mason_missing_tools {
+    mason_missing="$pds_mason_tools"
+    local tool_bin
+    local map="$HOME/.local/share/nvim/site/pack/packer/opt/mason-lspconfig.nvim/doc/mason-lspconfig-mapping.txt"
+    local dm="$HOME/.local/share/nvim/mason/bin/"
+    local mt=""
+    for t in $(echo "$pds_mason_tools" | tr " " "\n"); do
+        tool_bin="$(grep "$t" <"$map" | cut -d ' ' -f 2- | xargs)"
+        test -e "$dm/$tool_bin" && continue
+        test -e "$dm/$t" && continue
+        mt="$mt $t"
+    done
+    mason_missing="$(echo "$mt" | xargs)"
+}
+
 function install_lsps {
+    mason_missing_tools
+    test -z "$mason_missing" && {
+        have "Found All Mason Tools" "$pds_mason_tools"
+        return 0
+    }
     open_vi "Find File"
-    TSK ":MasonInstall $pds_mason_tools"
+    TSK ":MasonInstall $mason_missing"
     hint "Patience pls..."
     sleep 1
     until C | grep -q mason.nvim; do sleep 0.5; done
     # we exit the mason popup and wait until for sure no more little mason install notify popups are there:
+    C -e
     TSK q
     for k in 1 2 3 4; do
         sleep 0.1
         while C | grep -q mason.nvim; do sleep 0.5; done
     done
+    TSK ":Mason"
+    sleep 0.5
+    C -e
     safe_quit_vi
-    have "LSPs" "$tss"
+    have "Mason Tools" "$pds_mason_tools"
     # return
     # TSK "$pds_d_mamba/bin/vi"
     # sh lsp bashls "bash-language-server"
@@ -1148,3 +1172,4 @@ function main {
 }
 
 main "$@"
+set +e

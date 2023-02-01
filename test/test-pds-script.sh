@@ -9,7 +9,7 @@ function bootstrap_nvim_again {
     🚫 ./pds.sh install
 }
 function install_idempotent {
-    ✔️ pds i \| grep LSP \| grep tsserver
+    ✔️ pds i \| grep Finished
     ✔️ eval '[[ "'${test_dt}'" -lt 60 ]]' - "reinstall took too long"
 }
 function pds_avail { ✔️ pds; }
