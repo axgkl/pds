@@ -978,7 +978,7 @@ function Install {
         tmux -S $sck -f "$here/tmux.conf" new-session -d "$HOME/.config/pds/setup/pds.sh install"
         tmux -S $sck split-pane -h
         sleep 1
-        for k in pds space install space watchinstall; do
+        for k in "$HOME/.config/pds/setup/pds.sh" space install space watchinstall; do
             tmux -S $sck send-keys -t 2 ''$k''
         done
         tmux -S $sck send-keys -t 2 Enter
