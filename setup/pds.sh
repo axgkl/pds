@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# _______________________________________________________________________________________ DEFAULTS
+# ______________________________________________________________________ DEFAULTS
 set -a
 pds_repo="${pds_repo:-github.com:AXGKl/pds}"
 pds_distri="${pds_distri:-astro}"
@@ -7,8 +7,36 @@ pds_d_mamba="${pds_d_mamba:-$HOME/pds}"
 pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
 pds_v_nvim="${pds_v_nvim:-0.8.1}"
 pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
-pds_mamba_tools="${pds_mamba_tools:-bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier tmux tree unzip}"
-pds_mason_tools="${pds_mason_tools:-marksman prettierd python-lsp-server lua-language-server typescript-language-server vim-language-server ruff-lsp}"
+pds_mamba_tools="${pds_mamba_tools:-
+bat
+blue
+fd-find:fd
+fzf
+git
+gxx_linux-64:-
+gcc
+jq
+lazygit
+ncdu
+neovim:-
+ripgrep:rg
+prettier
+tmux
+tree
+unzip
+}"
+pds_mason_tools="${pds_mason_tools:-
+bash-language-server
+lua-language-server
+marksman
+prettierd
+python-lsp-server
+ruff-lsp
+shfmt
+stylua
+typescript-language-server
+vim-language-server
+}"
 pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-false}
 pds_pin_distri=${pds_pin_distri:-true}
 pds_pin_mamba=${pds_pin_mamba:-true}
@@ -173,10 +201,12 @@ function set_constants {
         $M
         install$O:
         - Ensures pds function within ~/.bashrc and/or ~/.zshrc
-        - Creates conda(mamba) environment at '$pds_d_mamba', with tools:
+        - Creates Mamba/Conda Environment at '$pds_d_mamba'. Tools/libs:
         $L$pds_mamba_tools$O
         - Installs NeoVim '$pds_v_nvim'
         - Installs Nvim '$pds_distri' Distribution 
+        - Installs Mason Tools:
+        $L$pds_mason_tools$O
         - Installs User Config
 
         Set install params into "'$here'/environ" or export them before install.
@@ -241,7 +271,7 @@ if true; then
 
     function hex {
         # tmux send-key convenience, this way we can send anything w/o space problems:
-        # -> safer way to send to tmux - appends an Enter (the a):
+        # -> safer way to send to tmux - appends an Enter (the a) No all tmux have it, new option:
         python -c 'import sys; l=[hex(ord(c))[2:] for c in sys.argv[1]];print(" ".join(l) + " a", end="")' "$1"
     }
 
@@ -274,7 +304,7 @@ if true; then
 
     function wait_for {
         local dt
-        dt="${wait_dt:-0.1}"
+        dt="${wait_100_dt:-0.1}"
         hintn '.'
         for i in {1..100}; do
             eval "$1" && return 0
@@ -459,7 +489,9 @@ function install_mamba_binary_pkg_mgr {
     $pds_pin_mamba && grep "${pds_v_mamba%%-*}" <<<"$hv_mamba" 1>/dev/null || die "$msg"
     have "Mamba Binary Pkg Env" "$hv_mamba $(disk "$pds_d_mamba")"
 }
-function ensure_tool {
+function ensure_single_tool {
+    # $1: tool $2: checker if present.
+    # we temporary set pds_mamba_tools to $1 and call install_binary_tools:
     local p1 t1
     t1="$pds_mamba_tools"
     p1="$pds_mamba_prefer_system_tools"
@@ -471,8 +503,8 @@ function ensure_tool {
     export pds_mamba_prefer_system_tools="$p1"
     have "$1" "$(type "$1")"
 }
-function ensure_tmux { ensure_tool tmux "tmux -V | grep -q 'tmux 3'"; }
-function ensure_git { ensure_tool git "git --version"; }
+function ensure_tmux { ensure_single_tool tmux "tmux -V | grep -q 'tmux 3'"; }
+function ensure_git { ensure_single_tool git "git --version"; }
 function install_pips {
     # todo: versions... For now we need those, for vpe vi plugin
     q 12 source "$me" a python -c 'import yaml' || TMIF pip install --upgrade emoji-fzf pyyaml
@@ -496,15 +528,19 @@ function create_vman {
     have vman 'Man pages in vi (alias man=vman)'
 }
 
+function line_seped { echo "$1" | xargs | tr ' ' '\n'; }
+
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
 function install_binary_tools {
     local f v pkg name spkgs pkgs vers vt
+    local wanted
     vt=""
     for f in "$here/$pds_distri" "$here"; do
         test -e "$f/versions_mamba.txt" || continue
         vers="$(cat "$f/versions_mamba.txt")"
     done
-    IFS=' ' && for t in $pds_mamba_tools; do
+    wanted="$(line_seped "$pds_mamba_tools")"
+    for t in $(echo -e "$wanted"); do
         pkg="${t%:*}"
         name="${t#*:*}"
         test "$name" == "-" || {
@@ -540,7 +576,8 @@ function install_binary_tools {
         done
         test -z "${vers/ /}"
     }
-    have_missing_installed || wait_dt=1 TMIF mamba install -c conda-forge -y $vt
+    # with slow internet this may take 5 minutes:
+    have_missing_installed || wait_100_dt=3 TMIF mamba install -c conda-forge -y $vt
     have Tools "$pkgs $spkgs"
     test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
 }
@@ -581,7 +618,7 @@ function install_neovim {
 #         sleep 0.5
 #         T send-keys Escape
 #         TSK ":LspInstall $1"
-#         wait_dt=0.2 wait_for_file "$fn"
+#         wait_100_dt=0.2 wait_for_file "$fn"
 #         T send-keys Escape
 #     }
 #     have LSP "$1"
@@ -594,7 +631,7 @@ function clone_astronvim_version {
     TSC 'git fetch'
     TSC "git checkout '$pds_inst_astro_branch'"
     test -n "$pds_inst_astro_ver" && {
-        wait_dt=0.01
+        wait_100_dt=0.01
         TSC "git checkout '$pds_inst_astro_ver'"
     }
     #$pds_pin_distri && TSC "( builtin cd '$d_conf_nvim' && git status && git reset --hard '$pds_v_distri'; )"
@@ -692,14 +729,17 @@ function open_vi {
 }
 
 function mason_missing_tools {
-    mason_missing="$pds_mason_tools"
     local tool_bin
     local map="$HOME/.local/share/nvim/site/pack/packer/opt/mason-lspconfig.nvim/doc/mason-lspconfig-mapping.txt"
-    local dm="$HOME/.local/share/nvim/mason/bin/"
+    local dm="$HOME/.local/share/nvim/mason/bin"
     local mt=""
-    for t in $(echo "$pds_mason_tools" | tr " " "\n"); do
+    wanted="$(line_seped "$pds_mason_tools")"
+    for t in $(echo -e "$wanted"); do
         tool_bin="$(grep "$t" <"$map" | cut -d ' ' -f 2- | xargs)"
-        test -e "$dm/$tool_bin" && continue
+        # may happen, e.g. prettierd. Can still install though :-/
+        test -z "$tool_bin" && hint "Mason tool unknown: $t"
+        # only when we found it.
+        test -n "$tool_bin" && test -e "$dm/$tool_bin" && continue
         test -e "$dm/$t" && continue
         mt="$mt $t"
     done
@@ -709,7 +749,7 @@ function mason_missing_tools {
 function install_lsps {
     mason_missing_tools
     test -z "$mason_missing" && {
-        have "Found All Mason Tools" "$pds_mason_tools"
+        have "Found All Mason Tools" "$(echo "$pds_mason_tools" | xargs)"
         return 0
     }
     open_vi "Find File"
@@ -717,19 +757,20 @@ function install_lsps {
     sleep 1
     until C | grep -q mason.nvim; do sleep 0.5; done
     C -e
-    TSK q
     hint "Patience pls..."
     # we exit the mason popup and wait until for sure no more little mason install notify popups are there:
     # for k in 1 2 3 4; do
     #     sleep 0.1
     #     while C | grep -q mason.nvim; do sleep 0.5; done
     # done
-    TSK ":Mason"
     until C | grep -q Installed; do sleep 0.1; done
-    while C | grep -q Installing; do sleep 0.1; done
+    for i in 1 2 3; do
+        while C | grep -q Installing; do sleep 0.1; done
+        sleep 0.1
+    done
     C -e
     safe_quit_vi
-    have "Mason Tools" "$pds_mason_tools"
+    have "Mason Tools" "$(echo "$pds_mason_tools" | xargs)"
     # return
     # TSK "$pds_d_mamba/bin/vi"
     # sh lsp bashls "bash-language-server"
@@ -761,7 +802,7 @@ function install_pds_flavor {
         for k in after ftplugin snippets; do
             s="$s $k"
             rm -f "$T/$k"
-            TSC "ln -s "$S/$k" "$T/$k""
+            TSC "ln -s '$S/$k' '$T/$k'"
         done
         rm -f "$T/spell"
         ln -s "$here/../assets/spell" "$T/spell"
@@ -769,7 +810,7 @@ function install_pds_flavor {
     }
     function install_user_plugins {
         packer_sync
-        #wait_dt=0.3 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+        #wait_100_dt=0.3 TSC "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
         have "User Packages" "see $S/plugins/init.lua"
     }
     sh set_user_symlinks
@@ -928,6 +969,32 @@ function parse_install_opts {
     done
 }
 function Install {
+    # run the install within an outer tmux, 2 pane mode:
+    test "$1" = "watch" && {
+        local sck="/tmp/pds.watch.$UID"
+        q 12 type tmux || die 'No tmux. Run install w/o watch.'
+        q 12 tmux -S $sck kill-server
+        sleep 0.5
+        tmux -S $sck -f "$here/tmux.conf" new-session -d "$HOME/.config/pds/setup/pds.sh install"
+        tmux -S $sck split-pane -h
+        sleep 1
+        for k in pds space install space watchinstall; do
+            tmux -S $sck send-keys -t 2 ''$k''
+        done
+        tmux -S $sck send-keys -t 2 Enter
+        tmux -S $sck att
+        cat "$inst_log"
+        exit $?
+    }
+    test "$1" = "watchinstall" && {
+        # we are second pane of the outer tmux. we stop looping when first pane done
+        while true; do
+            q 12 $HOME/.config/pds/setup/pds.sh att
+            q 12 tmux send-keys -t 2 Enter || tmux -S /tmp/pds.watch.$UID kill-server
+            sleep 0.5
+        done
+    }
+
     (DoInstall "$@") && return
     echo 'Install Failure'
     title Captures:
@@ -1001,7 +1068,7 @@ function kill_tmux {
     q 12 T list-sessions || return 0
     T list-session | grep -q attached && {
         echo -e '\nThere is a session attached - not killing tmux. Enter a key here to continue, once done with inspections.'
-        read -r key
+        test "${install_watch_mode:-x}" = "true" || read -r key
     }
     T kill-server || true
 }

@@ -38,7 +38,7 @@ function all_testfuncs {
 }
 
 function test_in_tmux {
-    export wait_dt=0.01
+    export wait_100_dt=0.01
     export test_mode=true
     mkdir -p "$d_vi_file"
     rm -f "$HOME"/.local/state/nvim/swap/%tmp*

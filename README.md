@@ -144,9 +144,15 @@ declarative dict, [understood][astronvim] by AstroNVim.
 
 ### More Tools
 
+#### Mamba
+
 Before install, you may parametrize pds to get [more tools](https://conda-forge.org/) - by exporting `$pds_mamba_tools`.
 
-Default is: "bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip"
+This is for tools which you might want also _outside_ of vi, installed into `$HOME/pds/bin`.
+
+💡 You can call these tools even w/o activation of `$HOME/pds`.
+
+Default is: <!----><!--pds_mamba_tools-->.
 
 💡 `pkg:cmd` may be used, when package name differs from cmd name. This allows PDS to
 "see" if a tool is already present on the host, then skip install.
@@ -155,6 +161,12 @@ Post install you can install new tools via `mamba install`.
 
 💡 You may want to check the [Mamba][mamba] docs, regarding how to create version
 ("environment.yaml") files for reproducible installs.
+
+#### Mason
+
+The LSP tools want are parametrizable by exporting `$pds_mason_tools` before install.
+
+💡 Those are installed (as symlinks) into `~/.local/share/nvim/mason/bin`
 
 ### Forking the Repo
 
@@ -271,3 +283,11 @@ diagnostics popup did not show up, we let first attempt die within a subshell, t
 [mamba]: https://github.com/mamba-org/mamba
 [neovim]: https://neovim.io
 [pde]: https://www.youtube.com/watch?v=IK_-C0GXfjo
+
+<!--
+if 1:
+  # runreplacements
+  vpe.notify('aasdf')
+-->
+
+<!-- :vpe /gg/runreplacements/ # :vpe_on_any  -->
