@@ -44,8 +44,10 @@ Value Proposition:
 ```bash
 wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh
 chmod +x pds.sh
-./pds.sh i[nstall]
-pds vi # or, recommended: export PATH="~/pds/bin:$PATH, then vi"
+./pds.sh i[nstall] [watch]
+# (...)
+pds vi (after shell restart) # or, recommended:
+export PATH="~/pds/bin:$PATH, then vi"
 ```
 
 Requirements: bash, wget.
@@ -54,15 +56,12 @@ OS: Currently only tested on Linux.
 
 💡 OSX and BSDs _should_ work as well. We do use the Linux style configuration directories though.
 
-This is a run on a minimal debian server:
+This is a run on a minimal debian server, w/o even git. We installed only tmux for the install *watch* feature:
 
-[![asciicast](https://asciinema.org/a/QObqodPheKWM7A7fUzkveDvzr.svg)](https://asciinema.org/a/QObqodPheKWM7A7fUzkveDvzr)
+[![asciicast](https://asciinema.org/a/FOPa9Lbh0vYSuHrRNxvgLUSPF.svg)](https://asciinema.org/a/FOPa9Lbh0vYSuHrRNxvgLUSPF)
 
 💡 The installation look and feel may be further improved in the future but you get the idea...
 
-Edit: Dropped the 2 pane tmux view. If you want to see what is going on during install,
-use `pds att -l`, in another terminal (will cause the installer to wait for confirmation
-before each tmux close)
 
 ### Existing NeoVim Install
 

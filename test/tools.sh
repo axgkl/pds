@@ -38,7 +38,7 @@ function all_testfuncs {
 }
 
 function test_in_tmux {
-    export wait_100_dt=0.01
+    export wait_100_dt=0.05
     export test_mode=true
     mkdir -p "$d_vi_file"
     rm -f "$HOME"/.local/state/nvim/swap/%tmp*
@@ -136,6 +136,7 @@ function open {
 }
 
 function vi_quit {
+	📷
     sleep 0.1
     TSK ':quitall!'
     TSC "echo 'vi done'" # the && touch done will be failing if not on shell again
@@ -184,7 +185,7 @@ function 📷 { #C is capture (pds.sh)
     #C | sed -r "/^\r?$/d;s/^/out: /g" | tee -a "$captures"
     (
         echo -e "\x1b[32m📷\x1b[0m\x1b[48;5;242m"
-        C | sed -r "/^\r?$/d;s/^/| /g "
+        C -e | sed -r "/^\r?$/d;s/^/| /g "
         echo -e "\x1b[0m"
     ) | tee -a "$captures"
 }
