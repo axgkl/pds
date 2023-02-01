@@ -127,9 +127,10 @@ def add_mode(m, defs, add=add, s=s):
 
 def by_mode():
     m = {}
-    nr = 0
+    nr =  0
     for l in vpe.ctx.src_buf:
         nr += 1
+        if not l.startswith('|'): continue
         l = [i.strip() for i in l.split('|')]
         if l and l[0] == '' and len(l) > 4 and len(l[1]) == 1 :
             l.insert(2, nr)
