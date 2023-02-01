@@ -14,17 +14,18 @@ That will rebuild ./mappings.lua
 | n   | <Left>         | Resize split left           | `require("smart-splits").resize_left(2)`         |
 | n   | <Right>        | Resize split right          | `require("smart-splits").resize_right(2)`        |
 | n   | <leader>fg     | Git files                   | `TS().git_files()`                               |
-| n   | <leader>mm     | Mind Main                   | :MindOpenMain                                    |
-| n   | <leader>mp     | Mind Project                | :MindOpenSmartProject                            |
+| n   | <leader>mm     | Mind Main                   | :MindOpenMain<CR>                                |
+| n   | <leader>mp     | Mind Project                | :MindOpenSmartProject<CR>                        |
 | n   | <leader>d      | Delete noregister           | `'"_d'`                                          |
 | v   | <leader>d      | Delete noregister           | `'"_d'`                                          |
+| n   | S              | Easy global replace         | :%s//gI<Left><Left><Left>                        |
 | n   | 11             | First char in line          | ^                                                |
 | n   | Y              | Yank (like C and D)         | y$                                               |
 | n   | ff             | Open file                   | `TS().find_files()`                              |
 | n   | fl             | Hop-line                    | :HopLine                                         |
 | n   | fk             | Hop-char                    | :HopChar1                                        |
 | n   | gq             | Format w/o formatexpr       | gwgw                                             | null-ls messes with formatexpr for some reason, which messes up `gq` (https://github.com/jose-elias-alvarez/null-ls.nvim/issues/1131) |
-| n   | ,s             | Toggle Autosave all buffers | :ASToggle                                        |
+| n   | ,s             | Toggle Autosave all buffers | :ASToggle<CR>                                    |
 | n   | ,D             | Buffer Diagnostics          | `TS().diagnostics({bufnr=0})`                    |
 | n   | ,C             | Color Schemes               | `TS().colorscheme({enable_preview=true})`        |
 | n   | ,G             | Lazygit                     | :TermExec cmd=lazygit<CR>                        |
@@ -75,7 +76,7 @@ You may add more funcs and replacements here.
 ### Code
 
 ```python :clear @parser :silent
-REPL = {'-SEMICOL-': ';', '-BACKTICK-': '`'}
+REPL = {'-SEMICOL-': 'gI', '-BACKTICK-': '`'}
 FUNCS = [
    'function TS() return require("telescope.builtin") end',
    'function UU() return require("user.utils") end',
@@ -110,8 +111,7 @@ def add_line(l, add=add):
         else:
             lua, how =1,  f'function () {how[1:-1]} end'
     if not lua:
-        if how[0] == ':':
-                how += '<CR>'
+        #if how[0] == ':': how += '<CR>'
         how = how.replace('"', '\\"')
         how = f'"{how}"'
     if cmt:
