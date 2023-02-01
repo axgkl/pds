@@ -714,18 +714,19 @@ function install_lsps {
     }
     open_vi "Find File"
     TSK ":MasonInstall $mason_missing"
-    hint "Patience pls..."
     sleep 1
     until C | grep -q mason.nvim; do sleep 0.5; done
-    # we exit the mason popup and wait until for sure no more little mason install notify popups are there:
     C -e
     TSK q
-    for k in 1 2 3 4; do
-        sleep 0.1
-        while C | grep -q mason.nvim; do sleep 0.5; done
-    done
+    hint "Patience pls..."
+    # we exit the mason popup and wait until for sure no more little mason install notify popups are there:
+    # for k in 1 2 3 4; do
+    #     sleep 0.1
+    #     while C | grep -q mason.nvim; do sleep 0.5; done
+    # done
     TSK ":Mason"
-    sleep 0.5
+    until C | grep -q Installed; do sleep 0.1; done
+    while C | grep -q Installing; do sleep 0.1; done
     C -e
     safe_quit_vi
     have "Mason Tools" "$pds_mason_tools"
