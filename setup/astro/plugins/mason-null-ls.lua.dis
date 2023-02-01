@@ -1,0 +1,19 @@
+-- We install thos via $pds_mason_tools in pds install.
+-- But this is how it would be done declaratively
+-- you might add others in your user config:
+return {
+    ensure_installed = {
+        'bashls',
+        'blue',
+        'marksman',
+        'prettierd',
+        'pylsp',
+        'ruff_lsp',
+        'shellcheck',
+        'shfmt',
+        'stylua',
+        'sumneko_lua',
+        'tsserver',
+        'vimls',
+    },
+}

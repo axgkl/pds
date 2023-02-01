@@ -1,6 +1,7 @@
 # Personal Development Sandbox
 
 <!--toc:start-->
+
 - [Personal Development Sandbox](#personal-development-sandbox)
   - [Bootstrap Installation](#bootstrap-installation)
     - [Existing NeoVim Install](#existing-neovim-install)
@@ -11,11 +12,8 @@
     - [Via $PDS_USER](#via-pdsuser)
     - [More Tools](#more-tools)
     - [Forking the Repo](#forking-the-repo)
-  - [Writing Tests](#writing-tests)
-    - [Test Helper Functions](#test-helper-functions)
-    - [Tips:](#tips)
-    - [Gotchas](#gotchas)
-<!--toc:end-->
+  - [Writing Tests](#writing-tests) - [Test Helper Functions](#test-helper-functions) - [Debugging Tips](#debugging-tips) - [Gotchas](#gotchas)
+  <!--toc:end-->
 
 [![gh-ci][gh-ci-img]][gh-ci]
 
@@ -23,7 +21,6 @@
 [gh-ci-img]: https://github.com/AXGKl/pds/actions/workflows/main.yml/badge.svg
 
 This installs an IDE and tools, organized so that it won't collide with anything else on the system.
-
 
 It is intended for
 
@@ -42,7 +39,6 @@ Value Proposition:
   cloud hosts as well
 - Comes with tmux based test functions, verifying correct working of the IDE
 
-
 ## Bootstrap Installation
 
 ```bash
@@ -56,8 +52,7 @@ Requirements: bash, wget.
 
 OS: Currently only tested on Linux.
 
-💡 OSX and BSDs *should* work as well. We do use the Linux style configuration directories though.
-
+💡 OSX and BSDs _should_ work as well. We do use the Linux style configuration directories though.
 
 This is a run on a minimal debian server:
 
@@ -85,19 +80,16 @@ Plugins are installed in "latest and greatest" mode, i.e. not version pinned.
 In order to cover your back when something fails, you can go back to a working version like so:
 
 ```bash
-pds v[ersion] use 
+pds v[ersion] use
 ```
 
 This checks out the versions of all plugins, astronvim and pds, from a versions file maintained by the author, kept [within the repo](./setup/astro/versions).
 You can create such a file on your own, anytime: `pds v write <filename>` - and use it as fallback via `pds v use <filename>`.
 
-
 ## Features
 
 - [Here](./setup/astro/README.md) is what you get, config wise, currently.
 - pds offers to assert on your config working via tests, see the 'tmux' tests.
-
-
 
 ## Usage
 
@@ -122,8 +114,6 @@ We recommend the last way
 
 When activating virtual environments after `pds a`, you'll have their tools (e.g. python)
 AND the ones from pds - in the right search order - available in your editor.
-
-
 
 ## Further Personalization
 
@@ -150,7 +140,7 @@ return M
 ```
 
 💡 `polish` is imperative code, run after all config is done, while `config` is a
-declarative dict, [understood][astronvim] by AstroNVim. 
+declarative dict, [understood][astronvim] by AstroNVim.
 
 ### More Tools
 
@@ -161,17 +151,15 @@ Default is: "bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neov
 💡 `pkg:cmd` may be used, when package name differs from cmd name. This allows PDS to
 "see" if a tool is already present on the host, then skip install.
 
-Post install you can install new tools via `mamba install`.  
+Post install you can install new tools via `mamba install`.
 
 💡 You may want to check the [Mamba][mamba] docs, regarding how to create version
-("environment.yaml") files for reproducible installs. 
+("environment.yaml") files for reproducible installs.
 
 ### Forking the Repo
 
 Please export `$pds_repo` away from the default "github.com:AXGKl/pds", in order to have
-the "wget based install" (w/o git on the target system) work against *your* fork.
-
-
+the "wget based install" (w/o git on the target system) work against _your_ fork.
 
 ## Writing Tests
 
@@ -190,16 +178,13 @@ For more output use `pds test -v`, e.g.:
 
 - With -v we produce verbose output.
 - But better it is to check what is going on by staring tmux attached session, started
-  (and restarted) via  `pds att -l` (`-l: loop`) .
+  (and restarted) via `pds att -l` (`-l: loop`) .
 - The main program, when wanting to kill tmux, waits for a key entry, when a session is
   attached.
-
 
 A testsession might light like so
 
 [![asciicast](https://asciinema.org/a/IPb1eZQ7Ss1Xr3qeWaDhOJAaD.svg)](https://asciinema.org/a/IPb1eZQ7Ss1Xr3qeWaDhOJAaD)
-
-
 
 ### Test Helper Functions
 
@@ -210,7 +195,7 @@ Open a test file in vim:
 - Wait until 'foo' is shown on the screen:
 
 ```
-open p1.py "$M1" foo   
+open p1.py "$M1" foo
 ```
 
 Typing and assertions: For improved fun and since we can we use some symbols for function names:
@@ -225,11 +210,10 @@ Typing and assertions: For improved fun and since we can we use some symbols for
 Convenience:
 
 ```
-👁️ foo     # eq to: ✔️ shows foo  
-👁️ foo 0.4 # eq to: ✔️ max 0.4 shows foo  
-😵 foo     # eq to: 🚫 shows foo 
+👁️ foo     # eq to: ✔️ shows foo
+👁️ foo 0.4 # eq to: ✔️ max 0.4 shows foo
+😵 foo     # eq to: 🚫 shows foo
 ```
-
 
 The min time deltas are not very small: When waiting for max dts we capture and inspect only every 0.1 seconds.
 
@@ -243,13 +227,28 @@ TSK <cmds> # Tmux send keys
 
 The cmds sent with `TSC` and `TSK` are safely sent as hex.
 
+### Debugging Tips
 
-### Tips:
+Here is how you fix breaking tests.
+
+Note: Also the [install program itself](./setup/pds.sh) is being debugged like this. It
+does a lot of "screenscraping", relying on certain messages (e.g. from mason) showing up -
+and those may and will change over time, requiring adaptions.
+
+Here is how debugging of the scripts, test and install, is done:
 
 - insert simple `read -r foo` to the test program stop at a point, then inspect visually, using `pds att`
-- Using `pds att -l` will show you what's going on, even over tmux restarts
+- Yet more convenient: Using `pds att -l` will show you what's going on, even over tmux restarts:
 
-### Gotchas
+| Terminal 1: Inspection | Terminal 2: Main program              |
+| ---------------------- | ------------------------------------- |
+| `pds att -l`           | `pkill tmux; pds clean-all -f; pds i` |
+
+If you use tmux elsewhere, kill the session using the pds install socket path.
+
+Note: When a client is attached, the main program will always want a key stroke from you before killing tmux.
+
+#### Gotchas
 
 - Mind Test Screen Size
 
@@ -269,7 +268,6 @@ diagnostics popup did not show up, we let first attempt die within a subshell, t
 ---
 
 [astronvim]: https://astronvim.github.io/
-[mamba]:  https://github.com/mamba-org/mamba
+[mamba]: https://github.com/mamba-org/mamba
 [neovim]: https://neovim.io
 [pde]: https://www.youtube.com/watch?v=IK_-C0GXfjo
- 

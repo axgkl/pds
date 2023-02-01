@@ -8,6 +8,7 @@ pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
 pds_v_nvim="${pds_v_nvim:-0.8.1}"
 pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
 pds_mamba_tools="${pds_mamba_tools:-bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier pyright shellcheck tmux tree unzip}"
+pds_mason_tools="${pds_mason_tools:-marksman prettierd python-lsp-server lua-language-server typescript-language-server vim-language-server ruff-lsp}"
 pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-false}
 pds_pin_distri=${pds_pin_distri:-true}
 pds_pin_mamba=${pds_pin_mamba:-true}
@@ -544,18 +545,18 @@ function install_binary_tools {
     test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
 }
 
-function install_shfmt {
-    # avoiding install golang
-    local fn fnm
-    fn="$pds_d_mamba/bin/shfmt"
-    fnm="$HOME/.local/share/nvim/mason/bin/shfmt" # always in nvim path
-    test -e "$fn" || {
-        TSC "curl -L -o shfmt '$shfmt' && mv shfmt '$fn'" "then" chmod +x "$fn"
-    }
-    rm -f "$fnm"
-    ln -s "$fn" "$fnm"
-    have ShellFormatter "$fn"
-}
+#function install_shfmt {
+#    # avoiding install golang
+#    local fn fnm
+#    fn="$pds_d_mamba/bin/shfmt"
+#    fnm="$HOME/.local/share/nvim/mason/bin/shfmt" # always in nvim path
+#    test -e "$fn" || {
+#        TSC "curl -L -o shfmt '$shfmt' && mv shfmt '$fn'" "then" chmod +x "$fn"
+#    }
+#    rm -f "$fnm"
+#    ln -s "$fn" "$fnm"
+#    have ShellFormatter "$fn"
+#}
 
 function install_neovim {
     local a="$pds_d_mamba/bin/nvim.appimg"
@@ -571,19 +572,20 @@ function install_neovim {
     have NeoVim "$d" "$(vi -v | head -n 1)"
 }
 
-function lsp() {
-    local fn
-    fn="$HOME/.local/share/nvim/mason/bin/${2:-$1}"
-    test -e "$fn" || {
-        echo "lsp install $1 ($2)"
-        sleep 0.5
-        T send-keys Escape
-        TSK ":LspInstall $1"
-        wait_dt=0.2 wait_for_file "$fn"
-        T send-keys Escape
-    }
-    have LSP "$1"
-}
+# function lsp() {
+#     # done batch wise now
+#     local fn
+#     fn="$HOME/.local/share/nvim/mason/bin/${2:-$1}"
+#     test -e "$fn" || {
+#         echo "lsp install $1 ($2)"
+#         sleep 0.5
+#         T send-keys Escape
+#         TSK ":LspInstall $1"
+#         wait_dt=0.2 wait_for_file "$fn"
+#         T send-keys Escape
+#     }
+#     have LSP "$1"
+# }
 
 function clone_astronvim_version {
     test -e "$d_conf_nvim" || TSC "git clone 'https://github.com/AstroNvim/AstroNvim' '$d_conf_nvim'"
@@ -605,29 +607,27 @@ function packer_sync {
     TSC 'echo synced'
 }
 function _packer_sync {
-    # not so sexy looking but pretty safe:
-    local pidfile=/tmp/pds.vi.$UID.pid
-    rm -f /tmp/pds.pid
-    for tries in  1 2 3; do
-        ps ax | grep PackerComplete | grep -v grep | xargs kill
-        ps ax | grep PackerComplete | grep -v grep | xargs kill -9
-        sleep 1
-        TSK "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
+    # not so sexy looking but pretty robust over errs confirms and even needed retries:
+    local i j
+    for i in 1 2 3; do
+        # todo: set a unique match string, if this runs in parallel for >1 user we fckup:
+        for j in 15 9; do pgrep -f PackerComplete | xargs kill -$j 2>/dev/null; done
         sleep 0.1
-        local pid=$(cat $pidfile)
-        for i in {1..100}; do
-            ps ax | grep PackerComplete | grep -v grep || return
-            C | grep -C 3 'y/N' && TSK y
-            C | grep -C 3  'Y/n' && TSK y
-            C | grep -C 3 'Press ENTER' && T send-keys Enter
-            sleep 0.5
-        done
+        TSK "$pds_d_mamba/bin/vi -c 'autocmd User PackerComplete quitall' -c 'PackerSync'"
         sleep 1
-        echo "retrying packer sync"
+        hint "waiting for vi process to exit"
+        for j in {1..100}; do
+            pgrep -f PackerComplete || return
+            C | grep -C 3 'y/N' && TSK y
+            C | grep -C 3 'Y/n' && TSK y
+            C | grep -C 3 'Press ENTER' && T send-keys Enter
+            sleep 1 # max 100 sec waiting for package installs
+        done
+        echo "Retrying packer sync"
     done
     C
     die "Packer sync failed"
-    # 
+    #
     # TSK "$pds_d_mamba/bin/vi"
     # sleep 1
     # while C | grep 'Press ENTER'; do
@@ -649,29 +649,25 @@ function _packer_sync {
 }
 
 function first_start_astronvim {
-    have "AstroNVim self install" "Plugins and Mason Binary Pkg Tool"
     #
     # #t resize-window -x 150 -y 50
-    local d t0 ts fn tss
-    d="$HOME/.local/share/nvim/mason/bin"
-    local want_mason=false
-    q 12 test -e "$d" || want_mason=true
-    #t0=$(date +%s) # total
-    TSK "$pds_d_mamba/bin/vi"
-    echo "want mason: $want_mason"
-    $want_mason && {
+    local d ts fn tss
+    q 12 test -e "$HOME/.local/share/nvim/mason/bin" || {
+        #local t0=$(date +%s) # total
+        TSK "$pds_d_mamba/bin/vi"
+        hint "is first start - bootstrapper running..."
         # we just start it, install begins autom:
         wait_for 'C | grep Mason'
         hint "Waiting for: 'Mason' to disappear"
         wait_for 'C | grep -v Mason'
+        safe_quit_vi
     }
-    safe_quit_vi
-    #read  -r foo
+    have "AstroNVim self install" "Plugins and Mason Binary Pkg Tool"
     #packer_sync
 }
 
 function install_treesitter_parsers {
-    TSK "$pds_d_mamba/bin/vi"
+    open_vi
     d="$HOME/.local/share/nvim/site/pack/packer/opt/nvim-treesitter/parser"
     tss="python bash css javascript vim help"
     for ts in $(echo "$tss" | xargs); do
@@ -687,18 +683,37 @@ function install_treesitter_parsers {
     safe_quit_vi
     have "Treesitter parsers" "$tss"
 }
+function open_vi {
+    TSK "$pds_d_mamba/bin/vi"
+    until C | grep "${1:-Find File}"; do
+        C | grep -q ENTER | grep -v grep && T send-keys Enter
+        sleep 0.2
+    done
+}
 
 function install_lsps {
-    TSK "$pds_d_mamba/bin/vi"
-    sh lsp bashls "bash-language-server"
-    sh lsp marksman
-    sh lsp pylsp
-    sh lsp sumneko_lua "lua-language-server"
-    sh lsp tsserver "typescript-language-server"
-    sh lsp vimls "vim-language-server"
-    sh lsp ruff_lsp "ruff-lsp"
+    open_vi "Find File"
+    TSK ":MasonInstall $pds_mason_tools"
+    hint "Patience pls..."
+    sleep 1
+    until C | grep -q mason.nvim; do sleep 0.5; done
+    # we exit the mason popup and wait until for sure no more little mason install notify popups are there:
+    TSK q
+    for k in 1 2 3 4; do
+        sleep 0.1
+        while C | grep -q mason.nvim; do sleep 0.5; done
+    done
     safe_quit_vi
     have "LSPs" "$tss"
+    # return
+    # TSK "$pds_d_mamba/bin/vi"
+    # sh lsp bashls "bash-language-server"
+    # sh lsp marksman
+    # sh lsp pylsp
+    # sh lsp sumneko_lua "lua-language-server"
+    # sh lsp tsserver "typescript-language-server"
+    # sh lsp vimls "vim-language-server"
+    # sh lsp ruff_lsp "ruff-lsp"
 }
 
 function safe_quit_vi {
@@ -915,7 +930,7 @@ function DoInstall {
     sh unset_installing_flag
     sh install_treesitter_parsers
     sh install_lsps
-    sh install_shfmt
+    #sh install_shfmt
     sh create_vman
     sh core_tests
     sh set_pds_function_to_user_shell

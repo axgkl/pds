@@ -3,7 +3,6 @@ P = function(v)
     return v
 end
 
-UU = require('user.utils') -- allows :lua U.dump(vim.lsp)
 if os.getenv('pds_installing') then
     return {}
 end
@@ -218,7 +217,7 @@ local config = {
         -- })
         -- don't get flooded by lsp diag. <spc>lx toggles
         vim.o.updatetime = 250
-        UU.toggle_diag_displ()
+        require('user.utils').toggle_diag_displ()
     end,
 }
 
