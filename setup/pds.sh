@@ -80,29 +80,51 @@ function run_with_pds_bin_path {
     fi
     "$@"
 }
-
+# function run-in-bash {
+#     # in zsh a tool wants to have all funcs here, must go bash to source this:
+# }
 function run-tools {
-    # access to further tools. w/o $1 we display fzf,  with match we  call it directly.
-    local funcs ts
-    . "$here/tools.sh"
-    test -n "$1" && {
-        type "$1" >/dev/null 2>&1 && {
-            "$@"
-            return $?
-        }
+    # access to further tools. w/o $1 or match we display fzf.
+    # with func name we  call it directly
+    test "${in_pds_shell:-}" = "true" || {
+        pds shell run-tools "$@"
+        return $?
     }
-    funcs="$(grep -E "^function " <"$here/tools.sh" | grep '\{ #')" # only documented ones
-    if [[ "$2" = "nomenu" ]]; then
-        shift 2
-        ts="$(cut -f 2 -d ' ' <<<"$funcs")"
-    else
-        ts="$(grep -E '^function' <"$here/tools.sh" |
-            sed -e 's/function //g;s/{//g;s/^/\x1b\[1;32m/g;s/#/\x1b[2;37m/g' |
-            run_with_pds_bin_path fzf --ansi --exact --height=30% --query "${*:-}" -1)"
-    fi
-    run_with_pds_bin_path 2>/dev/null
+    local match="${1:-}"
+    function list { grep -E "^function " <"$here/tools.sh" | grep '\{ #' | sed -e 's/function //g' | sort | grep "$match"; }
+    function pretty_list { list | sed -e 's/{//g;s/^/\x1b\[32m/g;s/#/\x1b[37m/g'; }
+    local func ts
+    test "${1:-}" = "-h" && {
+        match=""
+        list
+        return
+    }
     shift
-    eval "$ts $*"
+    ts="$(list)"
+    test "$(list | wc -l)" = "1" || {
+        ts="$(pretty_list | run_with_pds_bin_path fzf --tac --ansi --exact --height=30% --query "${1:-}" -0 -1)"
+    }
+    test -z "$ts" && {
+        hint 'no match'
+        return
+    }
+    ts="$(echo "$ts" | cut -d ' ' -f 1)"
+    sh "$ts" "$@"
+    #
+    # # given a tool func name right away?
+    # test -n "$1" && {
+    #     type "$1" >/dev/null 2>&1 && {
+    #         pds shell "$@" # run in subshell with all sourced with-tools
+    #         return $?
+    #     }
+    # }
+    #
+    # notify-send "$ts"
+    # run_with_pds_bin_path 2>/dev/null
+    # shift
+    # set -x
+    # eval "$ts # $*"
+    # set +x
 }
 
 function handle_sourced {
@@ -238,10 +260,10 @@ function set_helper_vars {
 }
 
 function activate_mamba {
-    # deactivate all condas, lsp install would fail with different node
+    # deactivate all condas, lsp install would fail with different nodejs
     function a_m {
         conda activate "$pds_d_mamba" 2>/dev/null
-        conda init bash
+        #conda init -q bash
     }
     . "$pds_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
     while [ -n "$CONDA_PREFIX" ]; do conda deactivate; done
@@ -340,8 +362,13 @@ true && {
     function title { echo -e "\n\x1b[1;38;5;119m$*\x1b[0m\n"; }
     function sh {
         local m out
+        local shcmd="$1"
+        test "${1:-}" = "-a" && {
+            shift
+            shcmd="$*"
+        }
         T -q rename-window "⚙️ $*" 2>/dev/null || true
-        out="\x1b[31m⚙️\x1b[0m\x1b[1m $1\x1b[0m"
+        out="\x1b[31m⚙️\x1b[0m\x1b[1m $shcmd\x1b[0m"
         echo -e "$out" | tee -a "$captures" | tee -a "$inst_log"
 
         $pds_is_stepped && {
@@ -507,7 +534,7 @@ function ensure_tmux { ensure_single_tool tmux "tmux -V | grep -q 'tmux 3'"; }
 function ensure_git { ensure_single_tool git "git --version"; }
 function install_pips {
     # todo: versions... For now we need those, for vpe vi plugin
-    q 12 source "$me" a python -c 'import yaml' || TMIF pip install --upgrade emoji-fzf pyyaml
+    q 12 source "$me" activate python -c 'import emoji_fzf' || TMIF pip install --upgrade emoji-fzf pyyaml
     have PIPs "emoji-fzf pyyaml"
 }
 function create_vman {
@@ -529,6 +556,13 @@ function create_vman {
 }
 
 function line_seped { echo "$1" | xargs | tr ' ' '\n'; }
+function install_graph_easy {
+    # the best ascii art tool
+    q 12 type graph-easy || {
+        mamba install -y -c bioconda perl-app-cpanminus && env PERL5LIB="" PERL_LOCAL_LIB_ROOT="" PERL_MM_OPT="" PERL_MB_OPT="" cpanm Graph::Easy
+    }
+    have graph-easy "Asci drawing tool"
+}
 
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
 function install_binary_tools {
@@ -1013,6 +1047,7 @@ function DoInstall {
     sh ensure_tmux
     sh start_tmux
     sh install_binary_tools
+    sh install_graph_easy
     sh install_pips
     sh install_neovim
     sh set_installing_flag
@@ -1036,6 +1071,7 @@ function DoInstall {
     echo -e "- Size: $(disk "$pds_d_mamba") - you may delete the pkgs folder."
     echo -e "- Source your ~/.bashrc or ~/.zshrc, to have pds function available."
     echo -e "- ${M}pds vi$O to start editor with all tools."
+    echo -e "- When you have no nerdfont installed (e.g. on servers), run: pds run-tools dev-icons false"
     echo -e "${L}\nDocs: "
     echo -e "- https://mamba.readthedocs.io"
     echo -e "- https://astronvim.github.io"
@@ -1074,12 +1110,28 @@ function kill_tmux {
 }
 
 function shell {
-    activate_mamba
-    have "Mamba" "Shell"
-    echo 'Deactive or exit to leave'
-    export pds_shell=true
-    bash
+    # w/o arg: Run *interactive* shell with all tools
+    # w arg: run the tool with all params at hand
+    local fn="/tmp/pds.sh.$UID"
+    local h="" c="" sw="-c"
+    test "${1:-}" = "" && {
+        h=". $HOME/.bashrc"
+        sw="--rcfile"
+    }
+    test "${1:-}" = "" || c="$*"
+    echo -e "#!/usr/bin/env bash
+    $h
+    shopt -u expand_aliases # avoid collisions
+    export PATH=\"$HOME/pds/bin:$PATH\"
+    function pds { . '$me' \$@; }
+    in_pds_shell=true
+    . $me source with-tools
+    $c
+    " >"$fn"
+    chmod +x "/tmp/pds.sh.$UID"
+    eval bash $sw $fn
 }
+
 function ensure_stash_dir { mkdir -p "$d_stash"; }
 
 function bootstrap_git {
@@ -1219,9 +1271,12 @@ function main {
             ;;
         #A r|restore <name>:        Restores stashed pds (-d: deletes stash, i.e. mv, not cp)
         \r | restore) unstash "$@" ;;
-        #A shell:                   Enters a shell with pds tools available
-        shell) shell ;;
-        source) return ;;
+        #A shell [cmd]:             Enters a shell with all pds tools sourced
+        shell) shell "$@" ;;
+        source)
+            test "$1" = "with-tools" && source "$here/tools.sh" || true
+            return
+            ;;
         #A stash <name>:            Moves away an existing install, restorable
         stash) stash "$@" ;;
         #A status:                  Status infos
@@ -1238,6 +1293,5 @@ function main {
         *) show_help "$@" ;;
     esac
 }
-
 main "$@"
 set +e
