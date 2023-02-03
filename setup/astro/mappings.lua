@@ -1,4 +1,4 @@
--- Autocreated @Fri Feb  3 22:56:19 2023 by parsing mappings.md
+-- Autocreated by parsing mappings.md
 
 function SS()
     return require('smart-splits')

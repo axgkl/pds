@@ -203,7 +203,8 @@ import time, os
 
 vpe.vim.command('write!')
 os.chdir(vpe.fnd().here)
-r = [f'-- Autocreated @{time.ctime()} by parsing mappings.md', '']
+# not time, this is comitted:
+r = [f'-- Autocreated by parsing mappings.md', '']
 add = lambda k, r=r: r.append(k)
 [add(f) for f in FUNCS]
 add('return {')
