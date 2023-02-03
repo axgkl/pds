@@ -1,43 +1,26 @@
 # Mappings
 
 <!--toc:start-->
-
 - [Mappings](#mappings)
-  - [Mappings Defined Here](#mappings-defined-here)
-    - [Usage](#usage)
-      - [Symbols](#symbols)
-    - [Folding](#folding)
-    - [Navigation](#navigation)
-    - [Editing](#editing)
-    - [Hopping Around](#hopping-around)
-    - [LSP](#lsp)
-    - [Misc](#misc)
-  - [Arch](#arch)
-  - [Links](#links)
-  - [Parse](#parse) - [Code](#code)
-  <!--toc:end-->
+  - [Folding](#folding)
+  - [Navigation](#navigation)
+  - [Editing](#editing)
+  - [Hopping Around](#hopping-around)
+  - [LSP](#lsp)
+  - [Misc](#misc)
+  - [Usage](#usage)
+    - [Symbols](#symbols)
+  - [Helpers](#helpers)
+    - [Arch](#arch)
+    - [Links](#links)
+    - [Parser](#parser)
+      - [Code](#code)
+<!--toc:end-->
 
 👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings  
 👉 `:map` lists them all
 
-## Mappings Defined Here
-
-### Usage
-
-👉 **Hit ,r (anywhere) after changes of these tables** That will rebuild mappings.lua
-
-> Any line in this file is [parsed](#code), which looks like a MD table row with single char in 2nd col.
-
-#### Symbols
-
-- `foo`: lua function -> `function () foo end`
-- `'foo`: (single apo. after start backtick): vim command, equal to foo (MD workaround)
-- -SEMICOL-, -UNDER-, -BACKTICK-: Replaced at parsing (MD and ,t workaround)
-- Function like TS(), SS() are defined in python [parser](#code)
-- [Aliases](#code): | 🟣 n | 🟠 v | 🟢 x | 🟤 i | ⏎ <CR> |
-- 🟥 Means: Dubious. might change.
-
-### Folding
+## Folding
 
 | Mapping | M   | What            | How | Cmt                       |
 | ------- | --- | --------------- | --- | ------------------------- |
@@ -47,7 +30,7 @@
 
 Type z and let which key help you, regarding other options
 
-### Navigation
+## Navigation
 
 | Mapping        | M   | What                         | How                                         | Cmt                                                                              |
 | -------------- | --- | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -75,7 +58,7 @@ Type z and let which key help you, regarding other options
 - `<Ctl>o` Jump last place (u knew that)
 - `H` `L` Window left/right selection
 
-### Editing
+## Editing
 
 | Mapping   | M   | What                        | How                              | Cmt                                                                          |
 | --------- | --- | --------------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
@@ -104,7 +87,7 @@ Type z and let which key help you, regarding other options
 - `,t` [Format](./ftplugin/markdown.vim) markdown table. ';' is converted to "|"
 - `ga,` [Align selected lines on sth, e.g. here: on ","][tabularize]
 
-### Hopping Around
+## Hopping Around
 
 | Mapping | M   | What                        | How             | Cmt                                 |
 | ------- | --- | --------------------------- | --------------- | ----------------------------------- |
@@ -124,7 +107,7 @@ Type z and let which key help you, regarding other options
 
 Since `f` alone is already "find forward char on current line", we cannot display help for those
 
-### LSP
+## LSP
 
 | Mapping | M   | What               | How                           | Cmt |
 | ------- | --- | ------------------ | ----------------------------- | --- |
@@ -138,7 +121,7 @@ Since `f` alone is already "find forward char on current line", we cannot displa
 
 👉 `:LSPInstall`
 
-### Misc
+## Misc
 
 | Mapping    | M   | What                  | How                                       | Cmt                                  |
 | ---------- | --- | --------------------- | ----------------------------------------- | ------------------------------------ |
@@ -160,7 +143,30 @@ Since `f` alone is already "find forward char on current line", we cannot displa
 | gq         | 🟠  | Format w/o formatexpr | gwgw                                      |
 | ⏎          | 🟠  | Fold all open         | zO                                        |
 
-## Arch
+## Usage
+
+👉 **Everything in the tables is parsed into mappings.lua.**
+
+The rest is informational.
+To (re-)generate mappings.lua, hit ,r (anywhere).
+
+Details: Any line in this file is [parsed](#code), which:
+
+- looks like a MD table row
+- with a single char in 2nd col.
+
+### Symbols
+
+- `foo`: lua function -> `function () foo end`
+- `'foo`: (single apo. after start backtick): vim command, equal to foo (MD workaround)
+- -SEMICOL-, -UNDER-, -BACKTICK-: Replaced at parsing (MD and ,t workaround)
+- Function like TS(), SS() are defined in python [parser](#code)
+- [Aliases](#code): | 🟣 n | 🟠 v | 🟢 x | 🟤 i | ⏎ <CR> |
+- 🟥 Means: Dubious. might change.
+
+## Helpers
+
+### Arch
 
 ```
     | M   | Mapping | What | How                       | Cmt                               |
@@ -168,7 +174,7 @@ Since `f` alone is already "find forward char on current line", we cannot displa
     | n   | S       |      | :%s//gI<Left><Left><Left> | " move between splits with alt-jk |
 ```
 
-## Links
+### Links
 
 [vim-surround]: https://github.com/tpope/vim-surround
 [autosave]: https://github.com/Pocco81/auto-save.nvim
@@ -178,11 +184,9 @@ Since `f` alone is already "find forward char on current line", we cannot displa
 [neotree]: https://github.com/nvim-neo-tree/neo-tree.nvim
 [gqbugorfeat]: https://github.com/jose-elias-alvarez/null-ls.nvim/issues/1131)
 
-## Parse
+### Parser
 
-You may add more funcs and replacements here.
-
-### Code
+#### Code
 
 ```python :clear @parser :silent
 MODES = {'🟣':'n', '🟠': 'v', '🟢': 'x', '🟤': 'i'}

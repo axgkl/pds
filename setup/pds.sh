@@ -6,7 +6,7 @@ pds_distri="${pds_distri:-astro}"
 pds_d_mamba="${pds_d_mamba:-$HOME/pds}"
 pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
 pds_v_nvim="${pds_v_nvim:-0.8.1}"
-pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
+#pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
 pds_mamba_tools="${pds_mamba_tools:-
 bat
 blue
@@ -255,7 +255,7 @@ function set_helper_vars {
     # 10k: https://raw.githubusercontent.com/neoclide/coc-sources/master/packages/word/10k.txt
     #
     url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
-    shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
+    #shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
     _stashes_have="$(ls "$d_stash" 2>/dev/null | sort | xargs)"
 }
 

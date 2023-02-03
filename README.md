@@ -182,10 +182,8 @@ The LSP tools want are parametrizable by exporting `$pds_mason_tools` before ins
 |`pds_pin_mamba_pkgs`|`false`|
 |`pds_pin_nvim_pkgs`|`false`|
 |`pds_repo`|`github.com:AXGKl/pds`|
-|`pds_v_distri`|`4f4269d174d85df8b278a6e09d05daeef840df4a`|
 |`pds_v_mamba`|`22.9.0-2`|
 |`pds_v_nvim`|`0.8.1`|
-|`pds_v_shfmt`|`3.6.0`|
 
 <!--@pds_defaults -->
 
@@ -231,7 +229,7 @@ Open a test file in vim:
 open p1.py "$M1" foo
 ```
 
-Typing and assertions: For improved fun and since we can we use some symbols for function names:
+Typing and assertions: For improved "fun" (and since we can) we use some symbols for function names:
 
 ```
 ⌨️  j k                 # enter j then k (0.05 in between keystrokes)
@@ -305,6 +303,8 @@ diagnostics popup did not show up, we let first attempt die within a subshell, t
 [neovim]: https://neovim.io
 [pde]: https://www.youtube.com/watch?v=IK_-C0GXfjo
 
+<!--
+
 ```python runreplacements :clear :silent
 replace_at = '@pds_defaults'
 
@@ -326,12 +326,12 @@ add('-', '-')
 [add(f'`{k}`', f'`{E[k]}`') for k in sorted([i for i in E if i.startswith('pds_')])]
 r.extend(['', ''])
 a = replace_at
-vpe.hlp.insert_between(a + '-->', '<!--' + a, '\n'.join(r))
+vpe.hlp.insert_between(a + '-' + '->', '<!-' + '-' + a, '\n'.join(r))
+
 vpe.vim.command('write')
 
 ```
 
-<!--
-:vpe /gg/runreplacements/ # :vpe_on_any  only found at max 3  lines from end!
+:vpe /gg/runreplacements/ # :vpe_on_any
 vi: fdl=1 fen
 -->

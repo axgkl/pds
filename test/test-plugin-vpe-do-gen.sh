@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# the vpe plugin should be always there, for the mappings.md
+# In readme it makes no sense, that table insert could and should be done elsewhere
+# => it's only a demo
 
 pds() { . "$HOME/.config/pds/setup/pds.sh" "$@"; }
 
@@ -16,4 +19,4 @@ function run_headless_in_page_vpe {
 run_headless_in_page_vpe "$HOME/.config/nvim/lua/user/mappings.md"
 run_headless_in_page_vpe README.md
 
-echo 'vpe tests passed'
+echo -e '\n\nvpe tests passed'
