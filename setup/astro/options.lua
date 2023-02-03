@@ -23,7 +23,7 @@ return {
         autopairs_enabled = false, -- enable autopairs at start
         diagnostics_enabled = true, -- enable diagnostics at start
         status_diagnostics_enabled = true, -- enable diagnostics in statusline
-        icons_enabled = true, -- disable icons in the ui (disable if no nerd font is available, requires :packersync after changing)
+icons_enabled = true, -- disable icons in the ui (disable if no nerd font is available, requires :packersync after changing)
         ui_notifications_enabled = true, -- disable notifications when toggling ui elements
         heirline_bufferline = true, -- enable new heirline based bufferline (requires :packersync after changing)
     },
