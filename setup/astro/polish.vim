@@ -157,12 +157,8 @@ autocmd! FileType TelescopeResults setlocal nofoldenable
 
 " autopairing: consider tmsvg/pear-tree
 "
-nnoremap          ,r  :PythonEval<CR>
-xnoremap <silent> ,r  :PythonEval<CR>
-nnoremap          ,E  :EvalInto<CR>
-
-vnoremap <silent> 5 :<c-u>HSHighlight 4<CR>
-vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
+" vnoremap <silent> 5 :<c-u>HSHighlight 4<CR>
+" vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
 
 " we often have old stuff at end of files:
 " go all down, then (<bar>, next cmd) search up but silent on no found:
@@ -194,6 +190,6 @@ vnoremap <silent> 6 :<c-u>HSHighlight 2<CR>
 
 
 " leave here:
-nnoremap  G        :$<CR><bar>:silent! ?begin_archive<CR>
+"nnoremap  G        :$<CR><bar>:silent! ?begin_archive<CR>
 "colorscheme catppuccin-mocha
 colorscheme catppuccin-macchiato

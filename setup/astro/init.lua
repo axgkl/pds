@@ -184,18 +184,18 @@ local config = {
     -- This function is run last
     -- good place to configuring augroups/autocommands and custom filetypes
     polish = function()
-        local hop = require('hop')
-        local function hopk(k, dir, offs)
-            vim.keymap.set('', k, function()
-                hop.hint_char1({ direction = k, current_line_only = true, hint_offset = offs })
-            end, { remap = true })
-        end
-
-        local d = require('hop.hint').HintDirection
-        hopk(',f', d.AFTER_CURSOR, 0)
-        hopk(',t', d.AFTER_CURSOR, -1)
-        hopk(',F', d.BEFORE_CURSOR, 0)
-        hopk(',T', d.BEFORE_CURSOR, -1)
+        -- local hop = require('hop')
+        -- local function hopk(k, dir, offs)
+        --     vim.keymap.set('', k, function()
+        --         hop.hint_char1({ direction = k, current_line_only = true, hint_offset = offs })
+        --     end, { remap = true })
+        -- end
+        --
+        -- local d = require('hop.hint').HintDirection
+        -- hopk(',f', d.AFTER_CURSOR, 0)
+        -- hopk(',t', d.AFTER_CURSOR, -1)
+        -- hopk(',F', d.BEFORE_CURSOR, 0)
+        -- hopk(',T', d.BEFORE_CURSOR, -1)
 
         local cnf = require('auto-save.config').opts
         cnf.enabled = false
@@ -207,18 +207,57 @@ local config = {
         -- lsp logging - unreadable without this all on one line:
         vim.lsp.set_log_level('info')
         require('vim.lsp.log').set_format_func(vim.inspect)
-
-        -- -- Restore cursor position
-        -- vim.api.nvim_create_autocmd({ 'BufReadPost' }, {
-        --     pattern = { '*' },
-        --     callback = function()
-        --         vim.api.nvim_exec('silent! normal! g`"zv', false)
-        --     end,
-        -- })
         -- don't get flooded by lsp diag. <spc>lx toggles
         vim.o.updatetime = 250
         require('user.utils').toggle_diag_displ()
+
+        -- local s = ls.snippet
+        -- local t = ls.text_node
+
+        -- local f = ls.function_node
+        -- local snippets = {}
+        -- local target_dates = {
+        --     'today',
+        --     'tomorrow',
+        --     'next monday',
+        --     'next tuesday',
+        --     'next wednesday',
+        --     'next thursday',
+        --     'next friday',
+        --     'next week',
+        --     'next month',
+        -- }
+        -- for _, target_date in pairs(target_dates) do
+        --     table.insert(
+        --         snippets,
+        --         s('bj_' .. target_date:gsub(' ', '_'), {
+        --             t('# '),
+        --             f(function(args, snip, user_arg_1)
+        --                 return vim.fn.trim(vim.fn.system([[date -d ']] .. target_date .. [[' +'%F %a']]))
+        --             end, {}),
+        --         })
+        --     )
+        -- end
+
+        --return snippets
     end,
+    -- vim.api.nvim_create_autocmd('User', {
+    --     pattern = 'LuasnipInsertNodeEnter',
+    --     callback = function()
+    --         local node = require('luasnip').session.event_node
+    --         print(table.concat(node:get_text(), '\n'))
+    --     end,
+    -- }),
+    -- vim.api.nvim_create_autocmd('User', {
+    --     pattern = 'LuasnipPostExpand',
+    --     callback = function()
+    --         -- get event-parameters from `session`.
+    --         local snippet = require('luasnip').session.event_node
+    --         local expand_position = require('luasnip').session.event_args.expand_pos
+    --         vim.cmd('!notify-send foo')
+    --     end,
+    -- }),
+    --
 }
 
 local userfn = os.getenv('PDS_USER')
