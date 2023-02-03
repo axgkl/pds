@@ -58,8 +58,13 @@ function restore {
 }
 
 function plugs-list {
-    ✔️ echo list
+    ✔️ echo list # todo
 
+}
+function shell {
+    ✔️ pds shell die foo | grep foo # exits and know the function
+    ✔️ pds shell echo \$in_pds_shell | grep true
+    🚫 pds shell die foo
 }
 function main {
     # Testing process calls. THESE MUST BE RUN IN ORDER (after bootstrap)
@@ -76,6 +81,7 @@ function main {
     tst stash
     tst clean-all
     tst restore
+    tst shell
 }
 
 main "$@"

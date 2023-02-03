@@ -146,7 +146,7 @@ function test-store-last-position { # will at reopen last position be stored AND
     ⌨️ 'l'
     👁️ '4:9' 500 # yes, we are at second test = foo, second o
     ⌨️ 'gd' 500
-    👁️ '1:5' 500       # gd worked
+    👁️ '1:5' 500 # gd worked
     #read -r foo
     T send-keys Escape # required here, sometimes in strange mode still
     vi_quit
@@ -155,7 +155,10 @@ function test-store-last-position { # will at reopen last position be stored AND
 # -------------------------------------------------------------------- pds function
 function test-pds-plugs-list-and-fzf { # pds s function some tools, based on fzf et al
     TSK 'pds s plugins-list'
-    sleep 0.05
+    until C | grep -q "opt/"; do
+        sleep 0.1
+        C | grep -q "start/" && break
+    done
     TSK "'mason-null-ls.nvim"
     sleep 0.05 # time for fzf
     📷

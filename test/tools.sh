@@ -25,7 +25,7 @@ function tst_die {
     # die is in pds.sh
     echo -e 'tst_die. will exit 1'
     set +x
-    C
+    C 2>/dev/null
     #tail -n 100 "${tmux_cmds_log:-}" || true
     out 196 "Failed" "${cur_test:-}"
     test -n "$1" && echo -e "$*"
