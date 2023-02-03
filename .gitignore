@@ -5,3 +5,5 @@ tmux-keylogger/
 Mambaforge-Linux-x86_64.sh
 
 *.swp
+
+setup/astro/foo

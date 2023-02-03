@@ -6,13 +6,6 @@
   - [Leader Keys](#leader-keys)
   - [Config Files](#config-files)
   - [Custom Shortcuts](#custom-shortcuts)
-    - [mappings.md](#mappingsmd)
-    - [Folding](#folding)
-    - [Navigation](#navigation)
-    - [Editing](#editing)
-      - [Hopping Around](#hopping-around)
-    - [LSP](#lsp)
-    - [Misc](#misc)
     - [File Type Specific](#file-type-specific)
       - [Explorer ([NeoTree][neotree])](#explorer-neotreeneotree)
       - [Man Pages](#man-pages)
@@ -47,103 +40,22 @@ Usage:
 
 All in ~/.config/nvim/lua/user
 
+Main files:
+
 - init.lua
 - polish.vim
 - plugins/init.lua
 - smart_vi_open.py
+- mappings.md
 
 👉 `,g` on those filenames to open (see ,g below)
 
 - Files are symlinked, from ~/.config/pds into nvim's ~/.config/nvim
-- Some ext tools, e.g. lazygit, blue, require ~/nvim activation (i.e. ~/nvim/bin in $PATH)
+- Some ext tools, e.g. lazygit, blue, require access to these tools (i.e. ~/pds/bin in $PATH)
 
 ## Custom Shortcuts
 
-Some defined in our `init.lua` (mappings, lsp.mappings) most still in `polish.vim`
-
-👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings  
-👉 `:map` lists them all
-
-### mappings.md
-
-Appart from [./polish.vim](./polish.vim), we define most mappings in [this](./mappings.md)
-markdown(!) file.
-
-`,r` generates the [lua](./mappings.lua) file from it.
-
-### Folding
-
-Foldmethod is "indent", globally, except for markdown
-
-- `<TAB>`: Opens all folds. `zM` closes all.
-- `<Enter>`: Opens current fold
-
-### Navigation
-
-Note: Arrow keys resize split windows, i.e. **won't** work for navigation (hjkl ftw)
-
-👉 Note the leading space key, e.g. ` foo` is `<SPACE>foo`
-
-- `ff` [Open file][1] (from your start dir)
-- ` fg` Open git managed file
-- `;` Currently open buffers
-- `<Ctl>o` Jump last place
-- `<Alt>o` Jump newer place
-- ` ↩️` Last edited buffer in your open buffers (toggle back and forth)
-- `<Alt>w` Close buffer
-- `,c` Close window, close buffer
-- `,d` Done, write quit.
-- `G` Jump to end of file - except to string `"begin__archive"` (but with ONE underscore), when found in buffer
-- `J` `K` Paragraph (next, previous)
-- `H` `L` Window left/right selection
-- `,g` [Smart open][2] (vi's `gf` is unchanged)
-- `,q` ":q!" Leave file, forget changes
-- `,Q` ":quitall!" Leave all buffers, forget changes
-- `,u` Undo Tree
-- `,w` Autoformat file, then write
-
-[1]: You can open many files at once, by selecting them with TAB in the picker
-[2]: `,g`: Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file. Resolves md links) via `smart_vi_open.py`. ⚠️ Non locally (e.g. on servers) browser opening is not available.
-
-### Editing
-
-- `0` Start of line
-- `1` First character in line (`^`)
-- `fj` Better line concat, replacing J
-- `jk` Same as `<ESC>` in insert mode
-- `ds]` [Remove delimiters smartly (e.g. here: [foo bar] -> foo bar)][vim-surround]
-- `ysiw]` [Wrap word into (e.g. here: foo -> [foo])][vim-surround]
-- `,s` [Autosave mode on: Write after insert mode leave][autosave]
-- `ga,` [Align selected lines on sth, e.g. here: on ","][tabularize]
-- ` d` In visual or normal mode, delete w/o overwriting your "pasteable content"
-
-#### Hopping Around
-
-Since `f` alone is already "find forward char on current line", we cannot display help for those:
-
-- `fk<char>` [Hop](https://github.com/phaazon/hop.nvim) to position with `<char>`
-- `fl` Hop to line
-- `F<char>` Hop back on current line to char
-- `t` `T` Offset f, F by one char. E.g. for selecting: `vtx`: select until char "x"
-
-### LSP
-
-- `gd` Goto definition (e.g. over function name)
-- `,D` All buffer Diagnostics
-- ` lr` Rename e.g. function name
-- ` lR` Find references
-- ` lx` Diagnostics on/off toggle
-- `s` Hover (code context help)
-
-👉 `:LSPInstall`
-
-### Misc
-
-- `,1` Sources our init.lua
-- `,2` Opens our init.lua
-- `,3` Terminal in dir of current buffer
-- `,C` Colors (theme picker)
-- `,r` Evaluates as python or as vim cmd, see https://github.com/axiros/vpe
+Global ones defined in [mappings.md](./mappings.md).
 
 ### File Type Specific
 
@@ -235,10 +147,3 @@ To move it away to a backup dir:
 ---
 
 ## Links
-
-[vim-surround]: https://github.com/tpope/vim-surround
-[autosave]: https://github.com/Pocco81/auto-save.nvim
-[whichkey]: https://github.com/folke/which-key.nvim
-[tabularize]: https://github.com/godlygeek/tabular
-[lp]: https://www.youtube.com/watch?v=HtPL2YhK6h0&t=165s
-[neotree]: https://github.com/nvim-neo-tree/neo-tree.nvim

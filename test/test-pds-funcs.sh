@@ -39,6 +39,11 @@ function test-pds-tools-exact-match {
     test -e "$d"
 }
 
+function test-version-write {
+    local fn="/tmp/pds.versions.$UID"
+    "$pds" version write "$fn"
+    cat "$fn" | grep telescope || return 1
+}
 function ptst {
     local ret
     set-path

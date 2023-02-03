@@ -38,30 +38,32 @@ Value Proposition:
 - There are zero requirements on the host (wget and bash), i.e. works on stripped down
   cloud hosts as well
 - Comes with tmux based test functions, verifying correct working of the IDE
+- Fully noninteractive, including handling of required confirmation dialogues _within_ vi
+- A set of test functions for "typing" into vi and asserting on what's shown on the screen
 
 ## Bootstrap Installation
 
 ```bash
 wget https://raw.githubusercontent.com/AXGKl/pds/master/setup/pds.sh
 chmod +x pds.sh
-./pds.sh i[nstall] [watch]
+./pds.sh i[nstall] [watch] # watch requires the presence of tmux alread *before* isntall
 # (...)
 pds vi (after shell restart) # or, recommended:
 export PATH="~/pds/bin:$PATH, then vi"
 ```
 
-Requirements: bash, wget.
+### Requirements: bash, wget.
 
-OS: Currently only tested on Linux.
+OS: Currently only tested on Linux but OSX and BSDs _should_ work as well. We do use (and
+create) the Linux style configuration directories (`~/.config/<pds|nvim>`, `~/.local/<cache|share>/nvim`) though - always.
 
-💡 OSX and BSDs _should_ work as well. We do use the Linux style configuration directories though.
+### Example
 
-This is a run on a minimal debian server, w/o even git. We installed only tmux for the install *watch* feature:
+This is a run on a minimal debian server, w/o even git. We installed only tmux for the install _watch_ feature:
 
 [![asciicast](https://asciinema.org/a/FOPa9Lbh0vYSuHrRNxvgLUSPF.svg)](https://asciinema.org/a/FOPa9Lbh0vYSuHrRNxvgLUSPF)
 
 💡 The installation look and feel may be further improved in the future but you get the idea...
-
 
 ### Existing NeoVim Install
 
@@ -149,23 +151,43 @@ Before install, you may parametrize pds to get [more tools](https://conda-forge.
 
 This is for tools which you might want also _outside_ of vi, installed into `$HOME/pds/bin`.
 
-💡 You can call these tools even w/o activation of `$HOME/pds`.
+💡 Tips
 
-Default is: <!----><!--pds_mamba_tools-->.
-
-💡 `pkg:cmd` may be used, when package name differs from cmd name. This allows PDS to
-"see" if a tool is already present on the host, then skip install.
-
-Post install you can install new tools via `mamba install`.
-
-💡 You may want to check the [Mamba][mamba] docs, regarding how to create version
-("environment.yaml") files for reproducible installs.
+- You can call these tools even w/o activation of `$HOME/pds`.
+- Post pds install you can install new tools via `mamba install`.
+- `pkg:cmd` within `$pds_mamba_tools` may be used, when package name differs from cmd name. This allows PDS to
+  "see" if a tool is already present on the host, then skip install.
+- You may want to check the [Mamba][mamba] docs, regarding how to create version
+  ("environment.yaml") files for reproducible installs.
 
 #### Mason
 
 The LSP tools want are parametrizable by exporting `$pds_mason_tools` before install.
 
 💡 Those are installed (as symlinks) into `~/.local/share/nvim/mason/bin`
+
+#### Defaults in This Version
+
+<!-- @pds_defaults-->
+
+|Param|Value|
+|-|-|
+|`pds_d_mamba`|`/home/gk/pds`|
+|`pds_distri`|`astro`|
+|`pds_mamba_prefer_system_tools`|`false`|
+|`pds_mamba_tools`|` bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier tmux tree unzip `|
+|`pds_mason_tools`|` bash-language-server lua-language-server marksman prettierd python-lsp-server ruff-lsp shfmt stylua typescript-language-server vim-language-server `|
+|`pds_pin_distri`|`true`|
+|`pds_pin_mamba`|`true`|
+|`pds_pin_mamba_pkgs`|`false`|
+|`pds_pin_nvim_pkgs`|`false`|
+|`pds_repo`|`github.com:AXGKl/pds`|
+|`pds_v_distri`|`4f4269d174d85df8b278a6e09d05daeef840df4a`|
+|`pds_v_mamba`|`22.9.0-2`|
+|`pds_v_nvim`|`0.8.1`|
+|`pds_v_shfmt`|`3.6.0`|
+
+<!--@pds_defaults -->
 
 ### Forking the Repo
 
@@ -283,10 +305,33 @@ diagnostics popup did not show up, we let first attempt die within a subshell, t
 [neovim]: https://neovim.io
 [pde]: https://www.youtube.com/watch?v=IK_-C0GXfjo
 
-<!--
-if 1:
-  # runreplacements
-  vpe.notify('aasdf')
--->
+```python runreplacements :clear :silent
+replace_at = '@pds_defaults'
 
-<!-- :vpe /gg/runreplacements/ # :vpe_on_any  -->
+show_defaults = ['pds_mamba_tools', 'pds_mason_tools']
+import os, json
+def pds_env():
+  cmd = 'import os, json; print(json.dumps(dict(os.environ)))'
+  cmd = f". $HOME/.config/pds/setup/pds.sh source && python -c '{cmd}'"
+  cmd = f'/bin/bash -c "{cmd}"'
+  return json.loads(os.popen(cmd).read())
+E = pds_env()
+tag = '@pds_defaults'
+r = ['', '']
+R = lambda s, k, v: s.replace(k, v)
+clean = lambda s: R(R(s, '|', ''),  '\n', ' ')
+add = lambda k, v:  r.append(f'|{clean(k)}|{clean(v)}|')
+add('Param', 'Value')
+add('-', '-')
+[add(f'`{k}`', f'`{E[k]}`') for k in sorted([i for i in E if i.startswith('pds_')])]
+r.extend(['', ''])
+a = replace_at
+vpe.hlp.insert_between(a + '-->', '<!--' + a, '\n'.join(r))
+vpe.vim.command('write')
+
+```
+
+<!--
+:vpe /gg/runreplacements/ # :vpe_on_any  only found at max 3  lines from end!
+vi: fdl=1 fen
+-->

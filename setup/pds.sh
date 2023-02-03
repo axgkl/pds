@@ -83,11 +83,11 @@ function run_with_pds_bin_path {
 # function run-in-bash {
 #     # in zsh a tool wants to have all funcs here, must go bash to source this:
 # }
-function run-tools {
+function run_tools {
     # access to further tools. w/o $1 or match we display fzf.
     # with func name we  call it directly
     test "${in_pds_shell:-}" = "true" || {
-        pds shell run-tools "$@"
+        pds shell run_tools "$@"
         return $?
     }
     local match="${1:-}"
@@ -147,7 +147,7 @@ function handle_sourced {
         #F source:        Sources ALL the pds functions
         source) return ;;
         #F s|tools:       Opens tools menu, except when exact match
-        \s | tools) run-tools "$@" ;;
+        \s | tools) run_tools "$@" ;;
         -x | -s | -h | --help | att | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status | \u | update | \v | version)
             "$here/pds.sh" "$func" "$@"
             ;;
@@ -1071,7 +1071,7 @@ function DoInstall {
     echo -e "- Size: $(disk "$pds_d_mamba") - you may delete the pkgs folder."
     echo -e "- Source your ~/.bashrc or ~/.zshrc, to have pds function available."
     echo -e "- ${M}pds vi$O to start editor with all tools."
-    echo -e "- When you have no nerdfont installed (e.g. on servers), run: pds run-tools dev-icons false"
+    echo -e "- When you have no nerdfont installed (e.g. on servers), run: pds tools dev-icons false"
     echo -e "${L}\nDocs: "
     echo -e "- https://mamba.readthedocs.io"
     echo -e "- https://astronvim.github.io"
