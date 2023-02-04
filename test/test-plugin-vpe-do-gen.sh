@@ -14,7 +14,7 @@ function go_home {
 function run_headless_in_page_vpe {
     go_home
     echo -e "\n\nGenerating $1..."
-    vi --headless '+PythonEval' '+quit' "$1" || exit 1
+    pds vi --headless '+PythonEval' '+quit' "$1" || exit 1
 
 }
 
