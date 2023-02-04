@@ -40,7 +40,7 @@ function rm-swaps { # rms: rm all swapfiles
     sd="$HOME/.local/state/nvim/swap"
     hint "before"
     sh -a ls -l "$sd"
-    cd "$sd" && rm -f ./**
+    cd "$sd" && rm -f ./*"${1:-}"*
     sh -a ls -l "$sd"
     hint "cleared"
 }
