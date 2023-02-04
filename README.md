@@ -182,6 +182,7 @@ The LSP tools want are parametrizable by exporting `$pds_mason_tools` before ins
 |`pds_pin_mamba_pkgs`|`false`|
 |`pds_pin_nvim_pkgs`|`false`|
 |`pds_repo`|`github.com:AXGKl/pds`|
+|`pds_v_distri`|`4f4269d174d85df8b278a6e09d05daeef840df4a`|
 |`pds_v_mamba`|`22.9.0-2`|
 |`pds_v_nvim`|`0.8.1`|
 

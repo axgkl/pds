@@ -4,19 +4,21 @@
 # => it's only a demo
 
 pds() { . "$HOME/.config/pds/setup/pds.sh" "$@"; }
-
+me="$0"
+here="$(builtin cd "$(dirname "$me")" && pwd)"
 function go_home {
-    here="$(builtin cd "$(dirname "$0")" && pwd)"
     cd "$here" && cd ..
     test -e "README.md" || exit 1
 }
 
 function run_headless_in_page_vpe {
+    go_home
     echo -e "\n\nGenerating $1..."
     vi --headless '+PythonEval' '+quit' "$1" || exit 1
+
 }
 
-run_headless_in_page_vpe "$HOME/.config/nvim/lua/user/mappings.md"
 run_headless_in_page_vpe README.md
+run_headless_in_page_vpe "$HOME/.config/nvim/lua/user/mappings.md"
 
 echo -e '\n\nvpe tests passed'
