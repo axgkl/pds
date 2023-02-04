@@ -42,7 +42,7 @@ function test_in_tmux {
     export test_mode=true
     mkdir -p "$d_vi_file"
     rm -f "$HOME"/.local/state/nvim/swap/%tmp*
-    . "$HOME/.config/pds/setup/pds.sh" source
+    pds source
     (cd "$d_vi_file" && q 12 git init || true) # lsps are sensitive here
     q 12 T ls || sh start_tmux                 # don't kill when running, want to retest
     test_match="${1:-}"
@@ -50,7 +50,7 @@ function test_in_tmux {
     q 12 safe_quit_vi
 }
 
-function pds { source "$HOME/.config/pds/setup/pds.sh" "$@"; }
+function pds { . "$HOME/.config/pds/setup/pds.sh" "$@"; }
 
 function tst {
     cur_test="$1"
@@ -108,7 +108,8 @@ function testit {
     return 1
 }
 function rm_swaps {
-    ( cd "$HOME/.local/state/nvim/swap" && rm -f ./*tmp* )
+    local m="${1:-tmp}"
+    (cd "$HOME/.local/state/nvim/swap" && rm -f ./*"$m"*)
 }
 
 function deindent { echo -e "$1" | tail -n +2 | sed -e 's/^    //g'; }
@@ -136,7 +137,7 @@ function open {
 }
 
 function vi_quit {
-	📷
+    📷
     sleep 0.1
     TSK ':quitall!'
     TSC "echo 'vi done'" # the && touch done will be failing if not on shell again
