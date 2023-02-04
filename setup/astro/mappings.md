@@ -271,7 +271,6 @@ add('}')
 with open('mappings.lua', 'w') as fd: fd.write('\n'.join(r))
 cmd = 'PATH="$HOME/.local/share/nvim/mason/bin:$PATH" stylua ./mappings.lua'
 os.system(cmd)
-
 vpe.notify('💾 Parsing Success', msg='\nHave written: mappings.lua')
 vpe.vim.command(f'edit {os.getcwd()}/mappings.lua')
 vpe.vim.current.buffer = vpe.ctx.src_buf
