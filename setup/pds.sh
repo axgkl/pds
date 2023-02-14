@@ -12,7 +12,6 @@ bat
 fd
 fzf
 gdu
-lazygit
 }"
 pds_mamba_tools="${pds_mamba_tools:-
 blue
@@ -20,6 +19,7 @@ git
 gxx_linux-64:-
 gcc
 jq
+lazygit
 neovim:-
 prettier
 ripgrep:rg
@@ -635,14 +635,14 @@ function install_binary_tools_mamba {
 function install_binenv {
     local fn fnm
     fn="$pds_d_mamba/bin/binenv"
+    export BINENV_BINDIR="$pds_d_mamba/bin"
+    export BINENV_LINKDIR="$pds_d_mamba/bin"
     test -e "$fn" || {
         wget -q "$url_binenv" -O /tmp/binenv
         chmod +x /tmp/binenv
         /tmp/binenv update
         /tmp/binenv install binenv
     }
-    export BINENV_BINDIR="$pds_d_mamba/bin"
-    export BINENV_LINKDIR="$pds_d_mamba/bin"
     have "binenv" "BINENV_BINDIR=$pds_d_mamba/bin"
 }
 
