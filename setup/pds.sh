@@ -7,20 +7,22 @@ pds_d_mamba="${pds_d_mamba:-$HOME/pds}"
 pds_v_mamba="${pds_v_mamba:-22.9.0-2}"
 pds_v_nvim="${pds_v_nvim:-0.8.1}"
 #pds_v_shfmt="${pds_v_shfmt:-3.6.0}"
-pds_mamba_tools="${pds_mamba_tools:-
+pds_binenv_tools="${pds_binenv_tools:-
 bat
-blue
-fd-find:fd
+fd
 fzf
+gdu
+lazygit
+}"
+pds_mamba_tools="${pds_mamba_tools:-
+blue
 git
 gxx_linux-64:-
 gcc
 jq
-lazygit
-ncdu
 neovim:-
-ripgrep:rg
 prettier
+ripgrep:rg
 tmux
 tree
 unzip
@@ -225,6 +227,8 @@ function set_constants {
         - Ensures pds function within ~/.bashrc and/or ~/.zshrc
         - Creates Mamba/Conda Environment at '$pds_d_mamba'. Tools/libs:
         $L$pds_mamba_tools$O
+        - Creates binenv Environment at '$pds_d_mamba'. Tools/libs:
+        $L$pds_binenv_tools$O
         - Installs NeoVim '$pds_v_nvim'
         - Installs Nvim '$pds_distri' Distribution 
         - Installs Mason Tools:
@@ -250,10 +254,13 @@ function set_constants {
     det_help="${det_help//        /}"
 }
 function set_helper_vars {
+    platform="$(uname)"
+    archi="amd64"
     source "$here/$pds_distri/environ" || true # maybe non needed, but show error
     # spell='http://ftp.vim.org/pub/vim/runtime/spell/de.utf-8.spl'
     # 10k: https://raw.githubusercontent.com/neoclide/coc-sources/master/packages/word/10k.txt
     #
+    url_binenv="https://github.com/devops-works/binenv/releases/download/v0.19.0/binenv_${platform}_$archi"
     url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
     #shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
     _stashes_have="$(ls "$d_stash" 2>/dev/null | sort | xargs)"
@@ -441,14 +448,18 @@ function disk {
 }
 function set_pds_function_to_user_shell {
     local a fn h
-    for fn in "$HOME/.bashrc" "$HOME/.zshrc"; do
+    for sh in "bash" "zsh"; do
+        fn="$HOME/.${sh}rc"
         test -e "$fn" || continue
-        h="$h $(basename "$fn")"
+        h="$h $(basename "$fn")" #for have info
         a='function pds { source "'$here'/pds.sh" "$@"; }'
         grep -A 3 'function pds' <"$fn" | grep source | head -n 1 | grep "$here" 1>/dev/null 2>&1 && hint "Already present in $h" || {
             echo "writing pds function to $fn => pls source it"
             echo "$a" >>"$fn"
         }
+        for k in BINENV_BINDIR BINENV_LINKDIR; do
+            grep $k <"$fn" || echo "export $k=$pds_d_mamba/bin" >>"$fn"
+        done
     done
     have 'Shell function' "$a in $h"
 }
@@ -518,14 +529,14 @@ function install_mamba_binary_pkg_mgr {
 }
 function ensure_single_tool {
     # $1: tool $2: checker if present.
-    # we temporary set pds_mamba_tools to $1 and call install_binary_tools:
+    # we temporary set pds_mamba_tools to $1 and call install_binary_tools_mamba:
     local p1 t1
     t1="$pds_mamba_tools"
     p1="$pds_mamba_prefer_system_tools"
     pds_mamba_tools="$1"
     pds_mamba_prefer_system_tools=false
     eval "$2" && pds_mamba_prefer_system_tools=true
-    install_binary_tools
+    install_binary_tools_mamba
     export pds_mamba_tools="$t1"
     export pds_mamba_prefer_system_tools="$p1"
     have "$1" "$(type "$1")"
@@ -563,9 +574,14 @@ function install_graph_easy {
     }
     have graph-easy "Asci drawing tool"
 }
-
+function install_binary_tools_binenv {
+    for t in $(echo -e "$pds_binenv_tools"); do
+        "$pds_d_mamba/bin/binenv" install "$t"
+    done
+    have binenv_tools "$pds_binenv_tools"
+}
 # support ripgrep[=ver][:<rg|->]  (- for library, no name on system)
-function install_binary_tools {
+function install_binary_tools_mamba {
     local f v pkg name spkgs pkgs vers vt
     local wanted
     vt=""
@@ -616,18 +632,19 @@ function install_binary_tools {
     test -z "${spkgs/ /}" || have "Tools Present" "$spkgs"
 }
 
-#function install_shfmt {
-#    # avoiding install golang
-#    local fn fnm
-#    fn="$pds_d_mamba/bin/shfmt"
-#    fnm="$HOME/.local/share/nvim/mason/bin/shfmt" # always in nvim path
-#    test -e "$fn" || {
-#        TSC "curl -L -o shfmt '$shfmt' && mv shfmt '$fn'" "then" chmod +x "$fn"
-#    }
-#    rm -f "$fnm"
-#    ln -s "$fn" "$fnm"
-#    have ShellFormatter "$fn"
-#}
+function install_binenv {
+    local fn fnm
+    fn="$pds_d_mamba/bin/binenv"
+    test -e "$fn" || {
+        wget -q "$url_binenv" -O /tmp/binenv
+        chmod +x /tmp/binenv
+        /tmp/binenv update
+        /tmp/binenv install binenv
+    }
+    export BINENV_BINDIR="$pds_d_mamba/bin"
+    export BINENV_LINKDIR="$pds_d_mamba/bin"
+    have "binenv" "BINENV_BINDIR=$pds_d_mamba/bin"
+}
 
 function install_neovim {
     local a="$pds_d_mamba/bin/nvim.appimg"
@@ -1046,7 +1063,9 @@ function DoInstall {
     sh activate_mamba
     sh ensure_tmux
     sh start_tmux
-    sh install_binary_tools
+    sh install_binary_tools_mamba
+    sh install_binenv
+    sh install_binary_tools_binenv
     sh install_graph_easy
     sh install_pips
     sh install_neovim
