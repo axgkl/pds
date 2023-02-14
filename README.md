@@ -30,6 +30,7 @@ This installs an IDE and tools, organized so that it won't collide with anything
 It is intended for
 
 - local and server operation, based on [Mamba][mamba] and [NeoVim][neovim].
+- Also we install [binenv][binenv], a superfast provider for devops related tools
 - Neovim is your IDE
 - Mamba is the package manager for underlying tools the IDE is based upon, incl. a compiler
 - python, javascript, lua, shell, markdown lsp support ootb - but extendable
@@ -60,7 +61,12 @@ export PATH="~/pds/bin:$PATH" # then vi"
 ### Requirements: bash, wget.
 
 OS: Currently only tested on Linux but OSX and BSDs _should_ work as well. We do use (and
-create) the Linux style configuration directories (`~/.config/<pds|nvim>`, `~/.local/<cache|share>/nvim`) though - always.
+create) the Linux style configuration directories (`~/.config/<pds|nvim>`,
+`~/.local/<cache|share>/nvim`) though - always.
+
+Correction: The nvim installation itself must currently fail(!) on OSX, since done via
+appimage. Will fix, once I get a hold on an OSX machine. Happy for PRs for an OSX version
+of the `install_nvim` function.
 
 ### Example
 
@@ -308,6 +314,7 @@ diagnostics popup did not show up, we let first attempt die within a subshell, t
 
 [astronvim]: https://astronvim.github.io/
 [mamba]: https://github.com/mamba-org/mamba
+[binenv]: https://github.com/devops-works/binenv
 [neovim]: https://neovim.io
 [pde]: https://www.youtube.com/watch?v=IK_-C0GXfjo
 

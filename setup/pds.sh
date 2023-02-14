@@ -650,6 +650,7 @@ function install_neovim {
     local a="$pds_d_mamba/bin/nvim.appimg"
     local d="$pds_d_mamba/bin/nvimfs"
     test -d "$d" || {
+
         local s="squashfs-root"
         rm -rf "$s"
         rm -rf "$pds_d_mamba/bin/vi"
