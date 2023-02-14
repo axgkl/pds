@@ -28,6 +28,7 @@ return {
         ['<S-Tab>'] = { 'zM', desc = 'Close ALL Folds' },
         -- Close just a split or a tab
         [',c'] = { ':close<CR>', desc = 'Close :close' },
+        [',g'] = { ':PythonGoto<CR>', desc = '[Open file or URL][vpe_goto]' },
         [',q'] = { ':quitall!<CR>', desc = 'Quit all!' },
         [',u'] = { ':UndotreeToggle<CR>', desc = 'Undo Tree' },
         -- 🟥 does not repeat last f t F T
@@ -144,8 +145,7 @@ return {
         [',G'] = { ':TermExec cmd=lazygit<CR>', desc = 'Lazygit' },
         [',W'] = { ':wa<CR>', desc = 'Save all buffers' },
         -- https://github.com/axiros/vpe
-        [',r'] = { ':PythonEval<CR>', desc = 'VimPythonEval' },
-        [',g'] = { ':PythonGoto<CR>', desc = 'VimPythonEval' },
+        [',r'] = { ':PythonEval<CR>', desc = '[VimPythonEval][vpe]' },
         ['<C-H>'] = { '<C-W><C-K>' },
         ['<C-L>'] = { '<C-W><C-J>' },
         ['<M-H>'] = { ':edit ~/.config/nvim/lua/user/README.md<CR>', desc = 'pds help' },
@@ -153,8 +153,8 @@ return {
         ['<leader>mp'] = { ':MindOpenSmartProject<CR>', desc = 'Mind Project' },
     },
     v = {
+        [',g'] = { ':PythonGotoRange<CR>', desc = '[Google sel. words][vpe_goto]' },
         ['<leader>d'] = { '"_d', desc = 'Delete noregister' },
-        [',g'] = { ':PythonGotoRange<CR>', desc = 'VimPythonEval' },
         ['gq'] = { 'gwgw', desc = 'Format w/o formatexpr' },
         ['⏎'] = { 'zO', desc = 'Fold all open' },
     },

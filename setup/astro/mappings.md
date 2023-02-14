@@ -15,7 +15,9 @@
   <!--toc:end-->
 
 👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings  
-👉 `:map` lists them all
+👉 `:map` lists them all  
+❗ This file is the _source_ for `mappings.lua` and **intended to be viewed in vi** or [raw][mapraw] in the browser. In rendered HTML you
+can't see the mappings in angle brackets, e.g. `<Enter>`.
 
 ## Folding
 
@@ -29,28 +31,23 @@ Type z and let which key help you, regarding other options
 
 ## Navigation
 
-| Mapping         | M   | What                         | How                                         | Cmt                                                                              |
-| --------------- | --- | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
-| ,c              | 🟣  | Close :close                 | :close ⏎                                    | Close just a split or a tab                                                      |
-| ,g              | x🟠 | Smart open                   | `':lua UU().smart_open([[visualsel]]) ⏎ ⏎`  |
-| ,g              | x🟣 | Smart open (browser or vi)   | `'viW"ay:lua UU().smart_open([[<C-R>a]]) ⏎` | Universal python scriptable file or browser opener over word `,g`                |
-| ,q              | 🟣  | Quit all!                    | :quitall! ⏎                                 |
-| ,u              | 🟣  | Undo Tree                    | :UndotreeToggle ⏎                           |                                                                                  |
-| -SEMICOL-       | 🟣  | Buffers open                 | `TS().buffers()`                            | 🟥 does not repeat last f t F T                                                  |
-| <M-o>           | 🟣  | Jump newer (after C-o)       | <C-i>                                       | C-o jump older -> alt-o is jump newer (since C-i is tab which we need elsewhere) |
-| <M-w>           | 🟣  | Buffer delete :bd!           | :bd! ⏎                                      | Close window                                                                     |
-| <leader>fg      | 🟣  | Git files                    | `TS().git_files()`                          |
-| <leader><enter> | 🟣  | Previous edited buffer       | :ls<CR>:b#<CR><Space>                       | in your open buffers (toggle back and forth) :b# ⏎ " previous buffer             |
-| G               | 🟣  | End of file                  | :$<CR><bar>:silent! ?begin-UNDER-archive ⏎  | Move stuff you want to keep below a `begin_ archive` comment and G jumps to that |
-| ff              | 🟣  | Open file(from vi start dir) | `TS().find_files()`                         | You can open many files at once, by selecting them with TAB in the picker        |
-| gw              | 🟣  | Live grep words              | `TS().live_grep()`                          | 🟥 gw reformat via gq                                                            |
+| Mapping         | M   | What                          | How                                        | Cmt                                                                              |
+| --------------- | --- | ----------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------- |
+| ,c              | 🟣  | Close :close                  | :close ⏎                                   | Close just a split or a tab                                                      |
+| ,g              | 🟣  | [Open file or URL][vpe_goto]  | :PythonGoto ⏎                              |
+| ,g              | 🟠  | [Google sel. words][vpe_goto] | :PythonGotoRange ⏎                         |
+| ,q              | 🟣  | Quit all!                     | :quitall! ⏎                                |
+| ,u              | 🟣  | Undo Tree                     | :UndotreeToggle ⏎                          |                                                                                  |
+| -SEMICOL-       | 🟣  | Buffers open                  | `TS().buffers()`                           | 🟥 does not repeat last f t F T                                                  |
+| <M-o>           | 🟣  | Jump newer (after C-o)        | <C-i>                                      | C-o jump older -> alt-o is jump newer (since C-i is tab which we need elsewhere) |
+| <M-w>           | 🟣  | Buffer delete :bd!            | :bd! ⏎                                     | Close window                                                                     |
+| <leader>fg      | 🟣  | Git files                     | `TS().git_files()`                         |
+| <leader><enter> | 🟣  | Previous edited buffer        | :ls<CR>:b#<CR><Space>                      | in your open buffers (toggle back and forth) :b# ⏎ " previous buffer             |
+| G               | 🟣  | End of file                   | :$<CR><bar>:silent! ?begin-UNDER-archive ⏎ | Move stuff you want to keep below a `begin_ archive` comment and G jumps to that |
+| ff              | 🟣  | Open file(from vi start dir)  | `TS().find_files()`                        | You can open many files at once, by selecting them with TAB in the picker        |
+| gw              | 🟣  | Live grep words               | `TS().live_grep()`                         | 🟥 gw reformat via gq                                                            |
 
 🟥 Arrow keys resize split windows, i.e. **won't** work for navigation (hjkl ftw)
-
-- `,g`:
-
-  - Opens e.g. in browser if URL. Google search if not resolvable word. nvim if file.
-  - Resolves md links) via `smart_vi_open.py`. Non locally (e.g. on servers) browser opening is not available.
 
 - `<Ctl>o` Jump last place (u knew that)
 - `H` `L` Window left/right selection
@@ -130,10 +127,8 @@ Since `f` alone is already "find forward char on current line", we cannot displa
 | ,E         | 🟢  | Vim Eval Into         | :EvalInto ⏎                               |
 | ,G         | 🟣  | Lazygit               | :TermExec cmd=lazygit ⏎                   |
 | ,W         | 🟣  | Save all buffers      | :wa ⏎                                     |
-| ,r         | 🟣  | VimPythonEval         | :PythonEval ⏎                             | https://github.com/axiros/vpe        |
+| ,r         | 🟣  | [VimPythonEval][vpe]  | :PythonEval ⏎                             | https://github.com/axiros/vpe        |
 | ,r         | 🟢  | VimPythonEval         | :PythonEval ⏎                             |
-| ,g         | 🟣  | VimPythonEval         | :PythonGoto ⏎                             |
-| ,g         | 🟠  | VimPythonEval         | :PythonGotoRange ⏎                        |
 | <C-E>      | 🟤  |                       | <C-O>A                                    | " Jump to end of line in insert mode |
 | <C-H>      | 🟣  |                       | <C-W><C-K>                                |
 | <C-L>      | 🟣  |                       | <C-W><C-J>                                |
@@ -162,7 +157,7 @@ Details: Any line in this file is [parsed](#code), which:
 - -SEMICOL-, -UNDER-, -BACKTICK-: Replaced at parsing (MD and ,t workaround)
 - Function like TS(), SS() are defined in python [parser](#code)
 - [Aliases](#code): | 🟣 n | 🟠 v | 🟢 x | 🟤 i | ⏎ <CR> |
-- 🟥 Means: Dubious. might change.
+- 🟥: Dubious - might change.
 
 ## Helpers
 
@@ -176,13 +171,16 @@ Details: Any line in this file is [parsed](#code), which:
 
 ### Links
 
+[mapraw]: https://raw.githubusercontent.com/AXGKl/pds/master/setup/astro/mappings.md
 [vim-surround]: https://github.com/tpope/vim-surround
 [autosave]: https://github.com/Pocco81/auto-save.nvim
 [whichkey]: https://github.com/folke/which-key.nvim
 [tabularize]: https://github.com/godlygeek/tabular
 [lp]: https://www.youtube.com/watch?v=HtPL2YhK6h0&t=165s
 [neotree]: https://github.com/nvim-neo-tree/neo-tree.nvim
-[gqbugorfeat]: https://github.com/jose-elias-alvarez/null-ls.nvim/issues/1131)
+[gqbugorfeat]: https://github.com/jose-elias-alvarez/null-ls.nvim/issues/1131
+[vpe]: https://github.com/axiros/vpe
+[vpe_goto]: https://github.com/axiros/vpe/blob/main/docs/smart_goto.md
 
 ### Parser
 

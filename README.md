@@ -1,6 +1,7 @@
 # Personal Development Sandbox
 
 <!--toc:start-->
+
 - [Personal Development Sandbox](#personal-development-sandbox)
   - [Bootstrap Installation](#bootstrap-installation)
     - [Requirements: bash, wget.](#requirements-bash-wget)
@@ -16,18 +17,15 @@
       - [Mason](#mason)
       - [Defaults in This Version](#defaults-in-this-version)
     - [Forking the Repo](#forking-the-repo)
-  - [Writing Tests](#writing-tests)
-    - [Test Helper Functions](#test-helper-functions)
-    - [Debugging Tips](#debugging-tips)
-    - [Gotchas](#gotchas)
-<!--toc:end-->
+  - [Writing Tests](#writing-tests) - [Test Helper Functions](#test-helper-functions) - [Debugging Tips](#debugging-tips) - [Gotchas](#gotchas)
+  <!--toc:end-->
 
 [![gh-ci][gh-ci-img]][gh-ci]
 
 [gh-ci]: https://github.com/AXGKl/pds/actions/workflows/main.yml
 [gh-ci-img]: https://github.com/AXGKl/pds/actions/workflows/main.yml/badge.svg
 
-This installs an IDE and tools, organized so that it won't collide with anything else on the system.
+This installs an IDE and tools, organized so that it won't collide with anything else on the system[^1].
 
 It is intended for
 
@@ -56,7 +54,7 @@ chmod +x pds.sh
 ./pds.sh i[nstall] [watch] # watch requires the presence of tmux alread *before* isntall
 # (...)
 pds vi (after shell restart) # or, recommended:
-export PATH="~/pds/bin:$PATH, then vi"
+export PATH="~/pds/bin:$PATH" # then vi"
 ```
 
 ### Requirements: bash, wget.
@@ -305,6 +303,8 @@ diagnostics popup did not show up, we let first attempt die within a subshell, t
 ```
 
 ---
+
+[^1]: Except an already existing NeoVim install - which you can stash and recover.
 
 [astronvim]: https://astronvim.github.io/
 [mamba]: https://github.com/mamba-org/mamba

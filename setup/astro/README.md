@@ -44,7 +44,7 @@ All in ~/.config/nvim/lua/user
 - `smart_vi_open.py`
 - `mappings.md`
 
-👉 `,g` on those filenames to open (see ,g below)
+👉 `,g` on those filenames to open (see ,g in [mappings](./mappings.md))
 
 - Files are symlinked, from ~/.config/pds into nvim's ~/.config/nvim
 - Ext tools, e.g. lazygit, blue, require these tools in $PATH (e.g. ~/pds/bin)
