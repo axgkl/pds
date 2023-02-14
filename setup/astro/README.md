@@ -25,8 +25,6 @@ Customizes [AstroNVim](https://github.com/AstroNvim/AstroNvim)
 
 Usage:
 
-- `<Enter>` expands,
-- `<TAB>` expands all.
 - `,P` Read in browser (when on your machine)
 
 ## Leader Keys
@@ -40,42 +38,44 @@ Usage:
 
 All in ~/.config/nvim/lua/user
 
-Main files:
-
-- init.lua
-- polish.vim
-- plugins/init.lua
-- smart_vi_open.py
-- mappings.md
+- `init.lua`
+- `polish.vim`
+- `plugins/init.lua`
+- `smart_vi_open.py`
+- `mappings.md`
 
 👉 `,g` on those filenames to open (see ,g below)
 
 - Files are symlinked, from ~/.config/pds into nvim's ~/.config/nvim
-- Some ext tools, e.g. lazygit, blue, require access to these tools (i.e. ~/pds/bin in $PATH)
+- Ext tools, e.g. lazygit, blue, require these tools in $PATH (e.g. ~/pds/bin)
 
 ## Custom Shortcuts
 
-Global ones defined in [mappings.md](./mappings.md).
+Defined in [mappings.md](./mappings.md).
 
-### File Type Specific
+## File Type Specific
 
-#### Explorer ([NeoTree][neotree])
+### Explorer ([NeoTree][neotree])
 
 - ` o`: Open the explorer (`,c` or `alt-w` closes)
 - `P`: Enter preview mode
 - `?`: Help
 
-#### Man Pages
+### Man Pages
 
 You can view man pages in vim like so: `alias man='pds vman'`
 
-#### Markdown
+### Markdown
 
 - `,p`: Toggle presentation mode
 - `,P`: Toggle rendering in $BROWSER (requires X/Wayland)
 - `,t`: Pretty format tables
 
-#### Python
+`marksman` LSP server tries to inspect your project files => problem in e.g. home dir.
+Add a `.marksman.toml` to restrict searching.  
+https://github.com/artempyanykh/marksman/issues/82#issuecomment-1245705362
+
+### Python
 
 - `,b`: Breakpoint, correctly indented
 - `,e`: Wrap line into try-except block
@@ -92,6 +92,14 @@ Available as `:lua require('user.utils')` or `:lua UU`
 
 - `dump(<table)`: Prints table recursively. Ex: `:lua UU.dump(vim.lsp)`
 - `P(<table)`: Prints table recursively. Ex: `:lua P(vim.lsp)`
+
+## Emojis
+
+- Supported in cmp (completion engine). Just type a `:heart` to see how that works.
+- We also installed pip `emoji-fzf` and added a snippet named `emo` for markdown, adding a
+  [vpe][vpe] evaluatable command:
+
+[![asciicast](https://asciinema.org/a/3mL2iYDkMx6bKrgcYpdgXoClr.svg)](https://asciinema.org/a/3mL2iYDkMx6bKrgcYpdgXoClr)
 
 ## Server Operation
 
@@ -147,3 +155,5 @@ To move it away to a backup dir:
 ---
 
 ## Links
+
+[vpe]: https://github.com/axiros/vpe

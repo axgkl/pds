@@ -28,8 +28,6 @@ return {
         ['<S-Tab>'] = { 'zM', desc = 'Close ALL Folds' },
         -- Close just a split or a tab
         [',c'] = { ':close<CR>', desc = 'Close :close' },
-        -- Universal python scriptable file or browser opener over word `,g`
-        [',g'] = { 'viW"ay:lua UU().smart_open([[<C-R>a]])<CR>', desc = 'Smart open (browser or vi)' },
         [',q'] = { ':quitall!<CR>', desc = 'Quit all!' },
         [',u'] = { ':UndotreeToggle<CR>', desc = 'Undo Tree' },
         -- 🟥 does not repeat last f t F T
@@ -50,7 +48,7 @@ return {
             desc = 'Git files',
         },
         -- in your open buffers (toggle back and forth) :b# ⏎ " previous buffer
-        ['<space><enter>'] = { ':ls<CR>', desc = 'Previous edited buffer' },
+        ['<leader><enter>'] = { ':ls<CR>:b#<CR><Space>', desc = 'Previous edited buffer' },
         -- Move stuff you want to keep below a `begin_ archive` comment and G jumps to that
         ['G'] = { ':$<CR><bar>:silent! ?begin_archive<CR>', desc = 'End of file' },
         -- You can open many files at once, by selecting them with TAB in the picker
@@ -142,10 +140,12 @@ return {
             end,
             desc = 'Color Schemes',
         },
+        [',E'] = { ':EvalInto<CR>', desc = 'Vim Eval Into' },
         [',G'] = { ':TermExec cmd=lazygit<CR>', desc = 'Lazygit' },
         [',W'] = { ':wa<CR>', desc = 'Save all buffers' },
         -- https://github.com/axiros/vpe
         [',r'] = { ':PythonEval<CR>', desc = 'VimPythonEval' },
+        [',g'] = { ':PythonGoto<CR>', desc = 'VimPythonEval' },
         ['<C-H>'] = { '<C-W><C-K>' },
         ['<C-L>'] = { '<C-W><C-J>' },
         ['<M-H>'] = { ':edit ~/.config/nvim/lua/user/README.md<CR>', desc = 'pds help' },
@@ -153,8 +153,8 @@ return {
         ['<leader>mp'] = { ':MindOpenSmartProject<CR>', desc = 'Mind Project' },
     },
     v = {
-        [',g'] = { ':lua UU().smart_open([[visualsel]])<CR><CR>', desc = 'Smart open' },
         ['<leader>d'] = { '"_d', desc = 'Delete noregister' },
+        [',g'] = { ':PythonGotoRange<CR>', desc = 'VimPythonEval' },
         ['gq'] = { 'gwgw', desc = 'Format w/o formatexpr' },
         ['⏎'] = { 'zO', desc = 'Fold all open' },
     },

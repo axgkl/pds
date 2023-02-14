@@ -1,6 +1,7 @@
 # Mappings
 
 <!--toc:start-->
+
 - [Mappings](#mappings)
   - [Folding](#folding)
   - [Navigation](#navigation)
@@ -10,12 +11,8 @@
   - [Misc](#misc)
   - [Usage](#usage)
     - [Symbols](#symbols)
-  - [Helpers](#helpers)
-    - [Arch](#arch)
-    - [Links](#links)
-    - [Parser](#parser)
-      - [Code](#code)
-<!--toc:end-->
+  - [Helpers](#helpers) - [Arch](#arch) - [Links](#links) - [Parser](#parser) - [Code](#code)
+  <!--toc:end-->
 
 👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings  
 👉 `:map` lists them all
@@ -32,21 +29,21 @@ Type z and let which key help you, regarding other options
 
 ## Navigation
 
-| Mapping        | M   | What                         | How                                         | Cmt                                                                              |
-| -------------- | --- | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
-| ,c             | 🟣  | Close :close                 | :close ⏎                                    | Close just a split or a tab                                                      |
-| ,g             | 🟠  | Smart open                   | `':lua UU().smart_open([[visualsel]]) ⏎ ⏎`  |
-| ,g             | 🟣  | Smart open (browser or vi)   | `'viW"ay:lua UU().smart_open([[<C-R>a]]) ⏎` | Universal python scriptable file or browser opener over word `,g`                |
-| ,q             | 🟣  | Quit all!                    | :quitall! ⏎                                 |
-| ,u             | 🟣  | Undo Tree                    | :UndotreeToggle ⏎                           |                                                                                  |
-| -SEMICOL-      | 🟣  | Buffers open                 | `TS().buffers()`                            | 🟥 does not repeat last f t F T                                                  |
-| <M-o>          | 🟣  | Jump newer (after C-o)       | <C-i>                                       | C-o jump older -> alt-o is jump newer (since C-i is tab which we need elsewhere) |
-| <M-w>          | 🟣  | Buffer delete :bd!           | :bd! ⏎                                      | Close window                                                                     |
-| <leader>fg     | 🟣  | Git files                    | `TS().git_files()`                          |
-| <space><enter> | 🟣  | Previous edited buffer       | :ls ⏎                                       | in your open buffers (toggle back and forth) :b# ⏎ " previous buffer             |
-| G              | 🟣  | End of file                  | :$<CR><bar>:silent! ?begin-UNDER-archive ⏎  | Move stuff you want to keep below a `begin_ archive` comment and G jumps to that |
-| ff             | 🟣  | Open file(from vi start dir) | `TS().find_files()`                         | You can open many files at once, by selecting them with TAB in the picker        |
-| gw             | 🟣  | Live grep words              | `TS().live_grep()`                          | 🟥 gw reformat via gq                                                            |
+| Mapping         | M   | What                         | How                                         | Cmt                                                                              |
+| --------------- | --- | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
+| ,c              | 🟣  | Close :close                 | :close ⏎                                    | Close just a split or a tab                                                      |
+| ,g              | x🟠 | Smart open                   | `':lua UU().smart_open([[visualsel]]) ⏎ ⏎`  |
+| ,g              | x🟣 | Smart open (browser or vi)   | `'viW"ay:lua UU().smart_open([[<C-R>a]]) ⏎` | Universal python scriptable file or browser opener over word `,g`                |
+| ,q              | 🟣  | Quit all!                    | :quitall! ⏎                                 |
+| ,u              | 🟣  | Undo Tree                    | :UndotreeToggle ⏎                           |                                                                                  |
+| -SEMICOL-       | 🟣  | Buffers open                 | `TS().buffers()`                            | 🟥 does not repeat last f t F T                                                  |
+| <M-o>           | 🟣  | Jump newer (after C-o)       | <C-i>                                       | C-o jump older -> alt-o is jump newer (since C-i is tab which we need elsewhere) |
+| <M-w>           | 🟣  | Buffer delete :bd!           | :bd! ⏎                                      | Close window                                                                     |
+| <leader>fg      | 🟣  | Git files                    | `TS().git_files()`                          |
+| <leader><enter> | 🟣  | Previous edited buffer       | :ls<CR>:b#<CR><Space>                       | in your open buffers (toggle back and forth) :b# ⏎ " previous buffer             |
+| G               | 🟣  | End of file                  | :$<CR><bar>:silent! ?begin-UNDER-archive ⏎  | Move stuff you want to keep below a `begin_ archive` comment and G jumps to that |
+| ff              | 🟣  | Open file(from vi start dir) | `TS().find_files()`                         | You can open many files at once, by selecting them with TAB in the picker        |
+| gw              | 🟣  | Live grep words              | `TS().live_grep()`                          | 🟥 gw reformat via gq                                                            |
 
 🟥 Arrow keys resize split windows, i.e. **won't** work for navigation (hjkl ftw)
 
@@ -129,11 +126,14 @@ Since `f` alone is already "find forward char on current line", we cannot displa
 | ,2         | 🟣  | Edit init.lua         | :edit ~/.config/nvim/lua/user/init.lua ⏎  |                                      |
 | ,3         | 🟣  | Term in dir of buf    | :ToggleTerm dir=%:p:h ⏎                   |
 | ,C         | 🟣  | Color Schemes         | `TS().colorscheme({enable_preview=true})` |
+| ,E         | 🟣  | Vim Eval Into         | :EvalInto ⏎                               |
 | ,E         | 🟢  | Vim Eval Into         | :EvalInto ⏎                               |
 | ,G         | 🟣  | Lazygit               | :TermExec cmd=lazygit ⏎                   |
 | ,W         | 🟣  | Save all buffers      | :wa ⏎                                     |
 | ,r         | 🟣  | VimPythonEval         | :PythonEval ⏎                             | https://github.com/axiros/vpe        |
 | ,r         | 🟢  | VimPythonEval         | :PythonEval ⏎                             |
+| ,g         | 🟣  | VimPythonEval         | :PythonGoto ⏎                             |
+| ,g         | 🟠  | VimPythonEval         | :PythonGotoRange ⏎                        |
 | <C-E>      | 🟤  |                       | <C-O>A                                    | " Jump to end of line in insert mode |
 | <C-H>      | 🟣  |                       | <C-W><C-K>                                |
 | <C-L>      | 🟣  |                       | <C-W><C-J>                                |

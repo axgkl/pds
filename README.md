@@ -1,9 +1,10 @@
 # Personal Development Sandbox
 
 <!--toc:start-->
-
 - [Personal Development Sandbox](#personal-development-sandbox)
   - [Bootstrap Installation](#bootstrap-installation)
+    - [Requirements: bash, wget.](#requirements-bash-wget)
+    - [Example](#example)
     - [Existing NeoVim Install](#existing-neovim-install)
     - [Fallback to Working Version](#fallback-to-working-version)
   - [Features](#features)
@@ -11,9 +12,15 @@
   - [Further Personalization](#further-personalization)
     - [Via $PDS_USER](#via-pdsuser)
     - [More Tools](#more-tools)
+      - [Mamba](#mamba)
+      - [Mason](#mason)
+      - [Defaults in This Version](#defaults-in-this-version)
     - [Forking the Repo](#forking-the-repo)
-  - [Writing Tests](#writing-tests) - [Test Helper Functions](#test-helper-functions) - [Debugging Tips](#debugging-tips) - [Gotchas](#gotchas)
-  <!--toc:end-->
+  - [Writing Tests](#writing-tests)
+    - [Test Helper Functions](#test-helper-functions)
+    - [Debugging Tips](#debugging-tips)
+    - [Gotchas](#gotchas)
+<!--toc:end-->
 
 [![gh-ci][gh-ci-img]][gh-ci]
 
@@ -170,24 +177,23 @@ The LSP tools want are parametrizable by exporting `$pds_mason_tools` before ins
 
 <!-- @pds_defaults-->
 
-|Param|Value|
-|-|-|
-|`pds_d_mamba`|`/home/gk/pds`|
-|`pds_distri`|`astro`|
-|`pds_mamba_prefer_system_tools`|`false`|
-|`pds_mamba_tools`|` bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier tmux tree unzip `|
-|`pds_mason_tools`|` bash-language-server lua-language-server marksman prettierd python-lsp-server ruff-lsp shfmt stylua typescript-language-server vim-language-server `|
-|`pds_pin_distri`|`true`|
-|`pds_pin_mamba`|`true`|
-|`pds_pin_mamba_pkgs`|`false`|
-|`pds_pin_nvim_pkgs`|`false`|
-|`pds_repo`|`github.com:AXGKl/pds`|
-|`pds_v_distri`|`4f4269d174d85df8b278a6e09d05daeef840df4a`|
-|`pds_v_mamba`|`22.9.0-2`|
-|`pds_v_nvim`|`0.8.1`|
+| Param                           | Value                                                                                                                                                |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pds_d_mamba`                   | `/home/gk/pds`                                                                                                                                       |
+| `pds_distri`                    | `astro`                                                                                                                                              |
+| `pds_mamba_prefer_system_tools` | `false`                                                                                                                                              |
+| `pds_mamba_tools`               | `bat blue fd-find:fd fzf git gxx_linux-64:- gcc jq lazygit ncdu neovim:- ripgrep:rg prettier tmux tree unzip`                                        |
+| `pds_mason_tools`               | `bash-language-server lua-language-server marksman prettierd python-lsp-server ruff-lsp shfmt stylua typescript-language-server vim-language-server` |
+| `pds_pin_distri`                | `true`                                                                                                                                               |
+| `pds_pin_mamba`                 | `true`                                                                                                                                               |
+| `pds_pin_mamba_pkgs`            | `false`                                                                                                                                              |
+| `pds_pin_nvim_pkgs`             | `false`                                                                                                                                              |
+| `pds_repo`                      | `github.com:AXGKl/pds`                                                                                                                               |
+| `pds_v_distri`                  | `4f4269d174d85df8b278a6e09d05daeef840df4a`                                                                                                           |
+| `pds_v_mamba`                   | `22.9.0-2`                                                                                                                                           |
+| `pds_v_nvim`                    | `0.8.1`                                                                                                                                              |
 
 <!--@pds_defaults -->
-
 
 ### Forking the Repo
 
@@ -215,7 +221,7 @@ For more output use `pds test -v`, e.g.:
 - The main program, when wanting to kill tmux, waits for a key entry, when a session is
   attached.
 
-A testsession might light like so
+A test session might light like so
 
 [![asciicast](https://asciinema.org/a/IPb1eZQ7Ss1Xr3qeWaDhOJAaD.svg)](https://asciinema.org/a/IPb1eZQ7Ss1Xr3qeWaDhOJAaD)
 
@@ -281,7 +287,7 @@ If you use tmux elsewhere, kill the session using the pds install socket path.
 
 Note: When a client is attached, the main program will always want a key stroke from you before killing tmux.
 
-#### Gotchas
+### Gotchas
 
 - Mind Test Screen Size
 

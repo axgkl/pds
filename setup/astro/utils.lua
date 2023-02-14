@@ -52,52 +52,53 @@ end
 --[[         os.execute("notify-send" .. i[1]) ]]
 --[[     end ]]
 --[[ end ]]
-
-M.smart_open = function(arg)
-    -- gf opens anything openable. Calls a python app, which writes back if vim should open it
-    -- we have a vmap of ,g to this with arg "visualsel" -> get that selection from the buffer:
-    local line = vim.api.nvim_get_current_line()
-    if arg == 'visualsel' then
-        local csrow, cscol, cerow, cecol = visual_selection_range()
-        local l = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), csrow, csrow + 1, true)
-        arg = l[1]
-        arg = arg:sub(cscol, cecol)
-    end
-    local fn = '/tmp/smartopen'
-    local fd = io.open(fn, 'w')
-    io.output(fd)
-    io.write(':-:word:-:')
-    io.write(arg)
-    io.write(':-:fn:-:')
-    io.write(vim.fn.expand('%:p'))
-    io.write(':-:line:-:')
-    io.write(line)
-    io.write(':-:end:-:')
-    io.close(fd)
-    os.execute('~/.config/nvim/lua/user/smart_vi_open.py')
-
-    -- local pth = arg --:gsub('"', "")
-    -- pth = pth:gsub("'", "")
-    -- pth = string.gsub(pth, "'", "")
-    fd = io.open(fn, 'r')
-    if fd ~= nil then
-        io.input(fd)
-        local s = io.read()
-        io.close(fd)
-        if s ~= nil then
-            fd = io.open(s, 'r')
-            -- if its a file: edit it
-            -- else its a vim command
-            if fd ~= nil then
-                io.close(fd)
-                vim.cmd('edit ' .. s)
-            else
-                vim.cmd(s)
-            end
-        end
-    end
-    return ''
-end
+--
+-- smart open Moved into vpe:
+-- M.smart_open = function(arg)
+--     -- gf opens anything openable. Calls a python app, which writes back if vim should open it
+--     -- we have a vmap of ,g to this with arg "visualsel" -> get that selection from the buffer:
+--     local line = vim.api.nvim_get_current_line()
+--     if arg == 'visualsel' then
+--         local csrow, cscol, cerow, cecol = visual_selection_range()
+--         local l = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), csrow, csrow + 1, true)
+--         arg = l[1]
+--         arg = arg:sub(cscol, cecol)
+--     end
+--     local fn = '/tmp/smartopen'
+--     local fd = io.open(fn, 'w')
+--     io.output(fd)
+--     io.write(':-:word:-:')
+--     io.write(arg)
+--     io.write(':-:fn:-:')
+--     io.write(vim.fn.expand('%:p'))
+--     io.write(':-:line:-:')
+--     io.write(line)
+--     io.write(':-:end:-:')
+--     io.close(fd)
+--     os.execute('~/.config/nvim/lua/user/smart_vi_open.py')
+--
+--     -- local pth = arg --:gsub('"', "")
+--     -- pth = pth:gsub("'", "")
+--     -- pth = string.gsub(pth, "'", "")
+--     fd = io.open(fn, 'r')
+--     if fd ~= nil then
+--         io.input(fd)
+--         local s = io.read()
+--         io.close(fd)
+--         if s ~= nil then
+--             fd = io.open(s, 'r')
+--             -- if its a file: edit it
+--             -- else its a vim command
+--             if fd ~= nil then
+--                 io.close(fd)
+--                 vim.cmd('edit ' .. s)
+--             else
+--                 vim.cmd(s)
+--             end
+--         end
+--     end
+--     return ''
+-- end
 
 M.merge = function(t1, t2)
     for k, v in pairs(t2) do
