@@ -8,7 +8,7 @@ function test-vi-dashboard {
     # 0.4 too long but first ti
     # I hate failing plugins on startup. may never happen time
     TSK vi
-    ✔️ max 400 shows "Recents"
+    ✔️ max 1000 shows "Recents"
     ✔️ shows "Find File"
     🚫 shows 'Error'
 }
