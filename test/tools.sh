@@ -141,7 +141,8 @@ function vi_quit {
     📷
     sleep 0.1
     TSK ':quitall!'
-    TSC "echo 'vi done'" # the && touch done will be failing if not on shell again
+    sleep 0.1
+    TSC "echo 'vi done'" || tst_die "quit failed" # the && touch done will be failing if not on shell again
 }
 
 function now { date +%s%N | cut -b1-13; } # millis
