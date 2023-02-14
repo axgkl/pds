@@ -45,6 +45,7 @@ function test_in_tmux {
     pds source
     (cd "$d_vi_file" && q 12 git init || true) # lsps are sensitive here
     q 12 T ls || sh start_tmux                 # don't kill when running, want to retest
+    TSC 'export PATH=$HOME/pds/bin:$PATH'
     test_match="${1:-}"
     all_testfuncs "$0" tst
     q 12 safe_quit_vi

@@ -7,8 +7,9 @@ set -o errexit
 function test-vi-dashboard {
     # 0.4 too long but first ti
     # I hate failing plugins on startup. may never happen time
+    TSC "type vi" | grep pds || die "wrong vi. $(type vi)\nPATH: $PATH"
     TSK vi
-    ✔️ max 10000 shows "Recents" || {
+    ✔️ max 400 shows "Recents" || {
         📷
         exit 1
     }
