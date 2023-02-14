@@ -49,6 +49,7 @@ All in ~/.config/nvim/lua/user
 - Files are symlinked, from ~/.config/pds into nvim's ~/.config/nvim
 - Ext tools, e.g. lazygit, blue, require these tools in $PATH (e.g. ~/pds/bin)
 
+
 ## Custom Shortcuts
 
 Defined in [mappings.md](./mappings.md).
