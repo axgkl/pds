@@ -35,7 +35,7 @@ function test-pds-source-not-all {
 
 function test-pds-tools-exact-match {
     local d s
-    d="$(. "$pds" s fn-pvers | grep home)"
+    d="$(. "$pds" t fn-pvers | grep home)"
     test -e "$d"
 }
 
