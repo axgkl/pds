@@ -658,6 +658,7 @@ function install_binenv {
         /tmp/binenv update
         /tmp/binenv install binenv
     }
+    "$fn" update
     have "binenv" "BINENV_BINDIR=$pds_d_mamba/bin"
 }
 
