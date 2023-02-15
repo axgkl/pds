@@ -153,8 +153,8 @@ function test-store-last-position { # will at reopen last position be stored AND
 }
 
 # -------------------------------------------------------------------- pds function
-function test-pds-plugs-list-and-fzf { # pds s function some tools, based on fzf et al
-    TSK 'pds s plugins-list'
+function test-pds-plugs-list-and-fzf { # pds t function some tools, based on fzf et al
+    TSK 'pds t plugins-list'
     until C | grep -q "opt/"; do
         sleep 0.1
         C | grep -q "start/" && break

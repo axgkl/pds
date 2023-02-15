@@ -128,6 +128,19 @@ function run_tools {
     # eval "$ts # $*"
     # set +x
 }
+function search {
+    local all=false
+    test "$1" = "-a" && {
+        shift
+        all=true
+    }
+    run_with_pds_bin_path
+    echo "Install those with: binenv install"
+    binenv search "$1"
+    $all || return
+    echo -e "\n\nInstall the following with: mamba install"
+    mamba search "$1"
+}
 
 function handle_sourced {
     local r func
@@ -146,10 +159,12 @@ function handle_sourced {
             cd "$here/$pds_distri" || true
             pds vi init.lua
             ;;
+        #F search [-a]:   Searches binenv and with -a also mamba
+        \s | search) search "$@" ;;
         #F source:        Sources ALL the pds functions
         source) return ;;
         #F s|tools:       Opens tools menu, except when exact match
-        \s | tools) run_tools "$@" ;;
+        \t | tools) run_tools "$@" ;;
         -x | -s | -h | --help | att | clean-all | \i | install | shell | stash | swaps | test | \r | restore | status | \u | update | \v | version)
             "$here/pds.sh" "$func" "$@"
             ;;
