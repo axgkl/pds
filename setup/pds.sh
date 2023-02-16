@@ -30,6 +30,7 @@ unzip
 # in vim type :Mason to see names:
 pds_mason_tools="${pds_mason_tools:-
 bash-language-server
+html-lsp
 lua-language-server
 marksman
 prettierd
