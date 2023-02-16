@@ -1,10 +1,16 @@
 d_packer="$HOME/.local/share/nvim/site/pack/packer"
 enter_shell() { sh "$SHELL"; }
+
 function lsp-show-all { # open null-ls BUILTINS in browser
     local cmd=open
     q 12 type xdg-open && cmd="xdg-open"
     $cmd 'https://github.com/jose-elias-alvarez/null-ls.nvim/blob/main/doc/BUILTINS.md'
 }
+function lsp-log-tail { # tail .local/state/nvim/lsp.log
+    cd $HOME/.local/state/nvim
+    tail -f lsp.log
+}
+
 function dev-icons { # set use of icons (true/false) # SH
     local o="$HOME/.config/pds/setup/${pds_distri}/options.lua"
     function setico {

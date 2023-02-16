@@ -27,6 +27,7 @@ tmux
 tree
 unzip
 }"
+# in vim type :Mason to see names:
 pds_mason_tools="${pds_mason_tools:-
 bash-language-server
 lua-language-server
@@ -38,6 +39,7 @@ shfmt
 stylua
 typescript-language-server
 vim-language-server
+yaml-language-server
 }"
 pds_mamba_prefer_system_tools=${pds_mamba_prefer_system_tools:-false}
 pds_pin_distri=${pds_pin_distri:-true}

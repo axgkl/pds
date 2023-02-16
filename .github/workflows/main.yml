@@ -46,7 +46,6 @@ jobs:
         shell: bash -l {0}
         run: "$HOME/.config/pds/setup/pds.sh test -f pds-script"
 
-
       - name: PDS Function Tests
         shell: bash -l {0}
         run: "$HOME/.config/pds/setup/pds.sh test -v -f pds-funcs"
@@ -54,7 +53,6 @@ jobs:
       - name: User Tests
         shell: bash -l {0}
         run: "$HOME/.config/pds/setup/pds.sh test -f user"
-
 
       - name: PDS Plugins Tests
         shell: bash -l {0}

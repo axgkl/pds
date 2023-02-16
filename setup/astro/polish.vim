@@ -2,7 +2,7 @@
 "nnoremap <Tab>   za
 " same size after win resize:
 autocmd VimResized * wincmd = 
-
+ 
 " C-o jump older -> alt-o is jump newer (since C-i is tab which we need elsewhere)
 "nnoremap <M-o>   <C-i>
 "cnoremap <silent> x<CR>  :call ConfirmQuit(1)<CR>

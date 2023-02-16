@@ -102,16 +102,16 @@ local config = {
                 b.formatting.stylua,
                 -- Set a linter
                 b.diagnostics.rubocop,
-                b.formatting.prettier.with({
+                b.formatting.prettierd.with({
                     filetypes = {
                         --"javascript",
                         'javascriptreact',
-                        'typescript',
                         'typescriptreact',
                         'vue',
                         'css',
                         'scss',
                         'less',
+                        'xml',
                         'html',
                         'json',
                         'jsonc',

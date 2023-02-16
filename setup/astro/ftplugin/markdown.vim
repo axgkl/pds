@@ -19,6 +19,7 @@ setl formatoptions+=t
 " not show spaces or tabs:
 setl nolist
 setl spell
+setl sw=2
 "setl spelllang=de,en
 setl spelllang=en
 setl textwidth=90
