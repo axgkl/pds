@@ -44,11 +44,12 @@ function cd-swaps { # cds: cd to swapfiles dir
 function rm-swaps { # rms: rm all swapfiles
     local sd
     sd="$HOME/.local/state/nvim/swap"
-    hint "before"
-    sh -a ls -l "$sd"
+    sh -a ls -l "$sd" >"/tmp/pds.rms.$UID.1"
     cd "$sd" && rm -f ./*"${1:-}"*
-    sh -a ls -l "$sd"
-    hint "cleared"
+    sh -a ls -l "$sd" >"/tmp/pds.rms.$UID.2"
+    hint "cleared:"
+    diff "/tmp/pds.rms.$UID.1" "/tmp/pds.rms.$UID.2"
+    true
 }
 
 function plugins-list { # pgl: fzf over all plugins, then cd into selected
