@@ -210,7 +210,7 @@ local config = {
         -- don't get flooded by lsp diag. <spc>lx toggles
         vim.o.updatetime = 250
         require('user.utils').toggle_diag_displ()
-
+    
         -- local s = ls.snippet
         -- local t = ls.text_node
 
@@ -240,6 +240,17 @@ local config = {
         -- end
 
         --return snippets
+        --
+        -- local new_lines = { '\x1b[1mHello \x1b[1;48;5;124mworld!' }
+        --
+        -- -- appending using Neovim standard API
+        -- local lastline = vim.api.nvim_buf_line_count(0)
+        -- vim.api.nvim_buf_set_lines(0, lastline, lastline, true, new_lines)
+        --
+        -- -- appending using Baleia API
+        -- local lastline = vim.api.nvim_buf_line_count(0)
+        -- local baleia = require('baleia').setup({})
+        -- baleia.buf_set_lines(0, lastline, lastline, true, new_lines)
     end,
     -- vim.api.nvim_create_autocmd('User', {
     --     pattern = 'LuasnipInsertNodeEnter',
@@ -259,7 +270,7 @@ local config = {
     -- }),
     --
 }
-
+-- pds customization hook:
 local userfn = os.getenv('PDS_USER')
 if userfn then
     local u = require(userfn)

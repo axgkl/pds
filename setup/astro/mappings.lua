@@ -28,7 +28,8 @@ return {
         ['<S-Tab>'] = { 'zM', desc = 'Close ALL Folds' },
         -- Close just a split or a tab
         [',c'] = { ':close<CR>', desc = 'Close :close' },
-        [',g'] = { ':PythonGoto<CR>', desc = '[Open file or URL][vpe_goto]' },
+        -- https://github.com/axiros/vpe
+        [',g'] = { ":silent call PyEvalSelection('SmartGoto', '')<CR>", desc = '[Open file or URL][vpe_goto]' },
         [',q'] = { ':quitall!<CR>', desc = 'Quit all!' },
         [',u'] = { ':UndotreeToggle<CR>', desc = 'Undo Tree' },
         -- 🟥 does not repeat last f t F T
@@ -145,23 +146,23 @@ return {
         [',G'] = { ':TermExec cmd=lazygit<CR>', desc = 'Lazygit' },
         [',W'] = { ':wa<CR>', desc = 'Save all buffers' },
         -- https://github.com/axiros/vpe
-        [',r'] = { ':PythonEval<CR>', desc = '[VimPythonEval][vpe]' },
+        [',r'] = { ":call PyEvalSelection('Eval', '')<CR>", desc = '[VimPythonEval][vpe]' },
         ['<C-H>'] = { '<C-W><C-K>' },
         ['<C-L>'] = { '<C-W><C-J>' },
         ['<M-H>'] = { ':edit ~/.config/nvim/lua/user/README.md<CR>', desc = 'pds help' },
         ['<leader>mm'] = { ':MindOpenMain<CR>', desc = 'Mind Main' },
         ['<leader>mp'] = { ':MindOpenSmartProject<CR>', desc = 'Mind Project' },
     },
+    x = {
+        [',g'] = { ":<C-U> silent call PyEvalSelection('SmartGoto', visualmode())<CR>", desc = '[Open file or URL][vpe_goto]', },
+        ['ga'] = { ':Tabularize/' },
+        [',E'] = { ':EvalInto<CR>', desc = 'Vim Eval Into' },
+        [',r'] = { ":<C-U> call PyEvalSelection('Eval', visualmode())<CR>", desc = 'VimPythonEval' },
+    },
     v = {
-        [',g'] = { ':PythonGotoRange<CR>', desc = '[Google sel. words][vpe_goto]' },
         ['<leader>d'] = { '"_d', desc = 'Delete noregister' },
         ['gq'] = { 'gwgw', desc = 'Format w/o formatexpr' },
         ['⏎'] = { 'zO', desc = 'Fold all open' },
-    },
-    x = {
-        ['ga'] = { ':Tabularize/' },
-        [',E'] = { ':EvalInto<CR>', desc = 'Vim Eval Into' },
-        [',r'] = { ':PythonEval<CR>', desc = 'VimPythonEval' },
     },
     i = {
         ['<M-j>'] = { '<ESC><C-W><C-W>', desc = 'Jump Left Split' },

@@ -1,5 +1,9 @@
 # Mappings
 
+This file is the _source_ for `mappings.lua` and **intended to be viewed in vi** or
+[raw][mapraw] in the browser. In rendered HTML you can't see the mappings in angle
+brackets, e.g. `<Enter>` (we don't clutter the tables with backticks).
+
 <!--toc:start-->
 
 - [Mappings](#mappings)
@@ -16,14 +20,12 @@
 
 👉 All default AstroNVim Shortcuts: https://astronvim.github.io/Basic%20Usage/mappings  
 👉 `:map` lists them all  
-❗ This file is the _source_ for `mappings.lua` and **intended to be viewed in vi** or [raw][mapraw] in the browser. In rendered HTML you
-can't see the mappings in angle brackets, e.g. `<Enter>`.
 
 ## Folding
 
 | Mapping | M   | What            | How | Cmt                       |
 | ------- | --- | --------------- | --- | ------------------------- |
-| <C-i>   | 🟣  | Fold open       | zR  | " folds                   |
+| <C-i>   | 🟣  | Fold open     | zR  | " folds                   |
 | <Enter> | 🟣  | Toggle fold     | za  |
 | <S-Tab> | 🟣  | Close ALL Folds | zM  | <C-i> is ident with <TAB> |
 
@@ -34,8 +36,8 @@ Type z and let which key help you, regarding other options
 | Mapping         | M   | What                          | How                                        | Cmt                                                                              |
 | --------------- | --- | ----------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------- |
 | ,c              | 🟣  | Close :close                  | :close ⏎                                   | Close just a split or a tab                                                      |
-| ,g              | 🟣  | [Open file or URL][vpe_goto]  | :PythonGoto ⏎                              |
-| ,g              | 🟠  | [Google sel. words][vpe_goto] | :PythonGotoRange ⏎                         |
+| ,g              | 🟣  | [Open file or URL][vpe_goto]  | :silent call PyEvalSelection('SmartGoto', '') ⏎   | https://github.com/axiros/vpe        |
+| ,g              | 🟢  | [Open file or URL][vpe_goto]  | :<C-U> silent call PyEvalSelection('SmartGoto', visualmode()) ⏎                          |
 | ,q              | 🟣  | Quit all!                     | :quitall! ⏎                                |
 | ,u              | 🟣  | Undo Tree                     | :UndotreeToggle ⏎                          |                                                                                  |
 | -SEMICOL-       | 🟣  | Buffers open                  | `TS().buffers()`                           | 🟥 does not repeat last f t F T                                                  |
@@ -127,8 +129,8 @@ Since `f` alone is already "find forward char on current line", we cannot displa
 | ,E         | 🟢  | Vim Eval Into         | :EvalInto ⏎                               |
 | ,G         | 🟣  | Lazygit               | :TermExec cmd=lazygit ⏎                   |
 | ,W         | 🟣  | Save all buffers      | :wa ⏎                                     |
-| ,r         | 🟣  | [VimPythonEval][vpe]  | :PythonEval ⏎                             | https://github.com/axiros/vpe        |
-| ,r         | 🟢  | VimPythonEval         | :PythonEval ⏎                             |
+| ,r         | 🟣  | [VimPythonEval][vpe]  | :call PyEvalSelection('Eval', '') ⏎       | https://github.com/axiros/vpe        |
+| ,r         | 🟢  | VimPythonEval         | :<C-U> call PyEvalSelection('Eval', visualmode()) ⏎  |
 | <C-E>      | 🟤  |                       | <C-O>A                                    | " Jump to end of line in insert mode |
 | <C-H>      | 🟣  |                       | <C-W><C-K>                                |
 | <C-L>      | 🟣  |                       | <C-W><C-J>                                |

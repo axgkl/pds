@@ -145,6 +145,21 @@ function search {
     mamba search "$1"
 }
 
+function activate_mamba {
+    # deactivate all condas, lsp install would fail with different nodejs
+    function a_m {
+        conda activate "$pds_d_mamba" 2>/dev/null
+        #conda init -q bash
+    }
+    . "$pds_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
+    while [ -n "$CONDA_PREFIX" ]; do conda deactivate; done
+    a_m || die "Could not activate mamba"
+    test "$CONDA_PREFIX"=="$pds_d_mamba" || {
+        echo "Could not activate $pds_d_mamba"
+        return
+    }
+    echo "Activated $pds_d_mamba"
+}
 function handle_sourced {
     local r func
     func="${1:--h}"
@@ -153,8 +168,10 @@ function handle_sourced {
     # backslashed the shorts, to avoid zsh global alias resolution. compat. with bash
 
     case "$func" in
-        #F a|activate:    Adds pds bin dir to $PATH
+        #F a|activate:    Adds pds bin dir to $PATH (light activate)
         \a | activate) $r "$@" ;;
+        #F A|Activate:    Full activation of pds. Use this before installing additional components into it
+        \A | Activate) activate_mamba ;;
         #F d|deactivate:  Removes from $PATH
         \d | deactivate) $r deact ;;
         #F e|edit:        cd to user dir, edit init.lua
@@ -282,22 +299,6 @@ function set_helper_vars {
     url_nvim_appimg="https://github.com/neovim/neovim/releases/download/v$pds_v_nvim/nvim.appimage"
     #shfmt="https://github.com/mvdan/sh/releases/download/v$pds_v_shfmt/shfmt_v${pds_v_shfmt}_linux_amd64"
     _stashes_have="$(ls "$d_stash" 2>/dev/null | sort | xargs)"
-}
-
-function activate_mamba {
-    # deactivate all condas, lsp install would fail with different nodejs
-    function a_m {
-        conda activate "$pds_d_mamba" 2>/dev/null
-        #conda init -q bash
-    }
-    . "$pds_d_mamba/etc/profile.d/conda.sh" || die "could not source conda"
-    while [ -n "$CONDA_PREFIX" ]; do conda deactivate; done
-    a_m || die "Could not activate mamba"
-    test "$CONDA_PREFIX"=="$pds_d_mamba" || {
-        echo "Could not activate $pds_d_mamba"
-        return
-    }
-    echo "Activated $pds_d_mamba"
 }
 
 function deactivate_mamba {
@@ -588,7 +589,7 @@ function line_seped { echo "$1" | xargs | tr ' ' '\n'; }
 function install_graph_easy {
     # the best ascii art tool
     q 12 type graph-easy || {
-        mamba install -y -c bioconda perl-app-cpanminus && env PERL5LIB="" PERL_LOCAL_LIB_ROOT="" PERL_MM_OPT="" PERL_MB_OPT="" cpanm Graph::Easy
+        mamba install -y -c bioconda perl-app-cpanminus && env PERL5LIB="" PERL_LOCAL_LIB_ROOT="" PERL_MM_OPT="" PERL_MB_OPT="" cpanm Graph::Easy::As_svg
     }
     have graph-easy "Asci drawing tool"
 }
@@ -1019,7 +1020,7 @@ function enter {
 #     inst 'nightly, versioned plugins' && return
 #     die "No more options to stabilize the install. Now show me who's the man 💪😎 ..."
 # }
-
+pds_light_install=false
 function set_installing_flag { TSC 'export pds_installing=true'; }
 function unset_installing_flag { TSC 'unset pds_installing'; }
 function parse_install_opts {
@@ -1027,6 +1028,11 @@ function parse_install_opts {
     pds_inst_astro_ver=""
     while test -n "$1"; do
         case "$1" in
+            -l | light)
+                pds_light_install=true
+                shift
+                ;;
+
             -av | astro-ver)
                 pds_inst_astro_ver="$2"
                 shift 2
@@ -1092,13 +1098,15 @@ function DoInstall {
     sh set_installing_flag
     sh clone_astronvim_version
     sh first_start_astronvim
-    sh install_pds_flavor
-    sh unset_installing_flag
-    sh install_treesitter_parsers
-    sh install_lsps
-    #sh install_shfmt
-    sh create_vman
-    sh core_tests
+    test "$pds_light_install" = true || {
+        sh install_pds_flavor
+        sh unset_installing_flag
+        sh install_treesitter_parsers
+        sh install_lsps
+        #sh install_shfmt
+        sh create_vman
+        sh core_tests
+    }
     sh set_pds_function_to_user_shell
     title 'Finished.'
     echo -e '\n\nInstall Settings\n'
