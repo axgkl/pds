@@ -1020,7 +1020,7 @@ function enter {
 #     inst 'nightly, versioned plugins' && return
 #     die "No more options to stabilize the install. Now show me who's the man 💪😎 ..."
 # }
-pds_light_install=false
+pds_light_install="${pds_light_install:-false}"
 function set_installing_flag { TSC 'export pds_installing=true'; }
 function unset_installing_flag { TSC 'unset pds_installing'; }
 function parse_install_opts {
