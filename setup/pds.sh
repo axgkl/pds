@@ -1096,8 +1096,8 @@ function DoInstall {
     sh install_neovim
     sh set_installing_flag
     sh clone_astronvim_version
-    sh first_start_astronvim
     test "$pds_light_install" = true || {
+        sh first_start_astronvim
         sh install_graph_easy
         sh install_pds_flavor
         sh unset_installing_flag
