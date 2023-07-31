@@ -1,5 +1,9 @@
 # Personal Development Sandbox
 
+❗**UNMAINTAINED** in favor of https://github.com/AXGKl/pds_lazy ❗
+
+
+
 <!--toc:start-->
 
 - [Personal Development Sandbox](#personal-development-sandbox)
